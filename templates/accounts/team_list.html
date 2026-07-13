@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Equipo" %}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3><i class="bi bi-people"></i> {% trans "Equipo" %}</h3>
+  {% if can_manage %}
+  <a href="{% url 'accounts:team_create' %}" class="btn btn-dark"><i class="bi bi-plus-lg"></i> {% trans "Agregar miembro" %}</a>
+  {% endif %}
+</div>
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0 align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>{% trans "Nombre" %}</th>
+          <th>{% trans "Usuario" %}</th>
+          <th>{% trans "Rol" %}</th>
+          <th>{% trans "Teléfono" %}</th>
+          <th>{% trans "Estado" %}</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for member in members %}
+        <tr>
+          <td>{{ member.get_full_name|default:"—" }}</td>
+          <td>{{ member.username }}</td>
+          <td><span class="badge text-bg-secondary">{{ member.get_role_display }}</span></td>
+          <td>{{ member.phone|default:"—" }}</td>
+          <td>{% if member.is_active %}<span class="badge text-bg-success">{% trans "Activo" %}</span>{% else %}<span class="badge text-bg-danger">{% trans "Inactivo" %}</span>{% endif %}</td>
+          <td class="text-end">
+            {% if can_manage %}<a href="{% url 'accounts:team_edit' member.pk %}" class="btn btn-sm btn-outline-secondary">{% trans "Editar" %}</a>{% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center text-muted py-4">{% trans "Todavía no hay miembros en el equipo." %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,1053 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: eventplanner\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-13 17:15\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: eventplanner
+msgid "Panel"
+msgstr "Dashboard"
+
+#: eventplanner
+msgid "Mis tareas"
+msgstr "My tasks"
+
+#: eventplanner
+msgid "Eventos"
+msgstr "Events"
+
+#: eventplanner
+msgid "Proveedores"
+msgstr "Vendors"
+
+#: eventplanner
+msgid "Proveedores y espacios"
+msgstr "Vendors & venues"
+
+#: eventplanner
+msgid "Equipo"
+msgstr "Team"
+
+#: eventplanner
+msgid "Mi perfil"
+msgstr "My profile"
+
+#: eventplanner
+msgid "Cerrar sesión"
+msgstr "Log out"
+
+#: eventplanner
+msgid "Guardar"
+msgstr "Save"
+
+#: eventplanner
+msgid "Cancelar"
+msgstr "Cancel"
+
+#: eventplanner
+msgid "Editar"
+msgstr "Edit"
+
+#: eventplanner
+msgid "Eliminar"
+msgstr "Delete"
+
+#: eventplanner
+msgid "Quitar"
+msgstr "Remove"
+
+#: eventplanner
+msgid "Agregar"
+msgstr "Add"
+
+#: eventplanner
+msgid "Subir"
+msgstr "Upload"
+
+#: eventplanner
+msgid "Todas"
+msgstr "All"
+
+#: eventplanner
+msgid "Todos"
+msgstr "All"
+
+#: eventplanner
+msgid "Activo"
+msgstr "Active"
+
+#: eventplanner
+msgid "Inactivo"
+msgstr "Inactive"
+
+#: eventplanner
+msgid "Nombre"
+msgstr "Name"
+
+#: eventplanner
+msgid "Usuario"
+msgstr "Username"
+
+#: eventplanner
+msgid "Rol"
+msgstr "Role"
+
+#: eventplanner
+msgid "Área"
+msgstr "Area"
+
+#: eventplanner
+msgid "Estado"
+msgstr "Status"
+
+#: eventplanner
+msgid "Fecha"
+msgstr "Date"
+
+#: eventplanner
+msgid "Fecha límite"
+msgstr "Due date"
+
+#: eventplanner
+msgid "Teléfono"
+msgstr "Phone"
+
+#: eventplanner
+msgid "Reporta a"
+msgstr "Reports to"
+
+#: eventplanner
+msgid "reporta a"
+msgstr "reports to"
+
+#: eventplanner
+msgid "supervisa"
+msgstr "supervises"
+
+#: eventplanner
+msgid "EventPlanner"
+msgstr "EventPlanner"
+
+#: eventplanner
+msgid "Iniciar sesión"
+msgstr "Log in"
+
+#: eventplanner
+msgid "Entrar"
+msgstr "Log in"
+
+#: eventplanner
+msgid "¿Nueva empresa? Regístrate"
+msgstr "New company? Sign up"
+
+#: eventplanner
+msgid "Registrar empresa"
+msgstr "Register company"
+
+#: eventplanner
+msgid "Registra tu empresa"
+msgstr "Register your company"
+
+#: eventplanner
+msgid "Datos de la empresa"
+msgstr "Company details"
+
+#: eventplanner
+msgid "Tu cuenta de administrador"
+msgstr "Your administrator account"
+
+#: eventplanner
+msgid "Crear empresa"
+msgstr "Create company"
+
+#: eventplanner
+msgid "Ya tengo una cuenta"
+msgstr "I already have an account"
+
+#: eventplanner
+msgid "Nombre de la empresa"
+msgstr "Company name"
+
+#: eventplanner
+msgid "País"
+msgstr "Country"
+
+#: eventplanner
+msgid "país"
+msgstr "country"
+
+#: eventplanner
+msgid "Ciudad"
+msgstr "City"
+
+#: eventplanner
+msgid "ciudad"
+msgstr "city"
+
+#: eventplanner
+msgid "Apellido"
+msgstr "Last name"
+
+#: eventplanner
+msgid "Correo"
+msgstr "Email"
+
+#: eventplanner
+msgid "correo"
+msgstr "email"
+
+#: eventplanner
+msgid "Contraseña"
+msgstr "Password"
+
+#: eventplanner
+msgid "Confirmar contraseña"
+msgstr "Confirm password"
+
+#: eventplanner
+msgid "(selecciona un país)"
+msgstr "(select a country)"
+
+#: eventplanner
+msgid "Ese nombre de usuario ya está en uso."
+msgstr "That username is already taken."
+
+#: eventplanner
+msgid "Las contraseñas no coinciden."
+msgstr "The passwords do not match."
+
+#: eventplanner
+msgid "La contraseña debe tener al menos 8 caracteres."
+msgstr "The password must be at least 8 characters long."
+
+#: eventplanner
+msgid "¡Empresa registrada! Ya puedes crear tu primer evento."
+msgstr "Company registered! You can now create your first event."
+
+#: eventplanner
+msgid "Agregar miembro"
+msgstr "Add member"
+
+#: eventplanner
+msgid "Todavía no hay miembros en el equipo."
+msgstr "There are no team members yet."
+
+#: eventplanner
+msgid "Nuevo miembro"
+msgstr "New member"
+
+#: eventplanner
+msgid "Editar miembro"
+msgstr "Edit member"
+
+#: eventplanner
+msgid "Nuevo miembro del equipo"
+msgstr "New team member"
+
+#: eventplanner
+msgid "No tienes permiso para agregar miembros al equipo."
+msgstr "You don't have permission to add team members."
+
+#: eventplanner
+msgid "No tienes permiso para editar miembros del equipo."
+msgstr "You don't have permission to edit team members."
+
+#: eventplanner
+msgid "Miembro del equipo creado correctamente."
+msgstr "Team member created successfully."
+
+#: eventplanner
+msgid "Datos actualizados correctamente."
+msgstr "Details updated successfully."
+
+#: eventplanner
+msgid "Perfil actualizado."
+msgstr "Profile updated."
+
+#: eventplanner
+msgid "Administrador de empresa"
+msgstr "Company administrator"
+
+#: eventplanner
+msgid "Planificador"
+msgstr "Planner"
+
+#: eventplanner
+msgid "Supervisor"
+msgstr "Supervisor"
+
+#: eventplanner
+msgid "Encargado"
+msgstr "Assignee"
+
+#: eventplanner
+msgid "idioma preferido"
+msgstr "preferred language"
+
+#: eventplanner
+msgid "Hola, %(name)s"
+msgstr "Hello, %(name)s"
+
+#: eventplanner
+msgid "Tareas pendientes"
+msgstr "Pending tasks"
+
+#: eventplanner
+msgid "Miembros del equipo"
+msgstr "Team members"
+
+#: eventplanner
+msgid "Nuevo evento"
+msgstr "New event"
+
+#: eventplanner
+msgid "Próximos eventos"
+msgstr "Upcoming events"
+
+#: eventplanner
+msgid "completado"
+msgstr "complete"
+
+#: eventplanner
+msgid "No hay eventos próximos."
+msgstr "No upcoming events."
+
+#: eventplanner
+msgid "Tareas atrasadas"
+msgstr "Overdue tasks"
+
+#: eventplanner
+msgid "Sin tareas atrasadas. ¡Bien hecho!"
+msgstr "No overdue tasks. Well done!"
+
+#: eventplanner
+msgid "No hay eventos todavía."
+msgstr "No events yet."
+
+#: eventplanner
+msgid "de tareas completadas"
+msgstr "of tasks completed"
+
+#: eventplanner
+msgid "Editar evento"
+msgstr "Edit event"
+
+#: eventplanner
+msgid "Solo planificadores o administradores pueden crear eventos."
+msgstr "Only planners or administrators can create events."
+
+#: eventplanner
+msgid "Evento creado correctamente."
+msgstr "Event created successfully."
+
+#: eventplanner
+msgid "Evento actualizado."
+msgstr "Event updated."
+
+#: eventplanner
+msgid "No perteneces al equipo de este evento."
+msgstr "You are not part of this event's team."
+
+#: eventplanner
+msgid "Resumen"
+msgstr "Overview"
+
+#: eventplanner
+msgid "Itinerario"
+msgstr "Itinerary"
+
+#: eventplanner
+msgid "Equipo del evento"
+msgstr "Event team"
+
+#: eventplanner
+msgid "Tareas"
+msgstr "Tasks"
+
+#: eventplanner
+msgid "Notas y archivos"
+msgstr "Notes & files"
+
+#: eventplanner
+msgid "Tareas totales"
+msgstr "Total tasks"
+
+#: eventplanner
+msgid "Completadas"
+msgstr "Completed"
+
+#: eventplanner
+msgid "Nueva actividad"
+msgstr "New activity"
+
+#: eventplanner
+msgid "Agregar actividad"
+msgstr "Add activity"
+
+#: eventplanner
+msgid "Agregar actividad al itinerario"
+msgstr "Add activity to the itinerary"
+
+#: eventplanner
+msgid "Actividad agregada al itinerario."
+msgstr "Activity added to the itinerary."
+
+#: eventplanner
+msgid "Actividad eliminada del itinerario."
+msgstr "Activity removed from the itinerary."
+
+#: eventplanner
+msgid "¿Eliminar actividad?"
+msgstr "Delete activity?"
+
+#: eventplanner
+msgid "Sin actividades en el itinerario."
+msgstr "No activities in the itinerary yet."
+
+#: eventplanner
+msgid "Equipo de"
+msgstr "Team for"
+
+#: eventplanner
+msgid "Volver al evento"
+msgstr "Back to event"
+
+#: eventplanner
+msgid "¿Quitar del equipo?"
+msgstr "Remove from team?"
+
+#: eventplanner
+msgid "Sin miembros asignados."
+msgstr "No members assigned."
+
+#: eventplanner
+msgid "Gestionar equipo"
+msgstr "Manage team"
+
+#: eventplanner
+msgid "Miembro agregado al equipo del evento."
+msgstr "Member added to the event team."
+
+#: eventplanner
+msgid "Miembro removido del equipo."
+msgstr "Member removed from the team."
+
+#: eventplanner
+msgid "Ver todas las tareas"
+msgstr "View all tasks"
+
+#: eventplanner
+msgid "Sin tareas todavía."
+msgstr "No tasks yet."
+
+#: eventplanner
+msgid "Asociar proveedor"
+msgstr "Link vendor"
+
+#: eventplanner
+msgid "saldo"
+msgstr "balance"
+
+#: eventplanner
+msgid "¿Quitar proveedor?"
+msgstr "Remove vendor?"
+
+#: eventplanner
+msgid "Sin proveedores asociados."
+msgstr "No vendors linked yet."
+
+#: eventplanner
+msgid "Notas"
+msgstr "Notes"
+
+#: eventplanner
+msgid "ver todas"
+msgstr "view all"
+
+#: eventplanner
+msgid "Sin notas."
+msgstr "No notes."
+
+#: eventplanner
+msgid "Archivos"
+msgstr "Files"
+
+#: eventplanner
+msgid "ver todos"
+msgstr "view all"
+
+#: eventplanner
+msgid "Sin archivos."
+msgstr "No files."
+
+#: eventplanner
+msgid "Notas de"
+msgstr "Notes for"
+
+#: eventplanner
+msgid "Nueva nota"
+msgstr "New note"
+
+#: eventplanner
+msgid "Sin notas todavía."
+msgstr "No notes yet."
+
+#: eventplanner
+msgid "¿Eliminar nota?"
+msgstr "Delete note?"
+
+#: eventplanner
+msgid "Archivos de"
+msgstr "Files for"
+
+#: eventplanner
+msgid "Sin archivos todavía."
+msgstr "No files yet."
+
+#: eventplanner
+msgid "Subir archivo"
+msgstr "Upload file"
+
+#: eventplanner
+msgid "¿Eliminar archivo?"
+msgstr "Delete file?"
+
+#: eventplanner
+msgid "empresa"
+msgstr "company"
+
+#: eventplanner
+msgid "empresas"
+msgstr "companies"
+
+#: eventplanner
+msgid "activa"
+msgstr "active"
+
+#: eventplanner
+msgid "creada"
+msgstr "created"
+
+#: eventplanner
+msgid "correo de contacto"
+msgstr "contact email"
+
+#: eventplanner
+msgid "nombre"
+msgstr "name"
+
+#: eventplanner
+msgid "creado"
+msgstr "created"
+
+#: eventplanner
+msgid "rol en el evento"
+msgstr "role in the event"
+
+#: eventplanner
+msgid "teléfono"
+msgstr "phone"
+
+#: eventplanner
+msgid "usuarios"
+msgstr "users"
+
+#: eventplanner
+msgid "nombre del evento"
+msgstr "event name"
+
+#: eventplanner
+msgid "tipo de evento"
+msgstr "event type"
+
+#: eventplanner
+msgid "cliente"
+msgstr "client"
+
+#: eventplanner
+msgid "teléfono del cliente"
+msgstr "client phone"
+
+#: eventplanner
+msgid "correo del cliente"
+msgstr "client email"
+
+#: eventplanner
+msgid "espacio / lugar principal"
+msgstr "main venue"
+
+#: eventplanner
+msgid "dirección"
+msgstr "address"
+
+#: eventplanner
+msgid "fecha del evento"
+msgstr "event date"
+
+#: eventplanner
+msgid "hora de inicio"
+msgstr "start time"
+
+#: eventplanner
+msgid "hora de fin"
+msgstr "end time"
+
+#: eventplanner
+msgid "estado"
+msgstr "status"
+
+#: eventplanner
+msgid "descripción"
+msgstr "description"
+
+#: eventplanner
+msgid "planificador a cargo"
+msgstr "planner in charge"
+
+#: eventplanner
+msgid "creado por"
+msgstr "created by"
+
+#: eventplanner
+msgid "evento"
+msgstr "event"
+
+#: eventplanner
+msgid "eventos"
+msgstr "events"
+
+#: eventplanner
+msgid "actividad"
+msgstr "activity"
+
+#: eventplanner
+msgid "lugar"
+msgstr "venue"
+
+#: eventplanner
+msgid "notas"
+msgstr "notes"
+
+#: eventplanner
+msgid "orden"
+msgstr "order"
+
+#: eventplanner
+msgid "actividad del itinerario"
+msgstr "itinerary activity"
+
+#: eventplanner
+msgid "itinerario"
+msgstr "itinerary"
+
+#: eventplanner
+msgid "área / responsabilidad"
+msgstr "area / responsibility"
+
+#: eventplanner
+msgid "Ej. Banquete, Sonido, Decoración, Logística"
+msgstr "E.g. Catering, Sound, Decor, Logistics"
+
+#: eventplanner
+msgid "asignado desde"
+msgstr "assigned since"
+
+#: eventplanner
+msgid "miembro del equipo del evento"
+msgstr "event team member"
+
+#: eventplanner
+msgid "equipo del evento"
+msgstr "event team"
+
+#: eventplanner
+msgid "Boda"
+msgstr "Wedding"
+
+#: eventplanner
+msgid "Evento corporativo"
+msgstr "Corporate event"
+
+#: eventplanner
+msgid "Cumpleaños"
+msgstr "Birthday"
+
+#: eventplanner
+msgid "Evento social"
+msgstr "Social event"
+
+#: eventplanner
+msgid "Otro"
+msgstr "Other"
+
+#: eventplanner
+msgid "En planificación"
+msgstr "Planning"
+
+#: eventplanner
+msgid "Confirmado"
+msgstr "Confirmed"
+
+#: eventplanner
+msgid "En curso"
+msgstr "In progress"
+
+#: eventplanner
+msgid "Finalizado"
+msgstr "Finished"
+
+#: eventplanner
+msgid "Cancelado"
+msgstr "Cancelled"
+
+#: eventplanner
+msgid "tarea"
+msgstr "task"
+
+#: eventplanner
+msgid "tareas"
+msgstr "tasks"
+
+#: eventplanner
+msgid "categoría"
+msgstr "category"
+
+#: eventplanner
+msgid "Ej. Montaje, Logística, Decoración, Insumos"
+msgstr "E.g. Setup, Logistics, Decor, Supplies"
+
+#: eventplanner
+msgid "requiere foto"
+msgstr "requires photo"
+
+#: eventplanner
+msgid "requiere documento"
+msgstr "requires document"
+
+#: eventplanner
+msgid "completada el"
+msgstr "completed on"
+
+#: eventplanner
+msgid "completada por"
+msgstr "completed by"
+
+#: eventplanner
+msgid "Pendiente"
+msgstr "Pending"
+
+#: eventplanner
+msgid "En progreso"
+msgstr "In progress"
+
+#: eventplanner
+msgid "Completada"
+msgstr "Completed"
+
+#: eventplanner
+msgid "completada"
+msgstr "completed"
+
+#: eventplanner
+msgid "Con problema"
+msgstr "Issue reported"
+
+#: eventplanner
+msgid "hora límite"
+msgstr "due time"
+
+#: eventplanner
+msgid "Tareas de"
+msgstr "Tasks for"
+
+#: eventplanner
+msgid "Nueva tarea"
+msgstr "New task"
+
+#: eventplanner
+msgid "No hay tareas."
+msgstr "No tasks."
+
+#: eventplanner
+msgid "Crear tarea"
+msgstr "Create task"
+
+#: eventplanner
+msgid "No tienes permiso para crear tareas en este evento."
+msgstr "You don't have permission to create tasks for this event."
+
+#: eventplanner
+msgid "Tarea creada y asignada."
+msgstr "Task created and assigned."
+
+#: eventplanner
+msgid "No tienes acceso a esta tarea."
+msgstr "You don't have access to this task."
+
+#: eventplanner
+msgid "Volver a tareas"
+msgstr "Back to tasks"
+
+#: eventplanner
+msgid "Evidencia"
+msgstr "Evidence"
+
+#: eventplanner
+msgid "Sin evidencia subida todavía."
+msgstr "No evidence uploaded yet."
+
+#: eventplanner
+msgid "Foto requerida"
+msgstr "Photo required"
+
+#: eventplanner
+msgid "Documento requerido"
+msgstr "Document required"
+
+#: eventplanner
+msgid "Se requiere subir evidencia antes de completar esta tarea."
+msgstr "Evidence must be uploaded before this task can be completed."
+
+#: eventplanner
+msgid ""
+"Esta tarea requiere subir evidencia (foto/documento) antes de completarla."
+msgstr ""
+"This task requires uploading evidence (photo/document) before it can be "
+"completed."
+
+#: eventplanner
+msgid "Marcar como completada"
+msgstr "Mark as completed"
+
+#: eventplanner
+msgid "¿Confirmar que la tarea está completada?"
+msgstr "Confirm this task is completed?"
+
+#: eventplanner
+msgid "Completada por %(user)s el %(time)s"
+msgstr "Completed by %(user)s on %(time)s"
+
+#: eventplanner
+msgid "Evidencia subida correctamente."
+msgstr "Evidence uploaded successfully."
+
+#: eventplanner
+msgid "No se pudo subir la evidencia. Revisa el archivo."
+msgstr "The evidence could not be uploaded. Check the file."
+
+#: eventplanner
+msgid "Tarea marcada como completada a las %(time)s."
+msgstr "Task marked as completed at %(time)s."
+
+#: eventplanner
+msgid "Solo el encargado o un supervisor pueden completar esta tarea."
+msgstr "Only the assignee or a supervisor can complete this task."
+
+#: eventplanner
+msgid "Completadas recientemente"
+msgstr "Recently completed"
+
+#: eventplanner
+msgid "No tienes tareas pendientes. ¡Buen trabajo!"
+msgstr "You have no pending tasks. Great job!"
+
+#: eventplanner
+msgid "archivo"
+msgstr "file"
+
+#: eventplanner
+msgid "comentario"
+msgstr "comment"
+
+#: eventplanner
+msgid "subido el"
+msgstr "uploaded on"
+
+#: eventplanner
+msgid "subido por"
+msgstr "uploaded by"
+
+#: eventplanner
+msgid "evidencia"
+msgstr "evidence"
+
+#: eventplanner
+msgid "evidencias"
+msgstr "evidence items"
+
+#: eventplanner
+msgid "Espacio / Venue"
+msgstr "Venue"
+
+#: eventplanner
+msgid "Banquete"
+msgstr "Catering"
+
+#: eventplanner
+msgid "Flores"
+msgstr "Flowers"
+
+#: eventplanner
+msgid "Música"
+msgstr "Music"
+
+#: eventplanner
+msgid "Fotografía / Video"
+msgstr "Photography / Video"
+
+#: eventplanner
+msgid "Licor / Bebidas"
+msgstr "Liquor / Drinks"
+
+#: eventplanner
+msgid "Mobiliario"
+msgstr "Furniture"
+
+#: eventplanner
+msgid "Transporte"
+msgstr "Transportation"
+
+#: eventplanner
+msgid "Decoración"
+msgstr "Decor"
+
+#: eventplanner
+msgid "contacto"
+msgstr "contact"
+
+#: eventplanner
+msgid "proveedor"
+msgstr "vendor"
+
+#: eventplanner
+msgid "proveedor / espacio"
+msgstr "vendor / venue"
+
+#: eventplanner
+msgid "Nuevo proveedor"
+msgstr "New vendor"
+
+#: eventplanner
+msgid "No hay proveedores registrados."
+msgstr "No vendors registered yet."
+
+#: eventplanner
+msgid "Nuevo proveedor / espacio"
+msgstr "New vendor / venue"
+
+#: eventplanner
+msgid "No tienes permiso para agregar proveedores."
+msgstr "You don't have permission to add vendors."
+
+#: eventplanner
+msgid "Proveedor/espacio agregado."
+msgstr "Vendor/venue added."
+
+#: eventplanner
+msgid "Asociar proveedor a"
+msgstr "Link vendor to"
+
+#: eventplanner
+msgid "Asociar"
+msgstr "Link"
+
+#: eventplanner
+msgid "Proveedor asociado al evento."
+msgstr "Vendor linked to the event."
+
+#: eventplanner
+msgid "Proveedor quitado del evento."
+msgstr "Vendor removed from the event."
+
+#: eventplanner
+msgid "monto del contrato"
+msgstr "contract amount"
+
+#: eventplanner
+msgid "anticipo pagado"
+msgstr "deposit paid"
+
+#: eventplanner
+msgid "Cotización"
+msgstr "Quote"
+
+#: eventplanner
+msgid "Pagado"
+msgstr "Paid"
+
+#: eventplanner
+msgid "proveedor del evento"
+msgstr "event vendor"
+
+#: eventplanner
+msgid "proveedores del evento"
+msgstr "event vendors"
+
+#: eventplanner
+msgid "proveedores y espacios"
+msgstr "vendors & venues"
+
+#: eventplanner
+msgid "nota"
+msgstr "note"
+
+#: eventplanner
+msgid "fijada"
+msgstr "pinned"
+
+#: eventplanner
+msgid "autor"
+msgstr "author"
+
+#: eventplanner
+msgid "contenido"
+msgstr "content"
+
+#: eventplanner
+msgid "archivo del evento"
+msgstr "event file"
+
+#: eventplanner
+msgid "archivos del evento"
+msgstr "event files"
+
+#: eventplanner
+msgid "título"
+msgstr "title"
+
+#: eventplanner
+msgid "Requiere documento"
+msgstr "Requires document"
+
+#: eventplanner
+msgid "Requiere foto"
+msgstr "Requires photo"
+
+#: eventplanner
+msgid "actualizado"
+msgstr "updated"
+
+#: eventplanner
+msgid "encargado"
+msgstr "assignee"
+
+#: eventplanner
+msgid "fecha límite"
+msgstr "due date"
+
+#: eventplanner
+msgid "rol"
+msgstr "role"
+
+#: eventplanner
+msgid "supervisor"
+msgstr "supervisor"
+
+#: eventplanner
+msgid "usuario"
+msgstr "user"

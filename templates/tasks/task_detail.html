@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{{ task.title }}{% endblock %}
+{% block content %}
+<a href="{% url 'tasks:list' event.pk %}" class="btn btn-link px-0">&larr; {% trans "Volver a tareas" %}</a>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-start">
+      <div>
+        <h4>{{ task.title }}</h4>
+        <div class="text-muted">{{ event.name }}{% if task.category %} · {{ task.category }}{% endif %}</div>
+      </div>
+      <span class="badge badge-status-{{ task.status }} fs-6">{{ task.get_status_display }}</span>
+    </div>
+    {% if task.description %}<p class="mt-3">{{ task.description|linebreaks }}</p>{% endif %}
+    <div class="row mt-3">
+      <div class="col-sm-4"><strong>{% trans "Encargado" %}:</strong> {{ task.assigned_to }}</div>
+      <div class="col-sm-4"><strong>{% trans "Supervisor" %}:</strong> {{ task.supervisor|default:"—" }}</div>
+      <div class="col-sm-4"><strong>{% trans "Fecha límite" %}:</strong> {{ task.due_date|default:"—" }} {{ task.due_time|default:"" }}</div>
+    </div>
+    <div class="mt-2">
+      {% if task.requires_photo %}<span class="badge text-bg-light border"><i class="bi bi-camera"></i> {% trans "Requiere foto" %}</span>{% endif %}
+      {% if task.requires_document %}<span class="badge text-bg-light border"><i class="bi bi-file-earmark-text"></i> {% trans "Requiere documento" %}</span>{% endif %}
+    </div>
+    {% if task.status == 'completada' %}
+    <div class="alert alert-success mt-3 mb-0">
+      <i class="bi bi-check-circle"></i>
+      {% blocktrans with user=task.completed_by time=task.completed_at|date:"d/m/Y H:i" %}Completada por {{ user }} el {{ time }}{% endblocktrans %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <h5>{% trans "Evidencia" %}</h5>
+    <div class="row g-3 mb-3">
+      {% for evidence in evidences %}
+      <div class="col-md-4">
+        <div class="card">
+          {% if evidence.is_image %}
+          <a href="{{ evidence.file.url }}" target="_blank"><img src="{{ evidence.file.url }}" class="card-img-top" style="height:160px;object-fit:cover;"></a>
+          {% else %}
+          <a href="{{ evidence.file.url }}" target="_blank" class="d-flex align-items-center justify-content-center bg-light" style="height:160px;"><i class="bi bi-file-earmark-text fs-1"></i></a>
+          {% endif %}
+          <div class="card-body p-2">
+            <div class="small text-muted">{{ evidence.uploaded_by }} · {{ evidence.uploaded_at|date:"d/m/Y H:i" }}</div>
+            {% if evidence.comment %}<div class="small">{{ evidence.comment }}</div>{% endif %}
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12 text-muted">{% trans "Sin evidencia subida todavía." %}</div>
+      {% endfor %}
+    </div>
+
+    {% if task.status != 'completada' %}
+    <form method="post" action="{% url 'tasks:upload_evidence' task.pk %}" enctype="multipart/form-data" class="row g-2 align-items-end">
+      {% csrf_token %}
+      <div class="col-md-5">{{ evidence_form.file.label_tag }} {{ evidence_form.file }}</div>
+      <div class="col-md-5">{{ evidence_form.comment.label_tag }} {{ evidence_form.comment }}</div>
+      <div class="col-md-2"><button type="submit" class="btn btn-outline-dark w-100"><i class="bi bi-upload"></i> {% trans "Subir" %}</button></div>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+{% if task.status != 'completada' and can_complete %}
+<form method="post" action="{% url 'tasks:complete' task.pk %}" onsubmit="return confirm('{% trans "¿Confirmar que la tarea está completada?" %}');">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-success btn-lg w-100">
+    <i class="bi bi-check2-circle"></i> {% trans "Marcar como completada" %}
+  </button>
+  {% if task.requires_evidence %}
+  <div class="form-text text-center">{% trans "Se requiere subir evidencia antes de completar esta tarea." %}</div>
+  {% endif %}
+</form>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% if is_new %}{% trans "Nuevo miembro" %}{% else %}{% trans "Editar miembro" %}{% endif %}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-7">
+    <div class="card">
+      <div class="card-body p-4">
+        <h4 class="mb-3">{% if is_new %}<i class="bi bi-person-plus"></i> {% trans "Nuevo miembro del equipo" %}{% else %}<i class="bi bi-pencil"></i> {% trans "Editar miembro" %}{% endif %}</h4>
+        <form method="post">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <button type="submit" class="btn btn-dark">{% trans "Guardar" %}</button>
+          <a href="{% url 'accounts:team_list' %}" class="btn btn-link">{% trans "Cancelar" %}</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

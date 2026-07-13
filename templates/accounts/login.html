@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Iniciar sesión" %}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-5">
+    <div class="card mt-5">
+      <div class="card-body p-4">
+        <h3 class="mb-4 text-center"><i class="bi bi-calendar-event"></i> EventPlanner</h3>
+        <form method="post">
+          {% csrf_token %}
+          {% for field in form %}
+          <div class="mb-3">
+            <label class="form-label">{{ field.label }}</label>
+            {{ field }}
+            {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+          </div>
+          {% endfor %}
+          {% for error in form.non_field_errors %}<div class="alert alert-danger py-2">{{ error }}</div>{% endfor %}
+          <button type="submit" class="btn btn-dark w-100">{% trans "Entrar" %}</button>
+        </form>
+        <p class="text-center mt-3 mb-0">
+          <a href="{% url 'accounts:register_company' %}">{% trans "¿Nueva empresa? Regístrate" %}</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

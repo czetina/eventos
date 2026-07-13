@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{{ event.name }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-3">
+  <div>
+    <h3>{{ event.name }} <span class="badge text-bg-{% if event.status == 'finalizado' %}success{% elif event.status == 'cancelado' %}danger{% else %}primary{% endif %}">{{ event.get_status_display }}</span></h3>
+    <div class="text-muted">{{ event.get_event_type_display }} · {{ event.client_name }} · <i class="bi bi-geo-alt"></i> {{ event.venue_name }} {{ event.city }}, {{ event.country.name }}</div>
+    <div class="text-muted">{% trans "Fecha" %}: {{ event.event_date }}{% if event.start_time %} · {{ event.start_time }}{% if event.end_time %} - {{ event.end_time }}{% endif %}{% endif %}</div>
+  </div>
+  {% if user.can_manage_events %}
+  <a href="{% url 'events:edit' event.pk %}" class="btn btn-outline-secondary"><i class="bi bi-pencil"></i> {% trans "Editar" %}</a>
+  {% endif %}
+</div>
+
+<ul class="nav nav-tabs mb-3" role="tablist">
+  <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-resumen">{% trans "Resumen" %}</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-itinerario">{% trans "Itinerario" %}</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-equipo">{% trans "Equipo" %}</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-tareas">{% trans "Tareas" %}</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-proveedores">{% trans "Proveedores" %}</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-notas">{% trans "Notas y archivos" %}</button></li>
+</ul>
+
+<div class="tab-content">
+  <div class="tab-pane fade show active" id="tab-resumen">
+    <div class="row g-3">
+      <div class="col-md-4"><div class="card p-3 text-center"><div class="fs-3 fw-bold">{{ task_total }}</div><div class="text-muted small">{% trans "Tareas totales" %}</div></div></div>
+      <div class="col-md-4"><div class="card p-3 text-center"><div class="fs-3 fw-bold">{{ event.task_progress_percent }}%</div><div class="text-muted small">{% trans "Completadas" %}</div></div></div>
+      <div class="col-md-4"><div class="card p-3 text-center"><div class="fs-3 fw-bold">{{ team_members|length }}</div><div class="text-muted small">{% trans "Miembros del equipo" %}</div></div></div>
+    </div>
+    {% if event.description %}<p class="mt-3">{{ event.description|linebreaks }}</p>{% endif %}
+  </div>
+
+  <div class="tab-pane fade" id="tab-itinerario">
+    {% if user.can_manage_events %}
+    <a href="{% url 'events:session_create' event.pk %}" class="btn btn-sm btn-dark mb-3"><i class="bi bi-plus-lg"></i> {% trans "Agregar actividad" %}</a>
+    {% endif %}
+    <div class="list-group">
+      {% for session in sessions %}
+      <div class="list-group-item d-flex justify-content-between align-items-center">
+        <div>
+          <strong>{{ session.start_time }}{% if session.end_time %} - {{ session.end_time }}{% endif %}</strong>
+          — {{ session.title }}
+          {% if session.venue_name %}<span class="text-muted small d-block"><i class="bi bi-geo-alt"></i> {{ session.venue_name }} {{ session.address }}</span>{% endif %}
+        </div>
+        {% if user.can_manage_events %}
+        <form method="post" action="{% url 'events:session_delete' event.pk session.pk %}" onsubmit="return confirm('{% trans "¿Eliminar actividad?" %}');">
+          {% csrf_token %}<button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+        </form>
+        {% endif %}
+      </div>
+      {% empty %}
+      <div class="list-group-item text-muted">{% trans "Sin actividades en el itinerario." %}</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="tab-pane fade" id="tab-equipo">
+    <a href="{% url 'events:team' event.pk %}" class="btn btn-sm btn-dark mb-3"><i class="bi bi-people"></i> {% trans "Gestionar equipo" %}</a>
+    <div class="list-group">
+      {% for member in team_members %}
+      <div class="list-group-item d-flex justify-content-between">
+        <span>{{ member.user }} <span class="text-muted small">— {{ member.area|default:"" }}</span></span>
+        <span>
+          <span class="badge text-bg-secondary">{{ member.get_role_in_event_display }}</span>
+          {% if member.reports_to %}<span class="text-muted small">{% trans "reporta a" %} {{ member.reports_to.user }}</span>{% endif %}
+        </span>
+      </div>
+      {% empty %}
+      <div class="list-group-item text-muted">{% trans "Sin miembros asignados." %}</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="tab-pane fade" id="tab-tareas">
+    <a href="{% url 'tasks:list' event.pk %}" class="btn btn-sm btn-outline-dark mb-3">{% trans "Ver todas las tareas" %}</a>
+    {% if user.can_manage_events or user.is_supervisor %}
+    <a href="{% url 'tasks:create' event.pk %}" class="btn btn-sm btn-dark mb-3"><i class="bi bi-plus-lg"></i> {% trans "Nueva tarea" %}</a>
+    {% endif %}
+    <div class="list-group">
+      {% for task in tasks %}
+      <a href="{% url 'tasks:detail' task.pk %}" class="list-group-item list-group-item-action d-flex justify-content-between">
+        <span>{{ task.title }} <span class="text-muted small d-block">{{ task.assigned_to }}{% if task.due_date %} · {{ task.due_date }} {{ task.due_time|default:"" }}{% endif %}</span></span>
+        <span class="badge badge-status-{{ task.status }}">{{ task.get_status_display }}</span>
+      </a>
+      {% empty %}
+      <div class="list-group-item text-muted">{% trans "Sin tareas todavía." %}</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="tab-pane fade" id="tab-proveedores">
+    <a href="{% url 'vendors:event_vendor_add' event.pk %}" class="btn btn-sm btn-dark mb-3"><i class="bi bi-plus-lg"></i> {% trans "Asociar proveedor" %}</a>
+    <div class="list-group">
+      {% for ev in vendors %}
+      <div class="list-group-item d-flex justify-content-between">
+        <span>{{ ev.vendor.name }} <span class="text-muted small">({{ ev.vendor.get_category_display }})</span></span>
+        <span>
+          <span class="badge text-bg-light border">{{ ev.get_status_display }}</span>
+          <span class="text-muted small">{{ ev.contract_amount }} {% trans "saldo" %}: {{ ev.balance_due }}</span>
+          <form method="post" action="{% url 'vendors:event_vendor_remove' event.pk ev.pk %}" class="d-inline" onsubmit="return confirm('{% trans "¿Quitar proveedor?" %}');">
+            {% csrf_token %}<button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+          </form>
+        </span>
+      </div>
+      {% empty %}
+      <div class="list-group-item text-muted">{% trans "Sin proveedores asociados." %}</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="tab-pane fade" id="tab-notas">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <h6>{% trans "Notas" %} <a href="{% url 'notes:list' event.pk %}" class="small">{% trans "ver todas" %}</a></h6>
+        <div class="list-group">
+          {% for note in notes %}
+          <div class="list-group-item">{{ note.content|truncatewords:20 }}<span class="text-muted small d-block">{{ note.author }} · {{ note.created_at|date:"d/m/Y H:i" }}</span></div>
+          {% empty %}<div class="list-group-item text-muted">{% trans "Sin notas." %}</div>{% endfor %}
+        </div>
+      </div>
+      <div class="col-md-6">
+        <h6>{% trans "Archivos" %} <a href="{% url 'notes:files' event.pk %}" class="small">{% trans "ver todos" %}</a></h6>
+        <div class="list-group">
+          {% for f in files %}
+          <a class="list-group-item" href="{{ f.file.url }}" target="_blank"><i class="bi bi-file-earmark"></i> {{ f.title|default:f.file.name }}</a>
+          {% empty %}<div class="list-group-item text-muted">{% trans "Sin archivos." %}</div>{% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

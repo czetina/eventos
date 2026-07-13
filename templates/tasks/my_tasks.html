@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Mis tareas" %}{% endblock %}
+{% block content %}
+<h3 class="mb-3"><i class="bi bi-check2-square"></i> {% trans "Mis tareas" %}</h3>
+
+{% for task in tasks %}
+<div class="card task-card mb-2 {% if task.is_overdue %}overdue{% endif %}">
+  <a href="{% url 'tasks:detail' task.pk %}" class="text-decoration-none text-dark">
+    <div class="card-body py-3">
+      <div class="d-flex justify-content-between">
+        <div>
+          <div class="fw-bold">{{ task.title }}</div>
+          <div class="text-muted small">{{ task.event.name }}{% if task.category %} · {{ task.category }}{% endif %}</div>
+          {% if task.due_date %}
+          <div class="small {% if task.is_overdue %}text-danger{% else %}text-muted{% endif %}">
+            <i class="bi bi-clock"></i> {{ task.due_date }} {{ task.due_time|default:"" }}
+          </div>
+          {% endif %}
+          <div class="small mt-1">
+            {% if task.requires_photo %}<span class="badge text-bg-light border"><i class="bi bi-camera"></i> {% trans "Foto requerida" %}</span>{% endif %}
+            {% if task.requires_document %}<span class="badge text-bg-light border"><i class="bi bi-file-earmark-text"></i> {% trans "Documento requerido" %}</span>{% endif %}
+          </div>
+        </div>
+        <span class="badge badge-status-{{ task.status }} align-self-start">{{ task.get_status_display }}</span>
+      </div>
+    </div>
+  </a>
+</div>
+{% empty %}
+<div class="alert alert-success">{% trans "No tienes tareas pendientes. ¡Buen trabajo!" %}</div>
+{% endfor %}
+
+{% if done_tasks %}
+<h5 class="mt-4 text-muted">{% trans "Completadas recientemente" %}</h5>
+{% for task in done_tasks %}
+<div class="card task-card done mb-2">
+  <a href="{% url 'tasks:detail' task.pk %}" class="text-decoration-none text-dark">
+    <div class="card-body py-2">
+      <div class="d-flex justify-content-between">
+        <div>
+          <div class="fw-bold">{{ task.title }}</div>
+          <div class="text-muted small">{{ task.event.name }} · {% trans "completada" %} {{ task.completed_at|date:"d/m/Y H:i" }}</div>
+        </div>
+        <span class="badge badge-status-completada">{% trans "Completada" %}</span>
+      </div>
+    </div>
+  </a>
+</div>
+{% endfor %}
+{% endif %}
+{% endblock %}

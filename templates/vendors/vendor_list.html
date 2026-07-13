@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Proveedores y espacios" %}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3><i class="bi bi-shop"></i> {% trans "Proveedores y espacios" %}</h3>
+  {% if user.can_manage_events %}
+  <a href="{% url 'vendors:create' %}" class="btn btn-dark"><i class="bi bi-plus-lg"></i> {% trans "Nuevo proveedor" %}</a>
+  {% endif %}
+</div>
+<div class="mb-3">
+  <a href="?" class="btn btn-sm {% if not active_category %}btn-dark{% else %}btn-outline-secondary{% endif %}">{% trans "Todos" %}</a>
+  {% for value, label in category_choices %}
+  <a href="?category={{ value }}" class="btn btn-sm {% if active_category == value %}btn-dark{% else %}btn-outline-secondary{% endif %}">{{ label }}</a>
+  {% endfor %}
+</div>
+<div class="row g-3">
+  {% for vendor in vendors %}
+  <div class="col-md-4">
+    <div class="card p-3 h-100">
+      <h6>{{ vendor.name }}</h6>
+      <span class="badge text-bg-secondary mb-2 align-self-start">{{ vendor.get_category_display }}</span>
+      <div class="small text-muted">{{ vendor.contact_name }}</div>
+      <div class="small">{{ vendor.phone }} {% if vendor.email %}· {{ vendor.email }}{% endif %}</div>
+    </div>
+  </div>
+  {% empty %}
+  <p class="text-muted">{% trans "No hay proveedores registrados." %}</p>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Equipo del evento" %}{% endblock %}
+{% block content %}
+<h3><i class="bi bi-people"></i> {% trans "Equipo de" %} {{ event.name }}</h3>
+<a href="{% url 'events:detail' event.pk %}" class="btn btn-link px-0 mb-3">&larr; {% trans "Volver al evento" %}</a>
+
+<div class="row g-4">
+  <div class="col-md-7">
+    <div class="card">
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead class="table-light">
+            <tr><th>{% trans "Usuario" %}</th><th>{% trans "Rol" %}</th><th>{% trans "Área" %}</th><th>{% trans "Reporta a" %}</th><th></th></tr>
+          </thead>
+          <tbody>
+            {% for member in team_members %}
+            <tr>
+              <td>{{ member.user }}</td>
+              <td><span class="badge text-bg-secondary">{{ member.get_role_in_event_display }}</span></td>
+              <td>{{ member.area|default:"—" }}</td>
+              <td>{{ member.reports_to.user|default:"—" }}</td>
+              <td class="text-end">
+                <form method="post" action="{% url 'events:team_remove' event.pk member.pk %}" onsubmit="return confirm('{% trans "¿Quitar del equipo?" %}');">
+                  {% csrf_token %}
+                  <button class="btn btn-sm btn-outline-danger">{% trans "Quitar" %}</button>
+                </form>
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="text-center text-muted py-3">{% trans "Sin miembros asignados." %}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-5">
+    <div class="card p-3">
+      <h5>{% trans "Agregar miembro" %}</h5>
+      <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-dark w-100">{% trans "Agregar" %}</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
