@@ -24,28 +24,85 @@ class Company(models.Model):
         return self.name
 
 
-class User(AbstractUser):
-    """Custom user with a role inside a Company (tenant)."""
+class Role(models.Model):
+    """A company-defined role (e.g. 'Novia', 'Asistente', 'Representante de Venue').
 
-    ROLE_COMPANY_ADMIN = "company_admin"
-    ROLE_PLANNER = "planner"
-    ROLE_SUPERVISOR = "supervisor"
-    ROLE_ENCARGADO = "encargado"
+    Each custom role inherits the permissions of one of the four fixed technical
+    tiers below, so the app's permission logic never has to guess what a role can
+    do — only what to call it and how to describe it to the team.
+    """
 
-    ROLE_CHOICES = [
-        (ROLE_COMPANY_ADMIN, _("Administrador de empresa")),
-        (ROLE_PLANNER, _("Planificador")),
-        (ROLE_SUPERVISOR, _("Supervisor")),
-        (ROLE_ENCARGADO, _("Encargado")),
+    LEVEL_COMPANY_ADMIN = "company_admin"
+    LEVEL_PLANNER = "planner"
+    LEVEL_SUPERVISOR = "supervisor"
+    LEVEL_ENCARGADO = "encargado"
+
+    LEVEL_CHOICES = [
+        (LEVEL_COMPANY_ADMIN, _("Administrador de empresa (gestiona toda la empresa)")),
+        (LEVEL_PLANNER, _("Planificador (crea y gestiona eventos)")),
+        (LEVEL_SUPERVISOR, _("Supervisor (coordina un equipo o área)")),
+        (LEVEL_ENCARGADO, _("Encargado (ejecuta tareas asignadas)")),
     ]
 
     # Higher number = more authority. Used for permission checks.
-    ROLE_LEVELS = {
-        ROLE_COMPANY_ADMIN: 4,
-        ROLE_PLANNER: 3,
-        ROLE_SUPERVISOR: 2,
-        ROLE_ENCARGADO: 1,
+    LEVEL_RANKS = {
+        LEVEL_COMPANY_ADMIN: 4,
+        LEVEL_PLANNER: 3,
+        LEVEL_SUPERVISOR: 2,
+        LEVEL_ENCARGADO: 1,
     }
+
+    company = models.ForeignKey(
+        Company, verbose_name=_("empresa"), related_name="roles", on_delete=models.CASCADE
+    )
+    name = models.CharField(_("nombre del rol"), max_length=100)
+    description = models.TextField(
+        _("qué hace este rol"), blank=True,
+        help_text=_("Ej. 'Coordina montaje y desmontaje', 'Contacto de la pareja para aprobaciones'"),
+    )
+    base_level = models.CharField(_("nivel de permisos"), max_length=20, choices=LEVEL_CHOICES)
+    is_default = models.BooleanField(
+        _("rol por defecto"), default=False,
+        help_text=_("Roles creados automáticamente con la empresa; no se pueden eliminar."),
+    )
+    created_at = models.DateTimeField(_("creado"), auto_now_add=True)
+
+    class Meta:
+        verbose_name = _("rol")
+        verbose_name_plural = _("roles")
+        unique_together = [("company", "name")]
+        ordering = ["-is_default", "name"]
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def level_rank(self):
+        return self.LEVEL_RANKS.get(self.base_level, 0)
+
+
+DEFAULT_ROLES = [
+    (Role.LEVEL_COMPANY_ADMIN, "Administrador de empresa"),
+    (Role.LEVEL_PLANNER, "Planificador"),
+    (Role.LEVEL_SUPERVISOR, "Supervisor"),
+    (Role.LEVEL_ENCARGADO, "Encargado"),
+]
+
+
+def create_default_roles(company):
+    """Called when a new Company is registered so it always starts with the four
+    base roles available; more can be added afterwards via role management."""
+    roles = {}
+    for base_level, name in DEFAULT_ROLES:
+        role, _created = Role.objects.get_or_create(
+            company=company, name=name, defaults={"base_level": base_level, "is_default": True}
+        )
+        roles[base_level] = role
+    return roles
+
+
+class User(AbstractUser):
+    """Custom user with a company-defined Role inside a Company (tenant)."""
 
     LANGUAGE_CHOICES = [
         ("es", "Español"),
@@ -60,8 +117,13 @@ class User(AbstractUser):
         null=True,
         blank=True,
     )
-    role = models.CharField(
-        _("rol"), max_length=20, choices=ROLE_CHOICES, default=ROLE_ENCARGADO
+    role = models.ForeignKey(
+        Role,
+        verbose_name=_("rol"),
+        related_name="users",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
     )
     phone = models.CharField(_("teléfono"), max_length=40, blank=True)
     preferred_language = models.CharField(
@@ -79,31 +141,30 @@ class User(AbstractUser):
 
     @property
     def role_level(self):
-        return self.ROLE_LEVELS.get(self.role, 0)
+        return self.role.level_rank if self.role else 0
 
-    def has_role_at_least(self, role):
-        return self.role_level >= self.ROLE_LEVELS.get(role, 0)
+    def has_role_at_least(self, base_level):
+        return self.role_level >= Role.LEVEL_RANKS.get(base_level, 0)
 
     @property
     def is_company_admin(self):
-        return self.role == self.ROLE_COMPANY_ADMIN
+        return bool(self.role and self.role.base_level == Role.LEVEL_COMPANY_ADMIN)
 
     @property
     def is_planner(self):
-        return self.role == self.ROLE_PLANNER
+        return bool(self.role and self.role.base_level == Role.LEVEL_PLANNER)
 
     @property
     def is_supervisor(self):
-        return self.role == self.ROLE_SUPERVISOR
+        return bool(self.role and self.role.base_level == Role.LEVEL_SUPERVISOR)
 
     @property
     def is_encargado(self):
-        return self.role == self.ROLE_ENCARGADO
+        return bool(self.role and self.role.base_level == Role.LEVEL_ENCARGADO)
 
     @property
     def can_manage_events(self):
         """Company admins and planners may create/edit events."""
-        return self.is_superuser or self.role in (
-            self.ROLE_COMPANY_ADMIN,
-            self.ROLE_PLANNER,
+        return self.is_superuser or (
+            self.role and self.role.base_level in (Role.LEVEL_COMPANY_ADMIN, Role.LEVEL_PLANNER)
         )

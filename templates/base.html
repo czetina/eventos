@@ -18,6 +18,11 @@
   .badge-status-en_progreso { background-color: #0d6efd; }
   .badge-status-completada { background-color: #198754; }
   .badge-status-con_problema { background-color: #dc3545; }
+  @media print {
+    nav, .no-print { display: none !important; }
+    body { background-color: #fff; }
+    .card { box-shadow: none; border: 1px solid #dee2e6 !important; }
+  }
 </style>
 </head>
 <body>
@@ -37,6 +42,9 @@
         <li class="nav-item"><a class="nav-link" href="{% url 'events:list' %}">{% trans "Eventos" %}</a></li>
         <li class="nav-item"><a class="nav-link" href="{% url 'vendors:list' %}">{% trans "Proveedores" %}</a></li>
         <li class="nav-item"><a class="nav-link" href="{% url 'accounts:team_list' %}">{% trans "Equipo" %}</a></li>
+        {% if user.is_company_admin or user.is_superuser %}
+        <li class="nav-item"><a class="nav-link" href="{% url 'accounts:role_list' %}">{% trans "Roles" %}</a></li>
+        {% endif %}
         {% endif %}
       </ul>
       <form action="{% url 'set_language' %}" method="post" class="d-flex me-3">
@@ -56,7 +64,7 @@
             <i class="bi bi-person-circle"></i> {{ user.get_full_name|default:user.username }}
           </a>
           <ul class="dropdown-menu dropdown-menu-end">
-            <li><span class="dropdown-item-text text-muted small">{{ user.get_role_display }}{% if current_company %} · {{ current_company.name }}{% endif %}</span></li>
+            <li><span class="dropdown-item-text text-muted small">{{ user.role.name|default:"—" }}{% if current_company %} · {{ current_company.name }}{% endif %}</span></li>
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">{% trans "Mi perfil" %}</a></li>
             <li>

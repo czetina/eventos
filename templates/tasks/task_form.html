@@ -1,17 +1,25 @@
 {% extends "base.html" %}
 {% load i18n %}
-{% block title %}{% trans "Nueva tarea" %}{% endblock %}
+{% block title %}{% if is_new %}{% trans "Nueva tarea" %}{% else %}{% trans "Editar tarea" %}{% endif %}{% endblock %}
 {% block content %}
 <div class="row justify-content-center">
   <div class="col-md-7">
     <div class="card">
       <div class="card-body p-4">
-        <h4 class="mb-3"><i class="bi bi-plus-square"></i> {% trans "Nueva tarea" %} — {{ event.name }}</h4>
+        <h4 class="mb-3">
+          {% if is_new %}<i class="bi bi-plus-square"></i> {% trans "Nueva tarea" %}
+          {% else %}<i class="bi bi-pencil"></i> {% trans "Editar tarea" %}{% endif %}
+          — {{ event.name }}
+        </h4>
         <form method="post">
           {% csrf_token %}
           {{ form.as_p }}
-          <button type="submit" class="btn btn-dark">{% trans "Crear tarea" %}</button>
+          <button type="submit" class="btn btn-dark">{% if is_new %}{% trans "Crear tarea" %}{% else %}{% trans "Guardar" %}{% endif %}</button>
+          {% if is_new %}
           <a href="{% url 'tasks:list' event.pk %}" class="btn btn-link">{% trans "Cancelar" %}</a>
+          {% else %}
+          <a href="{% url 'tasks:detail' task.pk %}" class="btn btn-link">{% trans "Cancelar" %}</a>
+          {% endif %}
         </form>
       </div>
     </div>

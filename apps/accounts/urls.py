@@ -11,5 +11,10 @@ urlpatterns = [
     path("equipo/", views.team_list, name="team_list"),
     path("equipo/nuevo/", views.team_create, name="team_create"),
     path("equipo/<int:pk>/editar/", views.team_edit, name="team_edit"),
+    path("equipo/<int:pk>/eliminar/", views.team_delete, name="team_delete"),
     path("perfil/", views.profile, name="profile"),
+    path("roles/", views.role_list, name="role_list"),
+    path("roles/nuevo/", views.role_create, name="role_create"),
+    path("roles/<int:pk>/editar/", views.role_edit, name="role_edit"),
+    path("roles/<int:pk>/eliminar/", views.role_delete, name="role_delete"),
 ]

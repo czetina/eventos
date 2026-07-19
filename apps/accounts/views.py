@@ -4,12 +4,13 @@ from django.contrib.auth import login as auth_login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView, LogoutView
 from django.core.exceptions import PermissionDenied
+from django.db import models
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import translation
 from django.utils.translation import gettext_lazy as _
 
-from .forms import CompanyRegistrationForm, LoginForm, ProfileForm, TeamMemberEditForm, TeamMemberForm
-from .models import User
+from .forms import CompanyRegistrationForm, LoginForm, ProfileForm, RoleForm, TeamMemberEditForm, TeamMemberForm
+from .models import Role, User
 
 
 def apply_user_language(request, response, language):
@@ -54,14 +55,16 @@ def register_company(request):
 
 
 def _can_manage_team(user):
-    return user.is_superuser or user.role in (User.ROLE_COMPANY_ADMIN, User.ROLE_PLANNER)
+    return user.can_manage_events
 
 
 @login_required
 def team_list(request):
     if not request.user.company:
         return render(request, "accounts/team_list.html", {"members": []})
-    members = User.objects.filter(company=request.user.company).order_by("role", "first_name")
+    members = User.objects.filter(company=request.user.company).select_related("role").order_by(
+        "role__name", "first_name"
+    )
     return render(request, "accounts/team_list.html", {
         "members": members,
         "can_manage": _can_manage_team(request.user),
@@ -102,6 +105,24 @@ def team_edit(request, pk):
 
 
 @login_required
+def team_delete(request, pk):
+    if not _can_manage_team(request.user):
+        raise PermissionDenied(_("No tienes permiso para eliminar miembros del equipo."))
+    member = get_object_or_404(User, pk=pk, company=request.user.company)
+    if request.method == "POST":
+        if member.pk == request.user.pk:
+            messages.error(request, _("No puedes eliminar tu propia cuenta."))
+        elif member.tasks_assigned.exists() or member.event_memberships.exists():
+            messages.error(request, _(
+                "No se puede eliminar: tiene tareas o eventos asignados. Márcalo como inactivo en su lugar."
+            ))
+        else:
+            member.delete()
+            messages.success(request, _("Miembro del equipo eliminado."))
+    return redirect("accounts:team_list")
+
+
+@login_required
 def profile(request):
     if request.method == "POST":
         form = ProfileForm(request.POST, instance=request.user)
@@ -112,3 +133,62 @@ def profile(request):
     else:
         form = ProfileForm(instance=request.user)
     return render(request, "accounts/profile.html", {"form": form})
+
+
+@login_required
+def role_list(request):
+    if not request.user.is_company_admin and not request.user.is_superuser:
+        raise PermissionDenied(_("Solo un administrador de empresa puede gestionar roles."))
+    roles = Role.objects.filter(company=request.user.company).annotate(
+        member_count=models.Count("users")
+    )
+    return render(request, "accounts/role_list.html", {"roles": roles})
+
+
+@login_required
+def role_create(request):
+    if not request.user.is_company_admin and not request.user.is_superuser:
+        raise PermissionDenied(_("Solo un administrador de empresa puede gestionar roles."))
+    if request.method == "POST":
+        form = RoleForm(request.POST)
+        if form.is_valid():
+            role = form.save(commit=False)
+            role.company = request.user.company
+            role.save()
+            messages.success(request, _("Rol creado correctamente."))
+            return redirect("accounts:role_list")
+    else:
+        form = RoleForm()
+    return render(request, "accounts/role_form.html", {"form": form, "is_new": True})
+
+
+@login_required
+def role_edit(request, pk):
+    if not request.user.is_company_admin and not request.user.is_superuser:
+        raise PermissionDenied(_("Solo un administrador de empresa puede gestionar roles."))
+    role = get_object_or_404(Role, pk=pk, company=request.user.company)
+    if request.method == "POST":
+        form = RoleForm(request.POST, instance=role)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Rol actualizado correctamente."))
+            return redirect("accounts:role_list")
+    else:
+        form = RoleForm(instance=role)
+    return render(request, "accounts/role_form.html", {"form": form, "is_new": False, "role": role})
+
+
+@login_required
+def role_delete(request, pk):
+    if not request.user.is_company_admin and not request.user.is_superuser:
+        raise PermissionDenied(_("Solo un administrador de empresa puede gestionar roles."))
+    role = get_object_or_404(Role, pk=pk, company=request.user.company)
+    if request.method == "POST":
+        if role.is_default:
+            messages.error(request, _("No se puede eliminar un rol por defecto."))
+        elif role.users.exists() or role.event_memberships.exists():
+            messages.error(request, _("No se puede eliminar un rol que todavía tiene personas asignadas."))
+        else:
+            role.delete()
+            messages.success(request, _("Rol eliminado."))
+    return redirect("accounts:role_list")

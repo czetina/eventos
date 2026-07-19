@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Mantenimiento de listas del cortejo" %}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3><i class="bi bi-flower1"></i> {% trans "Mantenimiento de listas del cortejo" %}</h3>
+  <a href="{% url 'events:wedding_party_type_create' %}" class="btn btn-dark"><i class="bi bi-plus-lg"></i> {% trans "Nueva lista" %}</a>
+</div>
+<p class="text-muted">
+  {% trans "Estas son las categorías disponibles para el cortejo nupcial (ej. Boutonnieres, Damas, Discursos, Ramo de Dama, Novia, Novio, Caballeros). Agrega, renombra o reordena las que tu empresa use." %}
+</p>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0 align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>{% trans "Orden" %}</th>
+          <th>{% trans "Lista" %}</th>
+          <th>{% trans "Personas" %}</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for list_type in list_types %}
+        <tr>
+          <td>{{ list_type.order }}</td>
+          <td>{{ list_type.name }}</td>
+          <td>{{ list_type.members.count }}</td>
+          <td class="text-end">
+            <a href="{% url 'events:wedding_party_type_edit' list_type.pk %}" class="btn btn-sm btn-outline-secondary">{% trans "Editar" %}</a>
+            <form method="post" action="{% url 'events:wedding_party_type_delete' list_type.pk %}" class="d-inline" onsubmit="return confirm('{% trans "¿Eliminar esta lista?" %}');">
+              {% csrf_token %}
+              <button class="btn btn-sm btn-outline-danger">{% trans "Eliminar" %}</button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="text-center text-muted py-4">{% trans "Todavía no hay listas." %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

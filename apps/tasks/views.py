@@ -1,13 +1,21 @@
+import json
+from datetime import date, datetime, time as dt_time
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
+from django.db.models import Max
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from apps.events.models import Event
+from apps.accounts.models import User
+from apps.events.models import Event, EventSession
 from apps.events.views import get_event_or_403
+from apps.vendors.models import Vendor
 
-from .forms import TaskEvidenceForm, TaskForm
+from . import importers
+from .forms import TaskEvidenceForm, TaskForm, TaskImportForm
 from .models import Task, TaskEvidence
 
 
@@ -54,11 +62,31 @@ def task_create(request, event_pk):
             task.event = event
             task.created_by = request.user
             task.save()
+            task.record_status_change(request.user)
             messages.success(request, _("Tarea creada y asignada."))
             return redirect("tasks:list", event_pk=event.pk)
     else:
         form = TaskForm(event=event)
-    return render(request, "tasks/task_form.html", {"form": form, "event": event})
+    return render(request, "tasks/task_form.html", {"form": form, "event": event, "is_new": True})
+
+
+@login_required
+def task_edit(request, pk):
+    task, event = _get_task_scoped(request.user, pk)
+    if not (request.user.can_manage_events or request.user.is_supervisor):
+        raise PermissionDenied(_("No tienes permiso para editar esta tarea."))
+    if request.method == "POST":
+        form = TaskForm(request.POST, instance=task, event=event)
+        if form.is_valid():
+            previous_status = task.status
+            task = form.save()
+            if task.status != previous_status:
+                task.record_status_change(request.user)
+            messages.success(request, _("Tarea actualizada."))
+            return redirect("tasks:detail", pk=task.pk)
+    else:
+        form = TaskForm(instance=task, event=event)
+    return render(request, "tasks/task_form.html", {"form": form, "event": event, "is_new": False, "task": task})
 
 
 def _get_task_scoped(user, pk):
@@ -78,6 +106,7 @@ def task_detail(request, pk):
         "evidences": task.evidences.select_related("uploaded_by"),
         "evidence_form": evidence_form,
         "can_complete": task.can_be_completed_by(request.user),
+        "status_history": task.status_history.select_related("changed_by"),
     })
 
 
@@ -97,6 +126,16 @@ def task_upload_evidence(request, pk):
     return redirect("tasks:detail", pk=task.pk)
 
 
+def _parse_completed_at(request):
+    raw = request.POST.get("completed_at", "").strip()
+    if not raw:
+        return None, False
+    try:
+        return timezone.make_aware(datetime.strptime(raw, "%Y-%m-%dT%H:%M")), False
+    except ValueError:
+        return None, True
+
+
 @login_required
 def task_complete(request, pk):
     task, event = _get_task_scoped(request.user, pk)
@@ -107,8 +146,257 @@ def task_complete(request, pk):
     if task.requires_evidence and not task.evidences.exists():
         messages.error(request, _("Esta tarea requiere subir evidencia (foto/documento) antes de completarla."))
         return redirect("tasks:detail", pk=task.pk)
-    task.mark_completed(request.user)
-    messages.success(request, _("Tarea marcada como completada a las %(time)s.") % {
-        "time": task.completed_at.strftime("%H:%M")
+
+    completed_at, invalid = _parse_completed_at(request)
+    if invalid:
+        messages.error(request, _("La fecha/hora de finalización no es válida; se usó el momento actual."))
+
+    task.mark_completed(request.user, completed_at=completed_at)
+    messages.success(request, _("Tarea marcada como completada el %(time)s.") % {
+        "time": timezone.localtime(task.completed_at).strftime("%d/%m/%Y %H:%M")
     })
     return redirect("tasks:detail", pk=task.pk)
+
+
+@login_required
+def task_bulk_complete(request):
+    if request.method != "POST":
+        return redirect("tasks:my_tasks")
+
+    next_url = request.POST.get("next") or "tasks:my_tasks"
+    task_ids = request.POST.getlist("task_ids")
+    if not task_ids:
+        messages.error(request, _("No seleccionaste ninguna tarea."))
+        return redirect(next_url)
+
+    completed_at, invalid = _parse_completed_at(request)
+    if invalid:
+        messages.error(request, _("La fecha/hora de finalización no es válida; se usó el momento actual."))
+
+    tasks = Task.objects.filter(pk__in=task_ids).select_related("event")
+    completed, skipped_permission, skipped_evidence = 0, 0, 0
+    for task in tasks:
+        try:
+            get_event_or_403(request.user, task.event_id)
+        except PermissionDenied:
+            skipped_permission += 1
+            continue
+        if not task.can_be_completed_by(request.user):
+            skipped_permission += 1
+            continue
+        if task.requires_evidence and not task.evidences.exists():
+            skipped_evidence += 1
+            continue
+        task.mark_completed(request.user, completed_at=completed_at)
+        completed += 1
+
+    if completed:
+        messages.success(request, _("%(count)s tareas marcadas como completadas.") % {"count": completed})
+    if skipped_evidence:
+        messages.warning(request, _(
+            "%(count)s tareas se omitieron porque requieren evidencia y todavía no la tienen."
+        ) % {"count": skipped_evidence})
+    if skipped_permission:
+        messages.warning(request, _("%(count)s tareas se omitieron porque no tienes permiso para completarlas.") % {
+            "count": skipped_permission
+        })
+    return redirect(next_url)
+
+
+TITLE_MAX_LEN = 200
+PLANNER_ROLE_ALIASES = {"planner", "planificador", "planner ", "planer"}
+
+
+def _row_to_payload(row, candidate_users, candidate_vendors, event):
+    """Truncates long titles (the full text is kept for the description), folds in
+    any location/vendor-category hints from richer formats, and resolves the
+    responsible name to an existing user or vendor when possible ('Planner' maps
+    straight to the event's assigned planner, since that role is already known)."""
+    title = row.title
+    extra_description = ""
+    if len(title) > TITLE_MAX_LEN:
+        title = title[: TITLE_MAX_LEN - 1] + "…"
+        extra_description = row.title
+
+    notes = []
+    if row.location and importers.normalize_text(row.location) != "escritorio":
+        notes.append(f"Ubicación: {row.location}")
+    if row.supplier_hint:
+        notes.append(f"Proveedor sugerido (por asignar): {row.supplier_hint}")
+    if notes:
+        extra_description = (extra_description or row.title) + "\n\n" + "\n".join(notes)
+
+    matched_user = None
+    if importers.normalize_text(row.responsible_name) in PLANNER_ROLE_ALIASES and event.planner_id:
+        matched_user = event.planner
+    if not matched_user:
+        matched_user = importers.match_user_by_name(row.responsible_name, candidate_users)
+    matched_vendor = None if matched_user else importers.match_vendor_by_name(row.responsible_name, candidate_vendors)
+    return {
+        "title": title,
+        "description": extra_description,
+        "category": row.category,
+        "responsible_name": row.responsible_name,
+        "due_date": row.due_date.isoformat() if row.due_date else "",
+        "due_time": row.due_time.strftime("%H:%M") if row.due_time else "",
+        "done": row.done,
+        "matched_user_id": matched_user.id if matched_user else None,
+        "matched_user_display": str(matched_user) if matched_user else "",
+        "matched_vendor_id": matched_vendor.id if matched_vendor else None,
+        "matched_vendor_display": str(matched_vendor.name) if matched_vendor else "",
+    }
+
+
+@login_required
+def task_import(request, event_pk):
+    event = get_event_or_403(request.user, event_pk)
+    if not request.user.can_manage_events:
+        raise PermissionDenied(_("Solo planificadores o administradores pueden importar tareas."))
+
+    if request.method == "POST":
+        form = TaskImportForm(request.POST, request.FILES)
+        if form.is_valid():
+            source_type = form.cleaned_data["source_type"]
+            uploaded = form.cleaned_data["file"]
+            candidate_users = list(User.objects.filter(company=event.company, is_active=True))
+            candidate_vendors = list(Vendor.objects.filter(company=event.company))
+            try:
+                if source_type == TaskImportForm.SOURCE_TASK_PER_PERSON:
+                    rows = importers.parse_task_per_person(uploaded)
+                elif source_type == TaskImportForm.SOURCE_GUION_FINAL:
+                    rows = importers.parse_guion_final(uploaded)
+                else:
+                    rows = importers.parse_guion_completo(uploaded)
+            except ValueError as exc:
+                messages.error(request, str(exc))
+                return render(request, "tasks/task_import.html", {"form": form, "event": event})
+
+            if not rows:
+                messages.error(request, _("No se encontraron filas para importar en ese archivo."))
+                return render(request, "tasks/task_import.html", {"form": form, "event": event})
+
+            payload = [_row_to_payload(r, candidate_users, candidate_vendors, event) for r in rows]
+
+            itinerary_payload = []
+            if source_type == TaskImportForm.SOURCE_GUION_FINAL:
+                proposals = importers.propose_itinerary_from_rows(rows, event.event_date)
+                section_labels = dict(EventSession.SECTION_CHOICES)
+                itinerary_payload = [{
+                    "due_date": p["due_date"].isoformat(),
+                    "start_time": p["start_time"].strftime("%H:%M"),
+                    "venue_name": p["venue_name"],
+                    "title": p["title"],
+                    "notes": p["notes"],
+                    "section": p["section"],
+                    "section_label": str(section_labels.get(p["section"], p["section"])),
+                } for p in proposals]
+
+            return render(request, "tasks/task_import_preview.html", {
+                "event": event,
+                "rows": payload,
+                "payload_json": json.dumps(payload),
+                "candidate_users": candidate_users,
+                "candidate_vendors": candidate_vendors,
+                "itinerary_rows": itinerary_payload,
+                "itinerary_payload_json": json.dumps(itinerary_payload),
+                "section_choices": EventSession.SECTION_CHOICES,
+            })
+    else:
+        form = TaskImportForm()
+    return render(request, "tasks/task_import.html", {"form": form, "event": event})
+
+
+@login_required
+def task_import_confirm(request, event_pk):
+    event = get_event_or_403(request.user, event_pk)
+    if not request.user.can_manage_events:
+        raise PermissionDenied(_("Solo planificadores o administradores pueden importar tareas."))
+    if request.method != "POST":
+        return redirect("tasks:import", event_pk=event.pk)
+
+    try:
+        rows = json.loads(request.POST.get("payload", "[]"))
+    except json.JSONDecodeError:
+        messages.error(request, _("No se pudo leer la información a importar."))
+        return redirect("tasks:import", event_pk=event.pk)
+
+    created = 0
+    for index, row in enumerate(rows):
+        assigned_to = None
+        vendor = None
+
+        # The planner may have changed the proposed assignee in the review screen —
+        # that choice wins over whatever the parser auto-matched. "external" means
+        # "no system user/vendor" (explicitly chosen or left as auto-matched none).
+        override = request.POST.get(f"assignee_{index}", "")
+        if override.startswith("user:"):
+            assigned_to = User.objects.filter(pk=override.split(":", 1)[1], company=event.company).first()
+        elif override.startswith("vendor:"):
+            vendor = Vendor.objects.filter(pk=override.split(":", 1)[1], company=event.company).first()
+        elif override != "external":
+            # Defensive fallback if the field was somehow missing from the submit.
+            if row.get("matched_user_id"):
+                assigned_to = User.objects.filter(pk=row["matched_user_id"], company=event.company).first()
+            elif row.get("matched_vendor_id"):
+                vendor = Vendor.objects.filter(pk=row["matched_vendor_id"], company=event.company).first()
+
+        task = Task(
+            event=event,
+            title=row["title"],
+            description=row.get("description", ""),
+            category=row.get("category", ""),
+            assigned_to=assigned_to,
+            vendor=vendor,
+            external_assignee_name="" if (assigned_to or vendor) else row.get("responsible_name", ""),
+            due_date=date.fromisoformat(row["due_date"]) if row.get("due_date") else None,
+            due_time=dt_time.fromisoformat(row["due_time"]) if row.get("due_time") else None,
+            created_by=request.user,
+        )
+        if row.get("done"):
+            task.status = Task.STATUS_DONE
+            task.completed_at = timezone.now()
+            task.completed_by = request.user
+        task.save()
+        task.record_status_change(request.user, note=_("Importada"))
+        created += 1
+
+    itinerary_created = 0
+    try:
+        itinerary_rows = json.loads(request.POST.get("itinerary_payload", "[]"))
+    except json.JSONDecodeError:
+        itinerary_rows = []
+    if itinerary_rows:
+        next_order = (event.sessions.aggregate(Max("order"))["order__max"] or 0) + 1
+        for index, row in enumerate(itinerary_rows):
+            if request.POST.get(f"itinerary_include_{index}") != "on":
+                continue
+            time_value = request.POST.get(f"itinerary_time_{index}", row.get("start_time", ""))
+            date_value = request.POST.get(f"itinerary_date_{index}", row.get("due_date", ""))
+            section = request.POST.get(f"itinerary_section_{index}", row.get("section", EventSession.SECTION_OTRO))
+            if section not in dict(EventSession.SECTION_CHOICES):
+                section = EventSession.SECTION_OTRO
+            try:
+                start_time = dt_time.fromisoformat(time_value)
+                session_date = date.fromisoformat(date_value)
+            except ValueError:
+                continue
+            EventSession.objects.create(
+                event=event,
+                section=section,
+                title=row["title"],
+                venue_name=row.get("venue_name", ""),
+                date=session_date,
+                start_time=start_time,
+                notes=row.get("notes", ""),
+                order=next_order,
+            )
+            next_order += 1
+            itinerary_created += 1
+
+    if itinerary_created:
+        messages.success(request, _("Se importaron %(count)s tareas y %(sessions)s actividades de itinerario.") % {
+            "count": created, "sessions": itinerary_created
+        })
+    else:
+        messages.success(request, _("Se importaron %(count)s tareas correctamente.") % {"count": created})
+    return redirect("tasks:list", event_pk=event.pk)

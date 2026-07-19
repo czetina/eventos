@@ -26,11 +26,19 @@
         <tr>
           <td>{{ member.get_full_name|default:"—" }}</td>
           <td>{{ member.username }}</td>
-          <td><span class="badge text-bg-secondary">{{ member.get_role_display }}</span></td>
+          <td><span class="badge text-bg-secondary">{{ member.role.name|default:"—" }}</span></td>
           <td>{{ member.phone|default:"—" }}</td>
           <td>{% if member.is_active %}<span class="badge text-bg-success">{% trans "Activo" %}</span>{% else %}<span class="badge text-bg-danger">{% trans "Inactivo" %}</span>{% endif %}</td>
           <td class="text-end">
-            {% if can_manage %}<a href="{% url 'accounts:team_edit' member.pk %}" class="btn btn-sm btn-outline-secondary">{% trans "Editar" %}</a>{% endif %}
+            {% if can_manage %}
+            <a href="{% url 'accounts:team_edit' member.pk %}" class="btn btn-sm btn-outline-secondary">{% trans "Editar" %}</a>
+            {% if member.pk != user.pk %}
+            <form method="post" action="{% url 'accounts:team_delete' member.pk %}" class="d-inline" onsubmit="return confirm('{% trans "¿Eliminar este miembro del equipo?" %}');">
+              {% csrf_token %}
+              <button class="btn btn-sm btn-outline-danger">{% trans "Eliminar" %}</button>
+            </form>
+            {% endif %}
+            {% endif %}
           </td>
         </tr>
         {% empty %}

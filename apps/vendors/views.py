@@ -22,6 +22,16 @@ def vendor_list(request):
 
 
 @login_required
+def vendor_detail(request, pk):
+    vendor = get_object_or_404(Vendor, pk=pk, company=request.user.company)
+    return render(request, "vendors/vendor_detail.html", {
+        "vendor": vendor,
+        "bookings": vendor.event_bookings.select_related("event"),
+        "tasks": vendor.tasks.select_related("event").order_by("due_date", "due_time"),
+    })
+
+
+@login_required
 def vendor_create(request):
     if not request.user.can_manage_events:
         raise PermissionDenied(_("No tienes permiso para agregar proveedores."))
@@ -53,7 +63,24 @@ def event_vendor_add(request, event_pk):
             return redirect("events:detail", pk=event.pk)
     else:
         form = EventVendorForm(company=request.user.company, event=event)
-    return render(request, "vendors/event_vendor_form.html", {"form": form, "event": event})
+    return render(request, "vendors/event_vendor_form.html", {"form": form, "event": event, "is_new": True})
+
+
+@login_required
+def event_vendor_edit(request, event_pk, pk):
+    event = get_event_or_403(request.user, event_pk)
+    if not request.user.can_manage_events:
+        raise PermissionDenied
+    ev = get_object_or_404(EventVendor, pk=pk, event=event)
+    if request.method == "POST":
+        form = EventVendorForm(request.POST, instance=ev, company=request.user.company, event=event)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Proveedor del evento actualizado."))
+            return redirect("events:detail", pk=event.pk)
+    else:
+        form = EventVendorForm(instance=ev, company=request.user.company, event=event)
+    return render(request, "vendors/event_vendor_form.html", {"form": form, "event": event, "is_new": False})
 
 
 @login_required

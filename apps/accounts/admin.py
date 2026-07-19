@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from .models import Company, User
+from .models import Company, Role, User
 
 
 @admin.register(Company)
@@ -9,6 +9,13 @@ class CompanyAdmin(admin.ModelAdmin):
     list_display = ["name", "country", "city", "is_active", "created_at"]
     list_filter = ["is_active", "country"]
     search_fields = ["name", "city"]
+
+
+@admin.register(Role)
+class RoleAdmin(admin.ModelAdmin):
+    list_display = ["name", "company", "base_level", "is_default"]
+    list_filter = ["base_level", "company", "is_default"]
+    search_fields = ["name"]
 
 
 @admin.register(User)

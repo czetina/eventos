@@ -27,6 +27,10 @@ class EventVendorForm(BootstrapFormMixin, forms.ModelForm):
         if company:
             self.fields["vendor"].queryset = Vendor.objects.filter(company=company)
         if event:
-            already = EventVendor.objects.filter(event=event).values_list("vendor_id", flat=True)
-            self.fields["vendor"].queryset = self.fields["vendor"].queryset.exclude(pk__in=already)
+            already = EventVendor.objects.filter(event=event)
+            if self.instance.pk:
+                already = already.exclude(pk=self.instance.pk)
+            self.fields["vendor"].queryset = self.fields["vendor"].queryset.exclude(
+                pk__in=already.values_list("vendor_id", flat=True)
+            )
         self._apply_bootstrap()

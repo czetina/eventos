@@ -1,6 +1,8 @@
 from django.contrib import admin
 
-from .models import Event, EventSession, EventTeamMember
+from .models import (
+    Event, EventSession, EventTeamMember, MealCount, ProcessionalEntry, WeddingPartyMember, WeddingPartyListType,
+)
 
 
 class EventSessionInline(admin.TabularInline):
@@ -25,5 +27,30 @@ class EventAdmin(admin.ModelAdmin):
 
 @admin.register(EventTeamMember)
 class EventTeamMemberAdmin(admin.ModelAdmin):
-    list_display = ["event", "user", "role_in_event", "area", "reports_to"]
-    list_filter = ["role_in_event"]
+    list_display = ["event", "user", "role", "area", "reports_to"]
+    list_filter = ["role"]
+
+
+@admin.register(WeddingPartyListType)
+class WeddingPartyListTypeAdmin(admin.ModelAdmin):
+    list_display = ["company", "name", "order"]
+    list_filter = ["company"]
+
+
+@admin.register(WeddingPartyMember)
+class WeddingPartyMemberAdmin(admin.ModelAdmin):
+    list_display = ["event", "list_type", "name", "role_description", "quantity", "order", "table_number"]
+    list_filter = ["list_type"]
+    search_fields = ["name"]
+
+
+@admin.register(ProcessionalEntry)
+class ProcessionalEntryAdmin(admin.ModelAdmin):
+    list_display = ["event", "phase", "order", "left_name", "center_name", "right_name", "music"]
+    list_filter = ["event", "phase"]
+
+
+@admin.register(MealCount)
+class MealCountAdmin(admin.ModelAdmin):
+    list_display = ["event", "group", "meal_label", "count"]
+    list_filter = ["group"]

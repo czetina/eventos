@@ -17,12 +17,12 @@
 <div class="row g-3">
   {% for vendor in vendors %}
   <div class="col-md-4">
-    <div class="card p-3 h-100">
+    <a href="{% url 'vendors:detail' vendor.pk %}" class="card p-3 h-100 text-decoration-none text-dark">
       <h6>{{ vendor.name }}</h6>
       <span class="badge text-bg-secondary mb-2 align-self-start">{{ vendor.get_category_display }}</span>
       <div class="small text-muted">{{ vendor.contact_name }}</div>
       <div class="small">{{ vendor.phone }} {% if vendor.email %}· {{ vendor.email }}{% endif %}</div>
-    </div>
+    </a>
   </div>
   {% empty %}
   <p class="text-muted">{% trans "No hay proveedores registrados." %}</p>

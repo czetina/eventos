@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Eliminar evento" %}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-7">
+    <div class="card border-danger">
+      <div class="card-body p-4">
+        <h4 class="text-danger"><i class="bi bi-exclamation-triangle"></i> {% trans "Eliminar evento" %}</h4>
+        <p>
+          {% blocktrans with name=event.name %}¿Seguro que quieres eliminar <strong>{{ name }}</strong>?{% endblocktrans %}
+        </p>
+        <p class="text-muted">
+          {% trans "Esto elimina permanentemente el evento junto con todas sus tareas, evidencia, itinerario, equipo, proveedores asociados, notas y archivos. No se puede deshacer." %}
+        </p>
+        <form method="post">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger"><i class="bi bi-trash"></i> {% trans "Sí, eliminar definitivamente" %}</button>
+          <a href="{% url 'events:detail' event.pk %}" class="btn btn-link">{% trans "Cancelar" %}</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

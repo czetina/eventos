@@ -4,32 +4,58 @@
 {% block content %}
 <h3 class="mb-3"><i class="bi bi-check2-square"></i> {% trans "Mis tareas" %}</h3>
 
-{% for task in tasks %}
-<div class="card task-card mb-2 {% if task.is_overdue %}overdue{% endif %}">
-  <a href="{% url 'tasks:detail' task.pk %}" class="text-decoration-none text-dark">
-    <div class="card-body py-3">
-      <div class="d-flex justify-content-between">
-        <div>
-          <div class="fw-bold">{{ task.title }}</div>
-          <div class="text-muted small">{{ task.event.name }}{% if task.category %} · {{ task.category }}{% endif %}</div>
-          {% if task.due_date %}
-          <div class="small {% if task.is_overdue %}text-danger{% else %}text-muted{% endif %}">
-            <i class="bi bi-clock"></i> {{ task.due_date }} {{ task.due_time|default:"" }}
+{% if tasks %}
+<form method="post" action="{% url 'tasks:bulk_complete' %}" id="bulk-complete-form">
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{{ request.path }}">
+
+  {% for task in tasks %}
+  <div class="card task-card mb-2 {% if task.is_overdue %}overdue{% endif %}">
+    <div class="card-body py-3 d-flex gap-2">
+      <div class="pt-1">
+        <input type="checkbox" class="form-check-input" name="task_ids" value="{{ task.pk }}">
+      </div>
+      <a href="{% url 'tasks:detail' task.pk %}" class="text-decoration-none text-dark flex-grow-1">
+        <div class="d-flex justify-content-between">
+          <div>
+            <div class="fw-bold">{{ task.title }}</div>
+            <div class="text-muted small">{{ task.event.name }}{% if task.category %} · {{ task.category }}{% endif %}</div>
+            {% if task.due_date %}
+            <div class="small {% if task.is_overdue %}text-danger{% else %}text-muted{% endif %}">
+              <i class="bi bi-clock"></i> {{ task.due_date }} {{ task.due_time|default:"" }}
+            </div>
+            {% endif %}
+            <div class="small mt-1">
+              {% if task.requires_photo %}<span class="badge text-bg-light border"><i class="bi bi-camera"></i> {% trans "Foto requerida" %}</span>{% endif %}
+              {% if task.requires_video %}<span class="badge text-bg-light border"><i class="bi bi-camera-video"></i> {% trans "Video requerido" %}</span>{% endif %}
+              {% if task.requires_document %}<span class="badge text-bg-light border"><i class="bi bi-file-earmark-text"></i> {% trans "Documento requerido" %}</span>{% endif %}
+            </div>
           </div>
-          {% endif %}
-          <div class="small mt-1">
-            {% if task.requires_photo %}<span class="badge text-bg-light border"><i class="bi bi-camera"></i> {% trans "Foto requerida" %}</span>{% endif %}
-            {% if task.requires_document %}<span class="badge text-bg-light border"><i class="bi bi-file-earmark-text"></i> {% trans "Documento requerido" %}</span>{% endif %}
-          </div>
+          <span class="badge badge-status-{{ task.status }} align-self-start">{{ task.get_status_display }}</span>
         </div>
-        <span class="badge badge-status-{{ task.status }} align-self-start">{{ task.get_status_display }}</span>
+      </a>
+    </div>
+  </div>
+  {% endfor %}
+
+  <div class="card p-3 mt-2">
+    <div class="row g-2 align-items-end">
+      <div class="col-sm-7">
+        <label class="form-label small">{% trans "Fecha y hora en que se hicieron (puedes ajustarla)" %}</label>
+        <input type="datetime-local" name="completed_at" class="form-control" value="{% now "Y-m-d\TH:i" %}">
+      </div>
+      <div class="col-sm-5">
+        <button type="submit" class="btn btn-success w-100" onclick="return confirm('{% trans "¿Marcar todas las tareas seleccionadas como completadas?" %}');">
+          <i class="bi bi-check2-all"></i> {% trans "Marcar seleccionadas como completadas" %}
+        </button>
       </div>
     </div>
-  </a>
-</div>
-{% empty %}
+    <div class="form-text mt-1">{% trans "Las tareas que requieran evidencia y no la tengan todavía se omitirán." %}</div>
+  </div>
+</form>
+{% else %}
 <div class="alert alert-success">{% trans "No tienes tareas pendientes. ¡Buen trabajo!" %}</div>
-{% endfor %}
+{% endif %}
 
 {% if done_tasks %}
 <h5 class="mt-4 text-muted">{% trans "Completadas recientemente" %}</h5>

@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from django.utils.translation import gettext_lazy as _
 
-from .models import Company, User
+from .models import Company, Role, User, create_default_roles
 
 BOOTSTRAP_WIDGETS = (forms.TextInput, forms.EmailInput, forms.PasswordInput, forms.Select,
                      forms.Textarea, forms.NumberInput, forms.DateInput, forms.TimeInput)
@@ -44,7 +44,10 @@ class CompanyRegistrationForm(BootstrapFormMixin, forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["country"].widget = forms.Select(choices=Company._meta.get_field("country").choices)
+        country_choices = [("", _("(selecciona un país)"))] + list(
+            Company._meta.get_field("country").choices
+        )
+        self.fields["country"].widget = forms.Select(choices=country_choices)
         self._apply_bootstrap()
 
     def clean_username(self):
@@ -67,6 +70,7 @@ class CompanyRegistrationForm(BootstrapFormMixin, forms.Form):
         company = Company.objects.create(
             name=data["company_name"], country=data["country"], city=data["city"]
         )
+        roles = create_default_roles(company)
         user = User.objects.create_user(
             username=data["username"],
             email=data["email"],
@@ -74,7 +78,7 @@ class CompanyRegistrationForm(BootstrapFormMixin, forms.Form):
             last_name=data["last_name"],
             password=data["password1"],
             company=company,
-            role=User.ROLE_COMPANY_ADMIN,
+            role=roles[Role.LEVEL_COMPANY_ADMIN],
         )
         return user
 
@@ -90,10 +94,8 @@ class TeamMemberForm(BootstrapFormMixin, forms.ModelForm):
 
     def __init__(self, *args, requesting_user=None, **kwargs):
         super().__init__(*args, **kwargs)
-        allowed_roles = User.ROLE_CHOICES
-        if requesting_user and not requesting_user.is_company_admin and not requesting_user.is_superuser:
-            allowed_roles = [c for c in User.ROLE_CHOICES if c[0] != User.ROLE_COMPANY_ADMIN]
-        self.fields["role"].choices = allowed_roles
+        self.fields["role"].queryset = _visible_roles_for(requesting_user)
+        self.fields["role"].required = True
         self._apply_bootstrap()
 
     def clean_username(self):
@@ -113,6 +115,16 @@ class TeamMemberForm(BootstrapFormMixin, forms.ModelForm):
         return user
 
 
+def _visible_roles_for(requesting_user):
+    """Non-admins can't hand out the company_admin role to someone else."""
+    if not requesting_user:
+        return Role.objects.none()
+    roles = Role.objects.filter(company=requesting_user.company)
+    if not requesting_user.is_company_admin and not requesting_user.is_superuser:
+        roles = roles.exclude(base_level=Role.LEVEL_COMPANY_ADMIN)
+    return roles
+
+
 class TeamMemberEditForm(BootstrapFormMixin, forms.ModelForm):
     """Edits an existing team member without touching the password."""
 
@@ -122,10 +134,8 @@ class TeamMemberEditForm(BootstrapFormMixin, forms.ModelForm):
 
     def __init__(self, *args, requesting_user=None, **kwargs):
         super().__init__(*args, **kwargs)
-        allowed_roles = User.ROLE_CHOICES
-        if requesting_user and not requesting_user.is_company_admin and not requesting_user.is_superuser:
-            allowed_roles = [c for c in User.ROLE_CHOICES if c[0] != User.ROLE_COMPANY_ADMIN]
-        self.fields["role"].choices = allowed_roles
+        self.fields["role"].queryset = _visible_roles_for(requesting_user)
+        self.fields["role"].required = True
         self._apply_bootstrap()
 
 
@@ -133,6 +143,17 @@ class ProfileForm(BootstrapFormMixin, forms.ModelForm):
     class Meta:
         model = User
         fields = ["first_name", "last_name", "email", "phone", "preferred_language"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._apply_bootstrap()
+
+
+class RoleForm(BootstrapFormMixin, forms.ModelForm):
+    class Meta:
+        model = Role
+        fields = ["name", "description", "base_level"]
+        widgets = {"description": forms.Textarea(attrs={"rows": 3})}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

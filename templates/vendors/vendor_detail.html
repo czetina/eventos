@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{{ vendor.name }}{% endblock %}
+{% block content %}
+<a href="{% url 'vendors:list' %}" class="btn btn-link px-0">&larr; {% trans "Volver a proveedores" %}</a>
+
+<div class="d-flex justify-content-between align-items-start mb-3">
+  <div>
+    <h3>{{ vendor.name }}</h3>
+    <span class="badge text-bg-secondary">{{ vendor.get_category_display }}</span>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-md-4">
+    <div class="card p-3">
+      <h6>{% trans "Contacto" %}</h6>
+      <div>{{ vendor.contact_name|default:"—" }}</div>
+      <div>{{ vendor.phone|default:"—" }}</div>
+      <div>{{ vendor.email|default:"—" }}</div>
+      {% if vendor.notes %}<hr><div class="small text-muted">{{ vendor.notes|linebreaks }}</div>{% endif %}
+    </div>
+
+    <h6 class="mt-4">{% trans "Eventos donde participa" %}</h6>
+    <div class="list-group">
+      {% for booking in bookings %}
+      <a href="{% url 'events:detail' booking.event.pk %}" class="list-group-item list-group-item-action">
+        {{ booking.event.name }}
+        <span class="badge text-bg-light border float-end">{{ booking.get_status_display }}</span>
+      </a>
+      {% empty %}
+      <div class="list-group-item text-muted">{% trans "Sin eventos asociados todavía." %}</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="col-md-8">
+    <h6>{% trans "Tareas asignadas a este proveedor" %}</h6>
+    <div class="list-group">
+      {% for task in tasks %}
+      <a href="{% url 'tasks:detail' task.pk %}" class="list-group-item list-group-item-action d-flex justify-content-between">
+        <span>{{ task.title }} <span class="text-muted small d-block">{{ task.event.name }}{% if task.due_date %} · {{ task.due_date }} {{ task.due_time|default:"" }}{% endif %}</span></span>
+        <span class="badge badge-status-{{ task.status }}">{{ task.get_status_display }}</span>
+      </a>
+      {% empty %}
+      <div class="list-group-item text-muted">{% trans "Sin tareas asignadas a este proveedor." %}</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

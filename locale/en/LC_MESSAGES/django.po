@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eventplanner\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-13 17:15\n"
+"POT-Creation-Date: 2026-07-18 19:30\n"
 "Language: en\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -794,6 +794,29 @@ msgid "Volver a tareas"
 msgstr "Back to tasks"
 
 #: eventplanner
+msgid "responsable externo"
+msgstr "external contact"
+
+#: eventplanner
+msgid ""
+"Nombre de un proveedor o contacto del cliente que no tiene usuario en el "
+"sistema"
+msgstr ""
+"Name of a vendor or client contact who doesn't have a user account in the "
+"system"
+
+#: eventplanner
+msgid "Sin asignar"
+msgstr "Unassigned"
+
+#: eventplanner
+msgid ""
+"Indica un encargado del sistema o un responsable externo "
+"(proveedor/cliente)."
+msgstr ""
+"Specify a system user as assignee or an external contact (vendor/client)."
+
+#: eventplanner
 msgid "Evidencia"
 msgstr "Evidence"
 
@@ -1021,6 +1044,557 @@ msgid "título"
 msgstr "title"
 
 #: eventplanner
+msgid "Importar tareas"
+msgstr "Import tasks"
+
+#: eventplanner
+msgid "Importar tareas desde Excel"
+msgstr "Import tasks from Excel"
+
+#: eventplanner
+msgid "Importar desde Excel"
+msgstr "Import from Excel"
+
+#: eventplanner
+msgid ""
+"Sube el 'task por persona' o el 'guion completo' que ya usas para planear el"
+" evento. Podrás revisar todo antes de confirmar la importación."
+msgstr ""
+"Upload the 'task per person' or 'full script' file you already use to plan "
+"the event. You'll be able to review everything before confirming the import."
+
+#: eventplanner
+msgid "Analizar archivo"
+msgstr "Analyze file"
+
+#: eventplanner
+msgid "Tipo de archivo"
+msgstr "File type"
+
+#: eventplanner
+msgid "Task por persona (responsible / task / hecho)"
+msgstr "Task per person (responsible / task / done)"
+
+#: eventplanner
+msgid "Guion completo (fecha / hora / responsable / ubicación / descripción)"
+msgstr "Full script (date / time / responsible / location / description)"
+
+#: eventplanner
+msgid "Archivo Excel (.xlsx)"
+msgstr "Excel file (.xlsx)"
+
+#: eventplanner
+msgid "Sube un archivo Excel (.xlsx)."
+msgstr "Upload an Excel file (.xlsx)."
+
+#: eventplanner
+msgid "No se encontraron filas para importar en ese archivo."
+msgstr "No rows to import were found in that file."
+
+#: eventplanner
+msgid "Solo planificadores o administradores pueden importar tareas."
+msgstr "Only planners or administrators can import tasks."
+
+#: eventplanner
+msgid "Revisar importación"
+msgstr "Review import"
+
+#: eventplanner
+msgid "Revisa antes de confirmar"
+msgstr "Review before confirming"
+
+#: eventplanner
+msgid "Filas listas para importar: %(total)s."
+msgstr "Rows ready to import: %(total)s."
+
+#: eventplanner
+msgid "Nada se guarda todavía — revisa la lista y confirma abajo."
+msgstr "Nothing is saved yet — review the list and confirm below."
+
+#: eventplanner
+msgid ""
+"Nada se guarda todavía — revisa la lista, ajusta el responsable de cada fila"
+" si hace falta, y confirma abajo."
+msgstr ""
+"Nothing is saved yet — review the list, adjust each row's assignee if "
+"needed, and confirm below."
+
+#: eventplanner
+msgid "¿Falta alguien? Crear nueva persona"
+msgstr "Missing someone? Create a new person"
+
+#: eventplanner
+msgid "Propuesta de itinerario"
+msgstr "Itinerary proposal"
+
+#: eventplanner
+msgid ""
+"Actividades cerca de la fecha del evento, agrupadas por fecha, lugar y "
+"actividad. Nada queda marcado por defecto — elige cuáles sí son momentos "
+"reales del itinerario y ajusta la hora si hace falta."
+msgstr ""
+"Activities near the event date, grouped by date, location and activity. "
+"Nothing is checked by default — pick which ones are real itinerary moments "
+"and adjust the time if needed."
+
+#: eventplanner
+msgid "Ejemplos"
+msgstr "Examples"
+
+#: eventplanner
+msgid ""
+"Se importaron %(count)s tareas y %(sessions)s actividades de itinerario."
+msgstr "%(count)s tasks and %(sessions)s itinerary activities were imported."
+
+#: eventplanner
+msgid ""
+"Fecha y hora real en que se hizo la tarea; por defecto es ahora, pero se "
+"puede ajustar."
+msgstr ""
+"The real date and time the task was done; defaults to now, but can be "
+"adjusted."
+
+#: eventplanner
+msgid "Momento exacto en que quedó guardado en el sistema (no editable)."
+msgstr "The exact moment it was saved in the system (not editable)."
+
+#: eventplanner
+msgid "La fecha/hora de finalización no es válida; se usó el momento actual."
+msgstr ""
+"The completion date/time was invalid; the current moment was used instead."
+
+#: eventplanner
+msgid "Tarea marcada como completada el %(time)s."
+msgstr "Task marked as completed on %(time)s."
+
+#: eventplanner
+msgid "registrada en el sistema el"
+msgstr "recorded in the system on"
+
+#: eventplanner
+msgid "Fecha y hora en que se hizo (puedes ajustarla)"
+msgstr "Date and time it was done (you can adjust it)"
+
+#: eventplanner
+msgid "Registrada en el sistema el %(time)s"
+msgstr "Recorded in the system on %(time)s"
+
+#: eventplanner
+msgid "No seleccionaste ninguna tarea."
+msgstr "You didn't select any tasks."
+
+#: eventplanner
+msgid "%(count)s tareas marcadas como completadas."
+msgstr "%(count)s tasks marked as completed."
+
+#: eventplanner
+msgid ""
+"%(count)s tareas se omitieron porque requieren evidencia y todavía no la "
+"tienen."
+msgstr ""
+"%(count)s tasks were skipped because they require evidence they don't have "
+"yet."
+
+#: eventplanner
+msgid ""
+"%(count)s tareas se omitieron porque no tienes permiso para completarlas."
+msgstr ""
+"%(count)s tasks were skipped because you don't have permission to complete "
+"them."
+
+#: eventplanner
+msgid "Fecha y hora en que se hicieron (puedes ajustarla)"
+msgstr "Date and time they were done (you can adjust it)"
+
+#: eventplanner
+msgid "Marcar seleccionadas como completadas"
+msgstr "Mark selected as completed"
+
+#: eventplanner
+msgid "Las tareas que requieran evidencia y no la tengan todavía se omitirán."
+msgstr "Tasks that require evidence they don't have yet will be skipped."
+
+#: eventplanner
+msgid "¿Marcar todas las tareas seleccionadas como completadas?"
+msgstr "Mark all selected tasks as completed?"
+
+#: eventplanner
+msgid "Eliminar evento"
+msgstr "Delete event"
+
+#: eventplanner
+msgid "¿Seguro que quieres eliminar <strong>%(name)s</strong>?"
+msgstr "Are you sure you want to delete <strong>%(name)s</strong>?"
+
+#: eventplanner
+msgid ""
+"Esto elimina permanentemente el evento junto con todas sus tareas, "
+"evidencia, itinerario, equipo, proveedores asociados, notas y archivos. No "
+"se puede deshacer."
+msgstr ""
+"This permanently deletes the event along with all its tasks, evidence, "
+"itinerary, team, linked vendors, notes, and files. This cannot be undone."
+
+#: eventplanner
+msgid "Sí, eliminar definitivamente"
+msgstr "Yes, delete permanently"
+
+#: eventplanner
+msgid "Solo planificadores o administradores pueden eliminar eventos."
+msgstr "Only planners or administrators can delete events."
+
+#: eventplanner
+msgid "Evento '%(name)s' eliminado, junto con sus tareas, itinerario y notas."
+msgstr "Event '%(name)s' deleted, along with its tasks, itinerary, and notes."
+
+#: eventplanner
+msgid ""
+"Evento creado correctamente. Ahora puedes importar el guion/tareas desde "
+"Excel."
+msgstr ""
+"Event created successfully. You can now import the script/tasks from Excel."
+
+#: eventplanner
+msgid "Actividad del itinerario actualizada."
+msgstr "Itinerary activity updated."
+
+#: eventplanner
+msgid "No seleccionaste ninguna actividad."
+msgstr "You didn't select any activity."
+
+#: eventplanner
+msgid "%(count)s actividades del itinerario eliminadas."
+msgstr "%(count)s itinerary activities deleted."
+
+#: eventplanner
+msgid "Editar actividad"
+msgstr "Edit activity"
+
+#: eventplanner
+msgid "Editar actividad del itinerario"
+msgstr "Edit itinerary activity"
+
+#: eventplanner
+msgid "Eliminar seleccionadas"
+msgstr "Delete selected"
+
+#: eventplanner
+msgid "¿Eliminar las actividades seleccionadas?"
+msgstr "Delete the selected activities?"
+
+#: eventplanner
+msgid "fecha"
+msgstr "date"
+
+#: eventplanner
+msgid "Proveedor del evento actualizado."
+msgstr "Event vendor updated."
+
+#: eventplanner
+msgid "Editar proveedor de"
+msgstr "Edit vendor for"
+
+#: eventplanner
+msgid "Editar proveedor del evento"
+msgstr "Edit event vendor"
+
+#: eventplanner
+msgid ""
+"se abre en otra pestaña; cuando termines, vuelve a analizar el archivo para "
+"que aparezca en la lista."
+msgstr ""
+"opens in a new tab; when you're done, re-analyze the file so they show up in"
+" the list."
+
+#: eventplanner
+msgid "Tarea"
+msgstr "Task"
+
+#: eventplanner
+msgid "Responsable"
+msgstr "Responsible"
+
+#: eventplanner
+msgid "Categoría"
+msgstr "Category"
+
+#: eventplanner
+msgid ""
+"No coincide con un usuario del sistema, se guardará como responsable externo"
+msgstr "Doesn't match a system user, will be saved as an external contact"
+
+#: eventplanner
+msgid "externo"
+msgstr "external"
+
+#: eventplanner
+msgid "Confirmar importación"
+msgstr "Confirm import"
+
+#: eventplanner
+msgid "Se importaron %(count)s tareas correctamente."
+msgstr "%(count)s tasks were imported successfully."
+
+#: eventplanner
+msgid "No se pudo leer la información a importar."
+msgstr "The import data could not be read."
+
+#: eventplanner
+msgid "Importar itinerario"
+msgstr "Import itinerary"
+
+#: eventplanner
+msgid "Importar itinerario desde Excel"
+msgstr "Import itinerary from Excel"
+
+#: eventplanner
+msgid ""
+"Sube el 'minuto a minuto' (columnas PLACE / HOUR / DETAILS). Podrás revisar "
+"todo antes de confirmar la importación."
+msgstr ""
+"Upload the 'minute by minute' file (PLACE / HOUR / DETAILS columns). You'll "
+"be able to review everything before confirming the import."
+
+#: eventplanner
+msgid "Archivo Excel (.xlsx) — minuto a minuto"
+msgstr "Excel file (.xlsx) — minute by minute"
+
+#: eventplanner
+msgid "Solo planificadores o administradores pueden importar el itinerario."
+msgstr "Only planners or administrators can import the itinerary."
+
+#: eventplanner
+msgid ""
+"Algunas horas no están en orden cronológico (probablemente un dato AM/PM del"
+" archivo original). Revisa la columna de hora antes de confirmar."
+msgstr ""
+"Some times are not in chronological order (likely an AM/PM issue in the "
+"original file). Review the time column before confirming."
+
+#: eventplanner
+msgid "Hora"
+msgstr "Time"
+
+#: eventplanner
+msgid "Lugar"
+msgstr "Place"
+
+#: eventplanner
+msgid "Actividad"
+msgstr "Activity"
+
+#: eventplanner
+msgid "misma hora anterior"
+msgstr "same time as above"
+
+#: eventplanner
+msgid "Se importaron %(count)s actividades al itinerario."
+msgstr "%(count)s itinerary activities were imported."
+
+#: eventplanner
+msgid ""
+"Indica un encargado del sistema, un proveedor o un responsable externo."
+msgstr "Specify a system user, a vendor, or an external contact."
+
+#: eventplanner
+msgid ""
+"Nombre de un contacto (proveedor o cliente) que no tiene usuario ni ficha en"
+" el sistema"
+msgstr ""
+"Name of a contact (vendor or client) with no user account or vendor record "
+"in the system"
+
+#: eventplanner
+msgid ""
+"Proveedor registrado responsable de esta tarea, en vez de un usuario del "
+"sistema"
+msgstr "Registered vendor responsible for this task, instead of a system user"
+
+#: eventplanner
+msgid "proveedor responsable"
+msgstr "responsible vendor"
+
+#: eventplanner
+msgid "Coincide con un proveedor registrado"
+msgstr "Matches a registered vendor"
+
+#: eventplanner
+msgid ""
+"No coincide con un usuario ni proveedor del sistema, se guardará como "
+"responsable externo"
+msgstr ""
+"Doesn't match a system user or vendor, will be saved as an external contact"
+
+#: eventplanner
+msgid "Contacto"
+msgstr "Contact"
+
+#: eventplanner
+msgid "Eventos donde participa"
+msgstr "Events it's involved in"
+
+#: eventplanner
+msgid "Sin eventos asociados todavía."
+msgstr "No events linked yet."
+
+#: eventplanner
+msgid "Tareas asignadas a este proveedor"
+msgstr "Tasks assigned to this vendor"
+
+#: eventplanner
+msgid "Sin tareas asignadas a este proveedor."
+msgstr "No tasks assigned to this vendor."
+
+#: eventplanner
+msgid "Volver a proveedores"
+msgstr "Back to vendors"
+
+#: eventplanner
+msgid ""
+"Guion final (fecha / hora / responsable(s) / actividad / proveedor / "
+"ubicación / tarea)"
+msgstr ""
+"Final script (date / time / responsible(s) / activity / vendor / location / "
+"task)"
+
+#: eventplanner
+msgid "requiere video"
+msgstr "requires video"
+
+#: eventplanner
+msgid "Requiere video"
+msgstr "Requires video"
+
+#: eventplanner
+msgid "Video requerido"
+msgstr "Video required"
+
+#: eventplanner
+msgid "Roles"
+msgstr "Roles"
+
+#: eventplanner
+msgid "Mantenimiento de roles"
+msgstr "Role management"
+
+#: eventplanner
+msgid "Nuevo rol"
+msgstr "New role"
+
+#: eventplanner
+msgid "Editar rol"
+msgstr "Edit role"
+
+#: eventplanner
+msgid ""
+"Cada rol define qué puede hacer una persona en el sistema (su nivel de "
+"permisos) y cómo se llama. Puedes crear tantos roles como necesites (ej. "
+"'Novia', 'Asistente de logística', 'Representante de Venue')."
+msgstr ""
+"Each role defines what a person can do in the system (their permission "
+"level) and what they're called. Create as many roles as you need (e.g. "
+"'Bride', 'Logistics Assistant', 'Venue Representative')."
+
+#: eventplanner
+msgid "Qué hace"
+msgstr "What they do"
+
+#: eventplanner
+msgid "Nivel de permisos"
+msgstr "Permission level"
+
+#: eventplanner
+msgid "Personas"
+msgstr "People"
+
+#: eventplanner
+msgid "por defecto"
+msgstr "default"
+
+#: eventplanner
+msgid "¿Eliminar este rol?"
+msgstr "Delete this role?"
+
+#: eventplanner
+msgid "Todavía no hay roles."
+msgstr "No roles yet."
+
+#: eventplanner
+msgid ""
+"Este es un rol por defecto. Puedes ajustar su descripción, pero no cambiar "
+"su nivel de permisos ni eliminarlo."
+msgstr ""
+"This is a default role. You can adjust its description, but not its "
+"permission level or delete it."
+
+#: eventplanner
+msgid "Solo un administrador de empresa puede gestionar roles."
+msgstr "Only a company administrator can manage roles."
+
+#: eventplanner
+msgid "Rol creado correctamente."
+msgstr "Role created successfully."
+
+#: eventplanner
+msgid "Rol actualizado correctamente."
+msgstr "Role updated successfully."
+
+#: eventplanner
+msgid "Rol eliminado."
+msgstr "Role deleted."
+
+#: eventplanner
+msgid "No se puede eliminar un rol por defecto."
+msgstr "A default role cannot be deleted."
+
+#: eventplanner
+msgid "No se puede eliminar un rol que todavía tiene personas asignadas."
+msgstr "A role that still has people assigned to it cannot be deleted."
+
+#: eventplanner
+msgid "nombre del rol"
+msgstr "role name"
+
+#: eventplanner
+msgid "qué hace este rol"
+msgstr "what this role does"
+
+#: eventplanner
+msgid ""
+"Ej. 'Coordina montaje y desmontaje', 'Contacto de la pareja para "
+"aprobaciones'"
+msgstr ""
+"E.g. 'Coordinates setup and teardown', 'Couple's contact for approvals'"
+
+#: eventplanner
+msgid "nivel de permisos"
+msgstr "permission level"
+
+#: eventplanner
+msgid "Administrador de empresa (gestiona toda la empresa)"
+msgstr "Company administrator (manages the whole company)"
+
+#: eventplanner
+msgid "Planificador (crea y gestiona eventos)"
+msgstr "Planner (creates and manages events)"
+
+#: eventplanner
+msgid "Supervisor (coordina un equipo o área)"
+msgstr "Supervisor (coordinates a team or area)"
+
+#: eventplanner
+msgid "Encargado (ejecuta tareas asignadas)"
+msgstr "Assignee (carries out assigned tasks)"
+
+#: eventplanner
+msgid "rol por defecto"
+msgstr "default role"
+
+#: eventplanner
+msgid "Roles creados automáticamente con la empresa; no se pueden eliminar."
+msgstr "Roles created automatically with the company; they cannot be deleted."
+
+#: eventplanner
 msgid "Requiere documento"
 msgstr "Requires document"
 
@@ -1051,3 +1625,587 @@ msgstr "supervisor"
 #: eventplanner
 msgid "usuario"
 msgstr "user"
+
+#: eventplanner
+msgid "Editar tarea"
+msgstr "Edit task"
+
+#: eventplanner
+msgid "No tienes permiso para editar esta tarea."
+msgstr "You don't have permission to edit this task."
+
+#: eventplanner
+msgid "Tarea actualizada."
+msgstr "Task updated."
+
+#: eventplanner
+msgid "Momento del itinerario"
+msgstr "Itinerary moment"
+
+#: eventplanner
+msgid "momento del itinerario"
+msgstr "itinerary moment"
+
+#: eventplanner
+msgid "Vincula esta tarea a un momento específico del itinerario (opcional)"
+msgstr "Link this task to a specific itinerary moment (optional)"
+
+#: eventplanner
+msgid "Historial de estado"
+msgstr "Status history"
+
+#: eventplanner
+msgid "historial de estado"
+msgstr "status history"
+
+#: eventplanner
+msgid "historial de estados"
+msgstr "status history"
+
+#: eventplanner
+msgid "fecha del cambio"
+msgstr "change date"
+
+#: eventplanner
+msgid "cambiado por"
+msgstr "changed by"
+
+#: eventplanner
+msgid "Importada"
+msgstr "Imported"
+
+#: eventplanner
+msgid "sección"
+msgstr "section"
+
+#: eventplanner
+msgid "Sección"
+msgstr "Section"
+
+#: eventplanner
+msgid ""
+"Para agrupar el itinerario en reportes: ceremonia, recepción, montaje, "
+"desmontaje"
+msgstr ""
+"To group the itinerary in reports: ceremony, reception, setup, teardown"
+
+#: eventplanner
+msgid "Ceremonia"
+msgstr "Ceremony"
+
+#: eventplanner
+msgid "Recepción"
+msgstr "Reception"
+
+#: eventplanner
+msgid "Montaje"
+msgstr "Setup"
+
+#: eventplanner
+msgid "Desmontaje"
+msgstr "Teardown"
+
+#: eventplanner
+msgid "lista"
+msgstr "list"
+
+#: eventplanner
+msgid "Boutonnieres"
+msgstr "Boutonnieres"
+
+#: eventplanner
+msgid "Damas"
+msgstr "Bridesmaids"
+
+#: eventplanner
+msgid "Discursos"
+msgstr "Speeches"
+
+#: eventplanner
+msgid "cantidad"
+msgstr "quantity"
+
+#: eventplanner
+msgid "Cantidad"
+msgstr "Quantity"
+
+#: eventplanner
+msgid "rol / descripción"
+msgstr "role / description"
+
+#: eventplanner
+msgid "Rol / descripción"
+msgstr "Role / description"
+
+#: eventplanner
+msgid "mesa"
+msgstr "table"
+
+#: eventplanner
+msgid "Mesa"
+msgstr "Table"
+
+#: eventplanner
+msgid "miembro del cortejo"
+msgstr "wedding party member"
+
+#: eventplanner
+msgid "cortejo nupcial"
+msgstr "wedding party"
+
+#: eventplanner
+msgid "Cortejo nupcial"
+msgstr "Wedding party"
+
+#: eventplanner
+msgid "Orden de discursos"
+msgstr "Speech order"
+
+#: eventplanner
+msgid "Orden"
+msgstr "Order"
+
+#: eventplanner
+msgid "¿Eliminar este registro?"
+msgstr "Delete this record?"
+
+#: eventplanner
+msgid "Sin registros todavía."
+msgstr "No records yet."
+
+#: eventplanner
+msgid "Agregar a una lista"
+msgstr "Add to a list"
+
+#: eventplanner
+msgid "Editar registro del cortejo"
+msgstr "Edit wedding party record"
+
+#: eventplanner
+msgid "Editar registro"
+msgstr "Edit record"
+
+#: eventplanner
+msgid "Persona agregada a la lista."
+msgstr "Person added to the list."
+
+#: eventplanner
+msgid "Registro actualizado."
+msgstr "Record updated."
+
+#: eventplanner
+msgid "Registro eliminado."
+msgstr "Record removed."
+
+#: eventplanner
+msgid "orden de entrada"
+msgstr "entrance order"
+
+#: eventplanner
+msgid "lado izquierdo"
+msgstr "left side"
+
+#: eventplanner
+msgid "lado derecho"
+msgstr "right side"
+
+#: eventplanner
+msgid "detalle"
+msgstr "detail"
+
+#: eventplanner
+msgid "música"
+msgstr "music"
+
+#: eventplanner
+msgid "entrada del cortejo"
+msgstr "processional entry"
+
+#: eventplanner
+msgid "orden del cortejo (planograma)"
+msgstr "processional order (diagram)"
+
+#: eventplanner
+msgid "Planograma del cortejo"
+msgstr "Processional diagram"
+
+#: eventplanner
+msgid "Compartir con la novia"
+msgstr "Share with the bride"
+
+#: eventplanner
+msgid "Copiar"
+msgstr "Copy"
+
+#: eventplanner
+msgid "Compartir por WhatsApp"
+msgstr "Share via WhatsApp"
+
+#: eventplanner
+msgid "Imprimir / Guardar PDF"
+msgstr "Print / Save PDF"
+
+#: eventplanner
+msgid "Izquierda"
+msgstr "Left"
+
+#: eventplanner
+msgid "Derecha"
+msgstr "Right"
+
+#: eventplanner
+msgid "Detalle"
+msgstr "Detail"
+
+#: eventplanner
+msgid "¿Eliminar esta entrada?"
+msgstr "Delete this entry?"
+
+#: eventplanner
+msgid "Sin entradas todavía."
+msgstr "No entries yet."
+
+#: eventplanner
+msgid "Agregar entrada"
+msgstr "Add entry"
+
+#: eventplanner
+msgid "Editar entrada del planograma"
+msgstr "Edit processional entry"
+
+#: eventplanner
+msgid "Entrada agregada al planograma."
+msgstr "Entry added to the processional diagram."
+
+#: eventplanner
+msgid "Entrada del planograma actualizada."
+msgstr "Processional entry updated."
+
+#: eventplanner
+msgid "Entrada eliminada del planograma."
+msgstr "Entry removed from the processional diagram."
+
+#: eventplanner
+msgid "Orden de entrada del cortejo nupcial"
+msgstr "Wedding party entrance order"
+
+#: eventplanner
+msgid "Entrada de la iglesia"
+msgstr "Church entrance"
+
+#: eventplanner
+msgid "Altar"
+msgstr "Altar"
+
+#: eventplanner
+msgid "Sin entradas registradas todavía."
+msgstr "No entries registered yet."
+
+#: eventplanner
+msgid "token para compartir"
+msgstr "share token"
+
+#: eventplanner
+msgid ""
+"Identificador usado para el link público (sin login) del planograma del "
+"cortejo."
+msgstr ""
+"Identifier used for the public (no-login) link to the processional diagram."
+
+#: eventplanner
+msgid "grupo"
+msgstr "group"
+
+#: eventplanner
+msgid "Equipo interno"
+msgstr "Internal team"
+
+#: eventplanner
+msgid "comida"
+msgstr "meal"
+
+#: eventplanner
+msgid "Comida"
+msgstr "Meal"
+
+#: eventplanner
+msgid "Ej. Almuerzo, Cena, Snack box"
+msgstr "E.g. Lunch, Dinner, Snack box"
+
+#: eventplanner
+msgid "conteo de comida"
+msgstr "meal count"
+
+#: eventplanner
+msgid "comidas de equipo y proveedores"
+msgstr "team & vendor meals"
+
+#: eventplanner
+msgid "Comidas de equipo y proveedores"
+msgstr "Team & vendor meals"
+
+#: eventplanner
+msgid "¿Eliminar este conteo?"
+msgstr "Delete this count?"
+
+#: eventplanner
+msgid "Agregar conteo"
+msgstr "Add count"
+
+#: eventplanner
+msgid "Editar conteo de comida"
+msgstr "Edit meal count"
+
+#: eventplanner
+msgid "Conteo de comida agregado."
+msgstr "Meal count added."
+
+#: eventplanner
+msgid "Conteo de comida actualizado."
+msgstr "Meal count updated."
+
+#: eventplanner
+msgid "Conteo de comida eliminado."
+msgstr "Meal count removed."
+
+#: eventplanner
+msgid "Boda y reportes"
+msgstr "Wedding & reports"
+
+#: eventplanner
+msgid "Reportes"
+msgstr "Reports"
+
+#: eventplanner
+msgid "Itinerario imprimible por día"
+msgstr "Printable itinerary by day"
+
+#: eventplanner
+msgid "Tareas por responsable"
+msgstr "Tasks by assignee"
+
+#: eventplanner
+msgid "Historial de cambios de estado"
+msgstr "Status change history"
+
+#: eventplanner
+msgid "Nuevo estado"
+msgstr "New status"
+
+#: eventplanner
+msgid "Cambiado por"
+msgstr "Changed by"
+
+#: eventplanner
+msgid "Nota"
+msgstr "Note"
+
+#: eventplanner
+msgid "Fecha del cambio"
+msgstr "Change date"
+
+#: eventplanner
+msgid "Sin cambios registrados todavía."
+msgstr "No changes recorded yet."
+
+#: eventplanner
+msgid "fase"
+msgstr "phase"
+
+#: eventplanner
+msgid "Fase"
+msgstr "Phase"
+
+#: eventplanner
+msgid "Entrada"
+msgstr "Entrance"
+
+#: eventplanner
+msgid "Salida"
+msgstr "Exit"
+
+#: eventplanner
+msgid "Salida / Puerta"
+msgstr "Exit / Door"
+
+#: eventplanner
+msgid "centro"
+msgstr "center"
+
+#: eventplanner
+msgid "Centro"
+msgstr "Center"
+
+#: eventplanner
+msgid "Orden del cortejo nupcial"
+msgstr "Wedding party order"
+
+#: eventplanner
+msgid "lugar de la ceremonia civil"
+msgstr "civil ceremony venue"
+
+#: eventplanner
+msgid "lugar de la ceremonia eclesiástica"
+msgstr "religious ceremony venue"
+
+#: eventplanner
+msgid "lugar del cóctel"
+msgstr "cocktail venue"
+
+#: eventplanner
+msgid "Ceremonia civil"
+msgstr "Civil ceremony"
+
+#: eventplanner
+msgid "Ceremonia eclesiástica"
+msgstr "Religious ceremony"
+
+#: eventplanner
+msgid "Cóctel"
+msgstr "Cocktail"
+
+#: eventplanner
+msgid "lista del cortejo"
+msgstr "wedding party list"
+
+#: eventplanner
+msgid "mantenimiento de listas del cortejo"
+msgstr "wedding party list management"
+
+#: eventplanner
+msgid "nombre de la lista"
+msgstr "list name"
+
+#: eventplanner
+msgid "Mantenimiento de listas"
+msgstr "List management"
+
+#: eventplanner
+msgid "Mantenimiento de listas del cortejo"
+msgstr "Wedding party list management"
+
+#: eventplanner
+msgid "Nueva lista"
+msgstr "New list"
+
+#: eventplanner
+msgid "Editar lista"
+msgstr "Edit list"
+
+#: eventplanner
+msgid ""
+"Estas son las categorías disponibles para el cortejo nupcial (ej. "
+"Boutonnieres, Damas, Discursos, Ramo de Dama, Novia, Novio, Caballeros). "
+"Agrega, renombra o reordena las que tu empresa use."
+msgstr ""
+"These are the available categories for the wedding party (e.g. Boutonnieres,"
+" Bridesmaids, Speeches, Bride's Bouquet, Bride, Groom, Groomsmen). Add, "
+"rename, or reorder the ones your company uses."
+
+#: eventplanner
+msgid "Lista"
+msgstr "List"
+
+#: eventplanner
+msgid "¿Eliminar esta lista?"
+msgstr "Delete this list?"
+
+#: eventplanner
+msgid "Todavía no hay listas."
+msgstr "No lists yet."
+
+#: eventplanner
+msgid "Todavía no hay listas configuradas."
+msgstr "No lists configured yet."
+
+#: eventplanner
+msgid "Lista creada correctamente."
+msgstr "List created successfully."
+
+#: eventplanner
+msgid "Lista actualizada correctamente."
+msgstr "List updated successfully."
+
+#: eventplanner
+msgid "No se puede eliminar una lista que todavía tiene personas asignadas."
+msgstr "A list that still has people assigned to it cannot be deleted."
+
+#: eventplanner
+msgid "Lista eliminada."
+msgstr "List deleted."
+
+#: eventplanner
+msgid "No tienes permiso para gestionar las listas del cortejo."
+msgstr "You don't have permission to manage the wedding party lists."
+
+#: eventplanner
+msgid "proveedor / persona"
+msgstr "vendor / person"
+
+#: eventplanner
+msgid "Ej. 'Transportes', 'Asistente 1', 'Planner'"
+msgstr "E.g. 'Transportation', 'Assistant 1', 'Planner'"
+
+#: eventplanner
+msgid "monto"
+msgstr "amount"
+
+#: eventplanner
+msgid "Monto"
+msgstr "Amount"
+
+#: eventplanner
+msgid "Imprevistos"
+msgstr "Contingency"
+
+#: eventplanner
+msgid "Persona"
+msgstr "Person"
+
+#: eventplanner
+msgid "Proveedor"
+msgstr "Vendor"
+
+#: eventplanner
+msgid "Concepto"
+msgstr "Concept"
+
+#: eventplanner
+msgid "Total general"
+msgstr "Grand total"
+
+#: eventplanner
+msgid "mostrar el detalle en el enlace público"
+msgstr "show the detail in the public link"
+
+#: eventplanner
+msgid ""
+"Desactívalo si esta nota es solo para uso interno del equipo de "
+"planificación."
+msgstr "Turn it off if this note is for internal planning use only."
+
+#: eventplanner
+msgid "Incluir el detalle al imprimir"
+msgstr "Include the detail when printing"
+
+#: eventplanner
+msgid "No tienes permiso para eliminar miembros del equipo."
+msgstr "You don't have permission to delete team members."
+
+#: eventplanner
+msgid "No puedes eliminar tu propia cuenta."
+msgstr "You can't delete your own account."
+
+#: eventplanner
+msgid ""
+"No se puede eliminar: tiene tareas o eventos asignados. Márcalo como "
+"inactivo en su lugar."
+msgstr "Can't delete: has assigned tasks or events. Mark as inactive instead."
+
+#: eventplanner
+msgid "Miembro del equipo eliminado."
+msgstr "Team member deleted."
+
+#: eventplanner
+msgid "¿Eliminar este miembro del equipo?"
+msgstr "Delete this team member?"

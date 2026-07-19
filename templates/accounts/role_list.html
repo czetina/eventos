@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Roles" %}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3><i class="bi bi-person-badge"></i> {% trans "Mantenimiento de roles" %}</h3>
+  <a href="{% url 'accounts:role_create' %}" class="btn btn-dark"><i class="bi bi-plus-lg"></i> {% trans "Nuevo rol" %}</a>
+</div>
+<p class="text-muted">
+  {% trans "Cada rol define qué puede hacer una persona en el sistema (su nivel de permisos) y cómo se llama. Puedes crear tantos roles como necesites (ej. 'Novia', 'Asistente de logística', 'Representante de Venue')." %}
+</p>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0 align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>{% trans "Rol" %}</th>
+          <th>{% trans "Qué hace" %}</th>
+          <th>{% trans "Nivel de permisos" %}</th>
+          <th>{% trans "Personas" %}</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for role in roles %}
+        <tr>
+          <td>
+            {{ role.name }}
+            {% if role.is_default %}<span class="badge text-bg-light border">{% trans "por defecto" %}</span>{% endif %}
+          </td>
+          <td class="text-muted small">{{ role.description|default:"—"|truncatewords:15 }}</td>
+          <td><span class="badge text-bg-secondary">{{ role.get_base_level_display }}</span></td>
+          <td>{{ role.member_count }}</td>
+          <td class="text-end">
+            <a href="{% url 'accounts:role_edit' role.pk %}" class="btn btn-sm btn-outline-secondary">{% trans "Editar" %}</a>
+            {% if not role.is_default %}
+            <form method="post" action="{% url 'accounts:role_delete' role.pk %}" class="d-inline" onsubmit="return confirm('{% trans "¿Eliminar este rol?" %}');">
+              {% csrf_token %}
+              <button class="btn btn-sm btn-outline-danger">{% trans "Eliminar" %}</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-center text-muted py-4">{% trans "Todavía no hay roles." %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

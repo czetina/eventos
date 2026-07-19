@@ -17,7 +17,7 @@
             {% for member in team_members %}
             <tr>
               <td>{{ member.user }}</td>
-              <td><span class="badge text-bg-secondary">{{ member.get_role_in_event_display }}</span></td>
+              <td><span class="badge text-bg-secondary">{{ member.role.name }}</span></td>
               <td>{{ member.area|default:"—" }}</td>
               <td>{{ member.reports_to.user|default:"—" }}</td>
               <td class="text-end">

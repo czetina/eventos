@@ -11,22 +11,42 @@
         <h4>{{ task.title }}</h4>
         <div class="text-muted">{{ event.name }}{% if task.category %} · {{ task.category }}{% endif %}</div>
       </div>
-      <span class="badge badge-status-{{ task.status }} fs-6">{{ task.get_status_display }}</span>
+      <div class="text-end">
+        <span class="badge badge-status-{{ task.status }} fs-6">{{ task.get_status_display }}</span>
+        {% if user.can_manage_events or user.is_supervisor %}
+        <a href="{% url 'tasks:edit' task.pk %}" class="btn btn-sm btn-outline-secondary d-block mt-2"><i class="bi bi-pencil"></i> {% trans "Editar" %}</a>
+        {% endif %}
+      </div>
     </div>
     {% if task.description %}<p class="mt-3">{{ task.description|linebreaks }}</p>{% endif %}
     <div class="row mt-3">
-      <div class="col-sm-4"><strong>{% trans "Encargado" %}:</strong> {{ task.assigned_to }}</div>
+      <div class="col-sm-4">
+        <strong>{% trans "Encargado" %}:</strong>
+        {% if task.vendor %}<a href="{% url 'vendors:detail' task.vendor.pk %}"><i class="bi bi-shop"></i> {{ task.vendor.name }}</a>
+        {% else %}{{ task.responsible_display }}{% endif %}
+      </div>
       <div class="col-sm-4"><strong>{% trans "Supervisor" %}:</strong> {{ task.supervisor|default:"—" }}</div>
       <div class="col-sm-4"><strong>{% trans "Fecha límite" %}:</strong> {{ task.due_date|default:"—" }} {{ task.due_time|default:"" }}</div>
     </div>
+    {% if task.itinerary_session %}
+    <div class="mt-2 small">
+      <strong>{% trans "Momento del itinerario" %}:</strong> {{ task.itinerary_session.title }} ({{ task.itinerary_session.date }} {{ task.itinerary_session.start_time }})
+    </div>
+    {% endif %}
     <div class="mt-2">
       {% if task.requires_photo %}<span class="badge text-bg-light border"><i class="bi bi-camera"></i> {% trans "Requiere foto" %}</span>{% endif %}
+      {% if task.requires_video %}<span class="badge text-bg-light border"><i class="bi bi-camera-video"></i> {% trans "Requiere video" %}</span>{% endif %}
       {% if task.requires_document %}<span class="badge text-bg-light border"><i class="bi bi-file-earmark-text"></i> {% trans "Requiere documento" %}</span>{% endif %}
     </div>
     {% if task.status == 'completada' %}
     <div class="alert alert-success mt-3 mb-0">
       <i class="bi bi-check-circle"></i>
       {% blocktrans with user=task.completed_by time=task.completed_at|date:"d/m/Y H:i" %}Completada por {{ user }} el {{ time }}{% endblocktrans %}
+      {% if task.completion_recorded_at %}
+      <div class="small text-muted mt-1">
+        {% blocktrans with time=task.completion_recorded_at|date:"d/m/Y H:i" %}Registrada en el sistema el {{ time }}{% endblocktrans %}
+      </div>
+      {% endif %}
     </div>
     {% endif %}
   </div>
@@ -41,6 +61,8 @@
         <div class="card">
           {% if evidence.is_image %}
           <a href="{{ evidence.file.url }}" target="_blank"><img src="{{ evidence.file.url }}" class="card-img-top" style="height:160px;object-fit:cover;"></a>
+          {% elif evidence.is_video %}
+          <video src="{{ evidence.file.url }}" class="card-img-top" style="height:160px;object-fit:cover;" controls></video>
           {% else %}
           <a href="{{ evidence.file.url }}" target="_blank" class="d-flex align-items-center justify-content-center bg-light" style="height:160px;"><i class="bi bi-file-earmark-text fs-1"></i></a>
           {% endif %}
@@ -67,14 +89,41 @@
 </div>
 
 {% if task.status != 'completada' and can_complete %}
-<form method="post" action="{% url 'tasks:complete' task.pk %}" onsubmit="return confirm('{% trans "¿Confirmar que la tarea está completada?" %}');">
-  {% csrf_token %}
-  <button type="submit" class="btn btn-success btn-lg w-100">
-    <i class="bi bi-check2-circle"></i> {% trans "Marcar como completada" %}
-  </button>
-  {% if task.requires_evidence %}
-  <div class="form-text text-center">{% trans "Se requiere subir evidencia antes de completar esta tarea." %}</div>
-  {% endif %}
-</form>
+<div class="card">
+  <div class="card-body">
+    <form method="post" action="{% url 'tasks:complete' task.pk %}" onsubmit="return confirm('{% trans "¿Confirmar que la tarea está completada?" %}');" class="row g-2 align-items-end">
+      {% csrf_token %}
+      <div class="col-sm-7">
+        <label class="form-label small">{% trans "Fecha y hora en que se hizo (puedes ajustarla)" %}</label>
+        <input type="datetime-local" name="completed_at" class="form-control" value="{% now "Y-m-d\TH:i" %}">
+      </div>
+      <div class="col-sm-5">
+        <button type="submit" class="btn btn-success w-100">
+          <i class="bi bi-check2-circle"></i> {% trans "Marcar como completada" %}
+        </button>
+      </div>
+    </form>
+    {% if task.requires_evidence %}
+    <div class="form-text mt-2">{% trans "Se requiere subir evidencia antes de completar esta tarea." %}</div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+{% if status_history %}
+<div class="card mt-3">
+  <div class="card-body">
+    <h6>{% trans "Historial de estado" %}</h6>
+    <ul class="list-unstyled small mb-0">
+      {% for entry in status_history %}
+      <li class="mb-1">
+        <span class="badge badge-status-{{ entry.status }}">{{ entry.get_status_display }}</span>
+        {{ entry.changed_at|date:"d/m/Y H:i" }} — {{ entry.changed_by|default:"—" }}
+        {% if entry.note %}<span class="text-muted">({{ entry.note }})</span>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
 {% endif %}
 {% endblock %}

@@ -57,7 +57,7 @@
       {% for task in overdue_tasks %}
       <a href="{% url 'tasks:detail' task.pk %}" class="list-group-item list-group-item-action">
         <strong>{{ task.title }}</strong>
-        <span class="d-block small text-muted">{{ task.event.name }} · {{ task.assigned_to }}</span>
+        <span class="d-block small text-muted">{{ task.event.name }} · {{ task.responsible_display }}</span>
       </a>
       {% empty %}
       <div class="list-group-item text-muted">{% trans "Sin tareas atrasadas. ¡Bien hecho!" %}</div>

@@ -4,7 +4,9 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from apps.events.models import Event
+from apps.accounts.models import Role
+from apps.events.models import Event, EventSession
+from apps.vendors.models import Vendor
 
 
 def evidence_upload_path(instance, filename):
@@ -46,6 +48,21 @@ class Task(models.Model):
         verbose_name=_("encargado"),
         related_name="tasks_assigned",
         on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+    vendor = models.ForeignKey(
+        Vendor,
+        verbose_name=_("proveedor responsable"),
+        related_name="tasks",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text=_("Proveedor registrado responsable de esta tarea, en vez de un usuario del sistema"),
+    )
+    external_assignee_name = models.CharField(
+        _("responsable externo"), max_length=150, blank=True,
+        help_text=_("Nombre de un contacto (proveedor o cliente) que no tiene usuario ni ficha en el sistema"),
     )
     supervisor = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -55,11 +72,21 @@ class Task(models.Model):
         null=True,
         blank=True,
     )
+    itinerary_session = models.ForeignKey(
+        EventSession,
+        verbose_name=_("momento del itinerario"),
+        related_name="tasks",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text=_("Vincula esta tarea a un momento específico del itinerario (opcional)"),
+    )
 
     due_date = models.DateField(_("fecha límite"), null=True, blank=True)
     due_time = models.TimeField(_("hora límite"), null=True, blank=True)
 
     requires_photo = models.BooleanField(_("requiere foto"), default=False)
+    requires_video = models.BooleanField(_("requiere video"), default=False)
     requires_document = models.BooleanField(_("requiere documento"), default=False)
 
     status = models.CharField(
@@ -76,7 +103,14 @@ class Task(models.Model):
     created_at = models.DateTimeField(_("creado"), auto_now_add=True)
     updated_at = models.DateTimeField(_("actualizado"), auto_now=True)
 
-    completed_at = models.DateTimeField(_("completada el"), null=True, blank=True)
+    completed_at = models.DateTimeField(
+        _("completada el"), null=True, blank=True,
+        help_text=_("Fecha y hora real en que se hizo la tarea; por defecto es ahora, pero se puede ajustar."),
+    )
+    completion_recorded_at = models.DateTimeField(
+        _("registrada en el sistema el"), null=True, blank=True,
+        help_text=_("Momento exacto en que quedó guardado en el sistema (no editable)."),
+    )
     completed_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         verbose_name=_("completada por"),
@@ -99,7 +133,15 @@ class Task(models.Model):
 
     @property
     def requires_evidence(self):
-        return self.requires_photo or self.requires_document
+        return self.requires_photo or self.requires_video or self.requires_document
+
+    @property
+    def responsible_display(self):
+        if self.assigned_to:
+            return str(self.assigned_to)
+        if self.vendor:
+            return str(self.vendor.name)
+        return self.external_assignee_name or _("Sin asignar")
 
     @property
     def is_overdue(self):
@@ -113,13 +155,23 @@ class Task(models.Model):
         return False
 
     def can_be_completed_by(self, user):
-        return user == self.assigned_to or user.has_role_at_least(user.ROLE_SUPERVISOR)
+        return user == self.assigned_to or user.has_role_at_least(Role.LEVEL_SUPERVISOR)
 
-    def mark_completed(self, user):
+    def mark_completed(self, user, completed_at=None):
+        now = timezone.now()
         self.status = self.STATUS_DONE
-        self.completed_at = timezone.now()
+        self.completed_at = completed_at or now
+        self.completion_recorded_at = now
         self.completed_by = user
-        self.save(update_fields=["status", "completed_at", "completed_by", "updated_at"])
+        self.save(update_fields=[
+            "status", "completed_at", "completion_recorded_at", "completed_by", "updated_at",
+        ])
+        self.record_status_change(user)
+
+    def record_status_change(self, user, note=""):
+        """Appends an entry to this task's status history — call whenever `status`
+        changes (creation, manual edit, completion, bulk actions)."""
+        TaskStatusHistory.objects.create(task=self, status=self.status, changed_by=user, note=note)
 
 
 class TaskEvidence(models.Model):
@@ -151,3 +203,35 @@ class TaskEvidence(models.Model):
     def is_image(self):
         name = self.file.name.lower()
         return name.endswith((".jpg", ".jpeg", ".png", ".gif", ".webp"))
+
+    @property
+    def is_video(self):
+        name = self.file.name.lower()
+        return name.endswith((".mp4", ".mov", ".avi", ".webm", ".m4v"))
+
+
+class TaskStatusHistory(models.Model):
+    """Audit trail: one row per status change, so a task's timeline (and event-wide
+    reports) can show exactly when it moved from pending to in-progress to done."""
+
+    task = models.ForeignKey(
+        Task, verbose_name=_("tarea"), related_name="status_history", on_delete=models.CASCADE
+    )
+    status = models.CharField(_("estado"), max_length=20, choices=Task.STATUS_CHOICES)
+    changed_at = models.DateTimeField(_("fecha del cambio"), auto_now_add=True)
+    changed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name=_("cambiado por"),
+        related_name="task_status_changes",
+        on_delete=models.SET_NULL,
+        null=True,
+    )
+    note = models.CharField(_("nota"), max_length=255, blank=True)
+
+    class Meta:
+        verbose_name = _("historial de estado")
+        verbose_name_plural = _("historial de estados")
+        ordering = ["-changed_at"]
+
+    def __str__(self):
+        return f"{self.task} → {self.get_status_display()} ({self.changed_at:%Y-%m-%d %H:%M})"

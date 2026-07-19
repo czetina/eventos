@@ -5,7 +5,7 @@ from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from apps.accounts.models import Company, User
+from apps.accounts.models import Company, Role, User, create_default_roles
 from apps.events.models import Event, EventSession, EventTeamMember
 from apps.notes.models import Note
 from apps.tasks.models import Task, TaskEvidence
@@ -48,31 +48,51 @@ class Command(BaseCommand):
             phone="+52 55 1234 5678", email="hola@bodasaurora.demo",
         )
 
+        roles = create_default_roles(company)
+        role_novia = Role.objects.create(
+            company=company, name="Novia / Cliente", base_level=Role.LEVEL_ENCARGADO,
+            description="Contacto principal del cliente para aprobaciones; ve y confirma sus propios pendientes.",
+        )
+        role_venue_rep = Role.objects.create(
+            company=company, name="Representante de Venue", base_level=Role.LEVEL_ENCARGADO,
+            description="Contacto del salón/restaurante para coordinar montaje, banquete y logística del lugar.",
+        )
+
         admin = User.objects.create_user(
             username="admin", password="admin123", email="admin@bodasaurora.demo",
             first_name="Laura", last_name="Aurora", company=company,
-            role=User.ROLE_COMPANY_ADMIN, preferred_language="es",
+            role=roles[Role.LEVEL_COMPANY_ADMIN], preferred_language="es",
             is_staff=True, is_superuser=True,
         )
         planner = User.objects.create_user(
             username="planner", password="planner123", email="planner@bodasaurora.demo",
             first_name="Diego", last_name="Ramírez", company=company,
-            role=User.ROLE_PLANNER, preferred_language="es",
+            role=roles[Role.LEVEL_PLANNER], preferred_language="es",
         )
         supervisor = User.objects.create_user(
             username="supervisor", password="super123", email="supervisor@bodasaurora.demo",
             first_name="Marcela", last_name="Solís", company=company,
-            role=User.ROLE_SUPERVISOR, preferred_language="es",
+            role=roles[Role.LEVEL_SUPERVISOR], preferred_language="es",
         )
         juan = User.objects.create_user(
             username="juan", password="juan123", email="juan@bodasaurora.demo",
             first_name="Juan", last_name="Pérez", company=company,
-            role=User.ROLE_ENCARGADO, phone="+52 55 1111 2222", preferred_language="es",
+            role=roles[Role.LEVEL_ENCARGADO], phone="+52 55 1111 2222", preferred_language="es",
         )
         maria = User.objects.create_user(
             username="maria", password="maria123", email="maria@bodasaurora.demo",
             first_name="María", last_name="López", company=company,
-            role=User.ROLE_ENCARGADO, phone="+52 55 3333 4444", preferred_language="en",
+            role=roles[Role.LEVEL_ENCARGADO], phone="+52 55 3333 4444", preferred_language="en",
+        )
+        paige = User.objects.create_user(
+            username="paige", password="paige123", email="paige@bodasaurora.demo",
+            first_name="Paige", last_name="Wilson", company=company,
+            role=role_novia, preferred_language="en",
+        )
+        maikol = User.objects.create_user(
+            username="maikol", password="maikol123", email="maikol@bodasaurora.demo",
+            first_name="Maikol", last_name="Restrepo", company=company,
+            role=role_venue_rep, preferred_language="es",
         )
 
         today = datetime.date.today()
@@ -105,35 +125,46 @@ class Command(BaseCommand):
         )
 
         EventSession.objects.bulk_create([
+            EventSession(event=wedding, title="Montaje general", venue_name="Hacienda Los Álamos",
+                         date=wedding.event_date - datetime.timedelta(days=1),
+                         start_time=datetime.time(9, 0), end_time=datetime.time(18, 0), order=1),
             EventSession(event=wedding, title="Ceremonia religiosa", venue_name="Parroquia San Rafael",
-                         start_time=datetime.time(16, 0), end_time=datetime.time(17, 0), order=1),
+                         date=wedding.event_date,
+                         start_time=datetime.time(16, 0), end_time=datetime.time(17, 0), order=2),
             EventSession(event=wedding, title="Cóctel de bienvenida", venue_name="Jardín principal",
-                         start_time=datetime.time(17, 30), end_time=datetime.time(19, 0), order=2),
+                         date=wedding.event_date,
+                         start_time=datetime.time(17, 30), end_time=datetime.time(19, 0), order=3),
             EventSession(event=wedding, title="Recepción y banquete", venue_name="Salón Los Álamos",
-                         start_time=datetime.time(19, 30), end_time=datetime.time(23, 59), order=3),
+                         date=wedding.event_date,
+                         start_time=datetime.time(19, 30), end_time=datetime.time(23, 59), order=4),
+            EventSession(event=wedding, title="Desmontaje", venue_name="Hacienda Los Álamos",
+                         date=wedding.event_date + datetime.timedelta(days=1),
+                         start_time=datetime.time(8, 0), end_time=datetime.time(14, 0), order=5),
         ])
 
         for event in (wedding, corporate):
             EventTeamMember.objects.get_or_create(
-                event=event, user=planner, defaults={"role_in_event": EventTeamMember.ROLE_PLANNER}
+                event=event, user=planner, defaults={"role": planner.role}
             )
         sup_membership, _ = EventTeamMember.objects.get_or_create(
             event=wedding, user=supervisor,
-            defaults={"role_in_event": EventTeamMember.ROLE_SUPERVISOR, "area": "Montaje y banquete"},
+            defaults={"role": supervisor.role, "area": "Montaje y banquete"},
         )
         juan_membership, _ = EventTeamMember.objects.get_or_create(
             event=wedding, user=juan,
-            defaults={
-                "role_in_event": EventTeamMember.ROLE_ENCARGADO, "area": "Montaje",
-                "reports_to": sup_membership,
-            },
+            defaults={"role": juan.role, "area": "Montaje", "reports_to": sup_membership},
         )
         maria_membership, _ = EventTeamMember.objects.get_or_create(
             event=wedding, user=maria,
-            defaults={
-                "role_in_event": EventTeamMember.ROLE_ENCARGADO, "area": "Insumos y bebidas",
-                "reports_to": sup_membership,
-            },
+            defaults={"role": maria.role, "area": "Insumos y bebidas", "reports_to": sup_membership},
+        )
+        EventTeamMember.objects.get_or_create(
+            event=wedding, user=paige,
+            defaults={"role": paige.role, "area": "Aprobaciones cliente"},
+        )
+        EventTeamMember.objects.get_or_create(
+            event=wedding, user=maikol,
+            defaults={"role": maikol.role, "area": "Venue / Restaurante", "reports_to": sup_membership},
         )
 
         task_mesas = Task.objects.create(
@@ -154,7 +185,7 @@ class Command(BaseCommand):
             event=wedding, title="Coordinar prueba de sonido",
             category="Logística", assigned_to=juan, supervisor=supervisor,
             due_date=wedding.event_date, due_time=datetime.time(15, 0),
-            created_by=supervisor,
+            requires_video=True, created_by=supervisor,
         )
         Task.objects.create(
             event=wedding, title="Confirmar montaje floral con proveedor",
@@ -163,11 +194,7 @@ class Command(BaseCommand):
             requires_photo=True, created_by=supervisor,
         )
 
-        task_mesas.status = Task.STATUS_DONE
-        from django.utils import timezone
-        task_mesas.completed_at = timezone.now()
-        task_mesas.completed_by = juan
-        task_mesas.save()
+        task_mesas.mark_completed(juan)
         TaskEvidence.objects.create(
             task=task_mesas, uploaded_by=juan, comment="Mesas y sillas listas según plano.",
             file=ContentFile(_placeholder_png(), name="montaje_mesas.png"),
@@ -203,3 +230,5 @@ class Command(BaseCommand):
         self.stdout.write("  supervisor / super123 / Supervisor\n")
         self.stdout.write("  juan / juan123 / Encargado (ve 'Mis tareas' en el celular)\n")
         self.stdout.write("  maria / maria123 / Encargado (interfaz en inglés)\n")
+        self.stdout.write("  paige / paige123 / Novia / Cliente (rol personalizado)\n")
+        self.stdout.write("  maikol / maikol123 / Representante de Venue (rol personalizado)\n")

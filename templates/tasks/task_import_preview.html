@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Revisar importación" %}{% endblock %}
+{% block content %}
+<h4><i class="bi bi-eye"></i> {% trans "Revisa antes de confirmar" %} — {{ event.name }}</h4>
+<p class="text-muted">
+  {% blocktrans with total=rows|length %}Filas listas para importar: {{ total }}.{% endblocktrans %}
+  {% trans "Nada se guarda todavía — revisa la lista, ajusta el responsable de cada fila si hace falta, y confirma abajo." %}
+</p>
+<p class="small">
+  <a href="{% url 'accounts:team_create' %}" target="_blank" class="link-dark">
+    <i class="bi bi-person-plus"></i> {% trans "¿Falta alguien? Crear nueva persona" %}
+  </a>
+  — {% trans "se abre en otra pestaña; cuando termines, vuelve a analizar el archivo para que aparezca en la lista." %}
+</p>
+
+<form method="post" action="{% url 'tasks:import_confirm' event.pk %}">
+  {% csrf_token %}
+  <textarea name="payload" style="display:none">{{ payload_json }}</textarea>
+
+  <div class="card mb-3">
+    <div class="table-responsive">
+      <table class="table table-sm align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>{% trans "Tarea" %}</th>
+            <th style="min-width: 220px;">{% trans "Responsable" %}</th>
+            <th>{% trans "Categoría" %}</th>
+            <th>{% trans "Fecha límite" %}</th>
+            <th>{% trans "Estado" %}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in rows %}
+          <tr>
+            <td>{{ row.title }}</td>
+            <td>
+              <select name="assignee_{{ forloop.counter0 }}" class="form-select form-select-sm">
+                <option value="external" {% if not row.matched_user_id and not row.matched_vendor_id %}selected{% endif %}>
+                  {% if row.responsible_name %}{{ row.responsible_name }} ({% trans "externo" %}){% else %}{% trans "Sin asignar" %}{% endif %}
+                </option>
+                <optgroup label="{% trans "Equipo" %}">
+                  {% for u in candidate_users %}
+                  <option value="user:{{ u.id }}" {% if u.id == row.matched_user_id %}selected{% endif %}>{{ u.get_full_name|default:u.username }}</option>
+                  {% endfor %}
+                </optgroup>
+                <optgroup label="{% trans "Proveedores" %}">
+                  {% for v in candidate_vendors %}
+                  <option value="vendor:{{ v.id }}" {% if v.id == row.matched_vendor_id %}selected{% endif %}>{{ v.name }}</option>
+                  {% endfor %}
+                </optgroup>
+              </select>
+            </td>
+            <td>{{ row.category|default:"—" }}</td>
+            <td>{{ row.due_date|default:"" }} {{ row.due_time|default:"" }}</td>
+            <td>
+              {% if row.done %}<span class="badge text-bg-success">{% trans "Completada" %}</span>
+              {% else %}<span class="badge text-bg-secondary">{% trans "Pendiente" %}</span>{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% if itinerary_rows %}
+  <textarea name="itinerary_payload" style="display:none">{{ itinerary_payload_json }}</textarea>
+  <h5 class="mt-4"><i class="bi bi-clock-history"></i> {% trans "Propuesta de itinerario" %}</h5>
+  <p class="text-muted small">
+    {% trans "Actividades cerca de la fecha del evento, agrupadas por fecha, lugar y actividad. Nada queda marcado por defecto — elige cuáles sí son momentos reales del itinerario y ajusta la hora si hace falta." %}
+  </p>
+  <div class="card mb-3">
+    <div class="table-responsive">
+      <table class="table table-sm align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th></th>
+            <th>{% trans "Sección" %}</th>
+            <th>{% trans "Fecha" %}</th>
+            <th>{% trans "Hora" %}</th>
+            <th>{% trans "Lugar" %}</th>
+            <th>{% trans "Actividad" %}</th>
+            <th>{% trans "Ejemplos" %}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for irow in itinerary_rows %}
+          {% ifchanged irow.section %}
+          <tr class="table-light">
+            <td colspan="7"><strong>{{ irow.section_label }}</strong></td>
+          </tr>
+          {% endifchanged %}
+          <tr>
+            <td><input type="checkbox" class="form-check-input" name="itinerary_include_{{ forloop.counter0 }}"></td>
+            <td>
+              <select name="itinerary_section_{{ forloop.counter0 }}" class="form-select form-select-sm">
+                {% for code, label in section_choices %}
+                <option value="{{ code }}" {% if code == irow.section %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </td>
+            <td><input type="date" class="form-control form-control-sm" style="width: 10.5em;" name="itinerary_date_{{ forloop.counter0 }}" value="{{ irow.due_date }}"></td>
+            <td><input type="time" class="form-control form-control-sm" style="width: 8.5em;" name="itinerary_time_{{ forloop.counter0 }}" value="{{ irow.start_time }}"></td>
+            <td>{{ irow.venue_name|default:"—" }}</td>
+            <td>{{ irow.title }}</td>
+            <td class="small text-muted">{{ irow.notes|truncatechars:70 }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  <button type="submit" class="btn btn-success"><i class="bi bi-check2-circle"></i> {% trans "Confirmar importación" %}</button>
+  <a href="{% url 'tasks:import' event.pk %}" class="btn btn-link">{% trans "Cancelar" %}</a>
+</form>
+{% endblock %}
