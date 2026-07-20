@@ -14,7 +14,10 @@ def dashboard(request):
         return redirect("tasks:my_tasks")
 
     events = events_visible_to(user)
-    upcoming_events = events.filter(event_date__gte=timezone.localdate()).order_by("event_date")[:6]
+    today = timezone.localdate()
+    upcoming_events = events.filter(event_date__gte=today).order_by("event_date")[:6]
+    for event in upcoming_events:
+        event.days_until = (event.event_date - today).days
 
     if user.is_supervisor:
         tasks_qs = Task.objects.filter(supervisor=user)

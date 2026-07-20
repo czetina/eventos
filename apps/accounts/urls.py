@@ -12,6 +12,7 @@ urlpatterns = [
     path("equipo/nuevo/", views.team_create, name="team_create"),
     path("equipo/<int:pk>/editar/", views.team_edit, name="team_edit"),
     path("equipo/<int:pk>/eliminar/", views.team_delete, name="team_delete"),
+    path("equipo/<int:pk>/contrasena/", views.team_change_password, name="team_change_password"),
     path("perfil/", views.profile, name="profile"),
     path("roles/", views.role_list, name="role_list"),
     path("roles/nuevo/", views.role_create, name="role_create"),

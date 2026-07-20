@@ -11,19 +11,27 @@
 <div class="row g-3">
   {% for event in events %}
   <div class="col-md-6 col-lg-4">
-    <a href="{% url 'events:detail' event.pk %}" class="card p-3 h-100 text-decoration-none text-dark">
-      <div class="d-flex justify-content-between">
-        <h5>{{ event.name }}</h5>
-        <span class="badge text-bg-{% if event.status == 'finalizado' %}success{% elif event.status == 'cancelado' %}danger{% else %}primary{% endif %}">{{ event.get_status_display }}</span>
-      </div>
-      <div class="text-muted small mb-2">{{ event.get_event_type_display }} · {{ event.client_name }}</div>
-      <div><i class="bi bi-geo-alt"></i> {{ event.city }}{% if event.city %}, {% endif %}{{ event.country.name }}</div>
-      <div><i class="bi bi-calendar3"></i> {{ event.event_date }}</div>
-      <div class="progress mt-2" style="height: 6px;">
-        <div class="progress-bar bg-success" style="width: {{ event.task_progress_percent }}%"></div>
-      </div>
-      <div class="small text-muted mt-1">{{ event.task_progress_percent }}% {% trans "de tareas completadas" %}</div>
-    </a>
+    <div class="card p-3 h-100">
+      <a href="{% url 'events:detail' event.pk %}" class="text-decoration-none text-dark">
+        <div class="d-flex justify-content-between">
+          <h5>{{ event.name }}</h5>
+          <span class="badge text-bg-{% if event.status == 'finalizado' %}success{% elif event.status == 'cancelado' %}danger{% else %}primary{% endif %}">{{ event.get_status_display }}</span>
+        </div>
+        <div class="text-muted small mb-2">{{ event.get_event_type_display }} · {{ event.client_name }}</div>
+        <div><i class="bi bi-geo-alt"></i> {{ event.city }}{% if event.city %}, {% endif %}{{ event.country.name }}</div>
+        <div><i class="bi bi-calendar3"></i> {{ event.event_date }}</div>
+        <div class="progress mt-2" style="height: 6px;">
+          <div class="progress-bar bg-success" style="width: {{ event.task_progress_percent }}%"></div>
+        </div>
+        <div class="small text-muted mt-1">{{ event.task_progress_percent }}% {% trans "de tareas completadas" %}</div>
+      </a>
+      {% if user.can_manage_events %}
+      <form method="post" action="{% url 'events:delete' event.pk %}" class="mt-2" onsubmit="return confirm('{% blocktrans with name=event.name %}¿Eliminar el evento {{ name }}? Esto también elimina sus tareas, itinerario, equipo, proveedores, notas y archivos.{% endblocktrans %}');">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-sm btn-outline-danger w-100"><i class="bi bi-trash"></i> {% trans "Eliminar" %}</button>
+      </form>
+      {% endif %}
+    </div>
   </div>
   {% empty %}
   <p class="text-muted">{% trans "No hay eventos todavía." %}</p>

@@ -32,6 +32,7 @@
           <td class="text-end">
             {% if can_manage %}
             <a href="{% url 'accounts:team_edit' member.pk %}" class="btn btn-sm btn-outline-secondary">{% trans "Editar" %}</a>
+            <a href="{% url 'accounts:team_change_password' member.pk %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-key"></i> {% trans "Contraseña" %}</a>
             {% if member.pk != user.pk %}
             <form method="post" action="{% url 'accounts:team_delete' member.pk %}" class="d-inline" onsubmit="return confirm('{% trans "¿Eliminar este miembro del equipo?" %}');">
               {% csrf_token %}

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Mantenimiento de categorías de proveedores" %}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3><i class="bi bi-shop"></i> {% trans "Mantenimiento de categorías de proveedores" %}</h3>
+  <a href="{% url 'vendors:category_create' %}" class="btn btn-dark"><i class="bi bi-plus-lg"></i> {% trans "Nueva categoría" %}</a>
+</div>
+<p class="text-muted">
+  {% trans "Estas son las categorías disponibles para proveedores y espacios (ej. Banquete, Flores, Limpieza, Maquillaje, Alquileres, Seguridad). Agrega, renombra o reordena las que tu empresa use." %}
+</p>
+<a href="{% url 'vendors:list' %}" class="btn btn-link px-0 mb-3">&larr; {% trans "Volver a proveedores" %}</a>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0 align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>{% trans "Orden" %}</th>
+          <th>{% trans "Categoría" %}</th>
+          <th>{% trans "Proveedores" %}</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for category in categories %}
+        <tr>
+          <td>{{ category.order }}</td>
+          <td>{{ category.name }}</td>
+          <td>{{ category.vendors.count }}</td>
+          <td class="text-end">
+            <a href="{% url 'vendors:category_edit' category.pk %}" class="btn btn-sm btn-outline-secondary">{% trans "Editar" %}</a>
+            <form method="post" action="{% url 'vendors:category_delete' category.pk %}" class="d-inline" onsubmit="return confirm('{% trans "¿Eliminar esta categoría?" %}');">
+              {% csrf_token %}
+              <button class="btn btn-sm btn-outline-danger">{% trans "Eliminar" %}</button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="text-center text-muted py-4">{% trans "Todavía no hay categorías." %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

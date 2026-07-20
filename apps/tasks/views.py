@@ -10,13 +10,17 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.accounts.models import User
-from apps.events.models import Event, EventSession
+from apps.events.models import (
+    Event, EventSectionType, EventSession, IMPORTER_SECTION_CODE_TO_NAME, create_default_section_types,
+)
 from apps.events.views import get_event_or_403
 from apps.vendors.models import Vendor
 
 from . import importers
-from .forms import TaskEvidenceForm, TaskForm, TaskImportForm
-from .models import Task, TaskEvidence
+from .forms import (
+    TaskEvidenceForm, TaskForm, TaskImportForm, TaskStatusChangeForm, TaskStatusHistoryEditForm,
+)
+from .models import Task, TaskEvidence, TaskStatusHistory
 
 
 @login_required
@@ -45,6 +49,9 @@ def task_list(request, event_pk):
     status = request.GET.get("status")
     if status:
         tasks = tasks.filter(status=status)
+    tasks = list(tasks)
+    for task in tasks:
+        task.latest_status_entry = task.status_history.select_related("changed_by").first()
     return render(request, "tasks/task_list.html", {
         "event": event, "tasks": tasks, "status_choices": Task.STATUS_CHOICES, "active_status": status,
     })
@@ -155,6 +162,62 @@ def task_complete(request, pk):
     messages.success(request, _("Tarea marcada como completada el %(time)s.") % {
         "time": timezone.localtime(task.completed_at).strftime("%d/%m/%Y %H:%M")
     })
+    return redirect("tasks:detail", pk=task.pk)
+
+
+@login_required
+def task_change_status(request, pk):
+    task, event = _get_task_scoped(request.user, pk)
+    if not (request.user.can_manage_events or request.user.is_supervisor or task.can_be_completed_by(request.user)):
+        raise PermissionDenied(_("No tienes permiso para cambiar el estado de esta tarea."))
+    if request.method == "POST":
+        form = TaskStatusChangeForm(request.POST)
+        if form.is_valid():
+            status = form.cleaned_data["status"]
+            if status == Task.STATUS_DONE and task.requires_evidence and not task.evidences.exists():
+                messages.error(request, _("Esta tarea requiere subir evidencia (foto/documento) antes de completarla."))
+            else:
+                changed_at = timezone.make_aware(form.cleaned_data["changed_at"]) \
+                    if timezone.is_naive(form.cleaned_data["changed_at"]) else form.cleaned_data["changed_at"]
+                task.change_status(request.user, status, changed_at=changed_at, note=form.cleaned_data["note"])
+                messages.success(request, _("Estado actualizado a %(status)s.") % {"status": task.get_status_display()})
+                return redirect("tasks:detail", pk=task.pk)
+    else:
+        form = TaskStatusChangeForm(initial={"status": task.status, "changed_at": timezone.localtime(timezone.now())})
+    return render(request, "tasks/task_status_change_form.html", {"form": form, "task": task, "event": event})
+
+
+@login_required
+def task_status_history_edit(request, pk, history_pk):
+    task, event = _get_task_scoped(request.user, pk)
+    if not (request.user.can_manage_events or request.user.is_supervisor):
+        raise PermissionDenied(_("No tienes permiso para editar el historial de estado."))
+    entry = get_object_or_404(TaskStatusHistory, pk=history_pk, task=task)
+    if request.method == "POST":
+        form = TaskStatusHistoryEditForm(request.POST, instance=entry)
+        if form.is_valid():
+            entry = form.save(commit=False)
+            if timezone.is_naive(entry.changed_at):
+                entry.changed_at = timezone.make_aware(entry.changed_at)
+            entry.save()
+            task.recompute_status_from_history()
+            messages.success(request, _("Entrada del historial actualizada."))
+            return redirect("tasks:detail", pk=task.pk)
+    else:
+        form = TaskStatusHistoryEditForm(instance=entry)
+    return render(request, "tasks/task_status_history_edit_form.html", {"form": form, "task": task, "event": event})
+
+
+@login_required
+def task_status_history_delete(request, pk, history_pk):
+    task, event = _get_task_scoped(request.user, pk)
+    if not (request.user.can_manage_events or request.user.is_supervisor):
+        raise PermissionDenied(_("No tienes permiso para eliminar entradas del historial de estado."))
+    entry = get_object_or_404(TaskStatusHistory, pk=history_pk, task=task)
+    if request.method == "POST":
+        entry.delete()
+        task.recompute_status_from_history()
+        messages.success(request, _("Entrada del historial eliminada."))
     return redirect("tasks:detail", pk=task.pk)
 
 
@@ -278,17 +341,17 @@ def task_import(request, event_pk):
             payload = [_row_to_payload(r, candidate_users, candidate_vendors, event) for r in rows]
 
             itinerary_payload = []
+            section_types = create_default_section_types(event.company)
             if source_type == TaskImportForm.SOURCE_GUION_FINAL:
                 proposals = importers.propose_itinerary_from_rows(rows, event.event_date)
-                section_labels = dict(EventSession.SECTION_CHOICES)
                 itinerary_payload = [{
                     "due_date": p["due_date"].isoformat(),
                     "start_time": p["start_time"].strftime("%H:%M"),
                     "venue_name": p["venue_name"],
                     "title": p["title"],
                     "notes": p["notes"],
-                    "section": p["section"],
-                    "section_label": str(section_labels.get(p["section"], p["section"])),
+                    "section": section_types[IMPORTER_SECTION_CODE_TO_NAME[p["section"]]].pk,
+                    "section_label": section_types[IMPORTER_SECTION_CODE_TO_NAME[p["section"]]].name,
                 } for p in proposals]
 
             return render(request, "tasks/task_import_preview.html", {
@@ -299,7 +362,7 @@ def task_import(request, event_pk):
                 "candidate_vendors": candidate_vendors,
                 "itinerary_rows": itinerary_payload,
                 "itinerary_payload_json": json.dumps(itinerary_payload),
-                "section_choices": EventSession.SECTION_CHOICES,
+                "section_choices": [(t.pk, t.name) for t in EventSectionType.objects.filter(company=event.company)],
             })
     else:
         form = TaskImportForm()
@@ -367,14 +430,14 @@ def task_import_confirm(request, event_pk):
         itinerary_rows = []
     if itinerary_rows:
         next_order = (event.sessions.aggregate(Max("order"))["order__max"] or 0) + 1
+        default_section = create_default_section_types(event.company)["Otro"]
         for index, row in enumerate(itinerary_rows):
             if request.POST.get(f"itinerary_include_{index}") != "on":
                 continue
             time_value = request.POST.get(f"itinerary_time_{index}", row.get("start_time", ""))
             date_value = request.POST.get(f"itinerary_date_{index}", row.get("due_date", ""))
-            section = request.POST.get(f"itinerary_section_{index}", row.get("section", EventSession.SECTION_OTRO))
-            if section not in dict(EventSession.SECTION_CHOICES):
-                section = EventSession.SECTION_OTRO
+            section_id = request.POST.get(f"itinerary_section_{index}", row.get("section", ""))
+            section = EventSectionType.objects.filter(pk=section_id, company=event.company).first() or default_section
             try:
                 start_time = dt_time.fromisoformat(time_value)
                 session_date = date.fromisoformat(date_value)

@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eventplanner\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-18 19:30\n"
+"POT-Creation-Date: 2026-07-19 20:38\n"
 "Language: en\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -2209,3 +2209,740 @@ msgstr "Team member deleted."
 #: eventplanner
 msgid "¿Eliminar este miembro del equipo?"
 msgstr "Delete this team member?"
+
+#: eventplanner
+msgid "sección de itinerario"
+msgstr "itinerary section"
+
+#: eventplanner
+msgid "mantenimiento de secciones"
+msgstr "section management"
+
+#: eventplanner
+msgid "nombre de la sección"
+msgstr "section name"
+
+#: eventplanner
+msgid "Mantenimiento de secciones"
+msgstr "Section management"
+
+#: eventplanner
+msgid "Nueva sección"
+msgstr "New section"
+
+#: eventplanner
+msgid "Editar sección"
+msgstr "Edit section"
+
+#: eventplanner
+msgid ""
+"Estas son las áreas disponibles para agrupar el itinerario (ej. Ceremonia, "
+"Recepción, Montaje, Desmontaje, Otro). Agrega, renombra o reordena las que "
+"tu empresa use."
+msgstr ""
+"These are the available areas to group the itinerary (e.g. Ceremony, "
+"Reception, Setup, Teardown, Other). Add, rename, or reorder the ones your "
+"company uses."
+
+#: eventplanner
+msgid "Actividades"
+msgstr "Activities"
+
+#: eventplanner
+msgid "¿Eliminar esta sección?"
+msgstr "Delete this section?"
+
+#: eventplanner
+msgid "Todavía no hay secciones."
+msgstr "No sections yet."
+
+#: eventplanner
+msgid "Sección creada correctamente."
+msgstr "Section created successfully."
+
+#: eventplanner
+msgid "Sección actualizada correctamente."
+msgstr "Section updated successfully."
+
+#: eventplanner
+msgid ""
+"No se puede eliminar una sección que todavía tiene actividades asignadas."
+msgstr "A section that still has activities assigned cannot be deleted."
+
+#: eventplanner
+msgid "Sección eliminada."
+msgstr "Section deleted."
+
+#: eventplanner
+msgid "No tienes permiso para gestionar las secciones del itinerario."
+msgstr "You don't have permission to manage itinerary sections."
+
+#: eventplanner
+msgid "Fecha y hora en que ocurrió"
+msgstr "Date and time it happened"
+
+#: eventplanner
+msgid "Motivo / explicación"
+msgstr "Reason / explanation"
+
+#: eventplanner
+msgid "Cambiar estado"
+msgstr "Change status"
+
+#: eventplanner
+msgid ""
+"Elige el nuevo estado, la fecha/hora real en que ocurrió, y una explicación "
+"si hace falta. El último cambio queda como estado actual."
+msgstr ""
+"Choose the new status, the real date/time it happened, and an explanation if"
+" needed. The latest change becomes the current status."
+
+#: eventplanner
+msgid "No tienes permiso para cambiar el estado de esta tarea."
+msgstr "You don't have permission to change this task's status."
+
+#: eventplanner
+msgid "Estado actualizado a %(status)s."
+msgstr "Status updated to %(status)s."
+
+#: eventplanner
+msgid "No tienes permiso para editar el historial de estado."
+msgstr "You don't have permission to edit the status history."
+
+#: eventplanner
+msgid "Entrada del historial actualizada."
+msgstr "History entry updated."
+
+#: eventplanner
+msgid "No tienes permiso para eliminar entradas del historial de estado."
+msgstr "You don't have permission to delete status history entries."
+
+#: eventplanner
+msgid "Entrada del historial eliminada."
+msgstr "History entry deleted."
+
+#: eventplanner
+msgid "Editar entrada del historial"
+msgstr "Edit history entry"
+
+#: eventplanner
+msgid "¿Eliminar esta entrada del historial?"
+msgstr "Delete this history entry?"
+
+#: eventplanner
+msgid "Editar nota"
+msgstr "Edit note"
+
+#: eventplanner
+msgid "Editada por %(who)s el %(when)s"
+msgstr "Edited by %(who)s on %(when)s"
+
+#: eventplanner
+msgid ""
+"¿Eliminar el evento %(name)s? Esto también elimina sus tareas, itinerario, "
+"equipo, proveedores, notas y archivos."
+msgstr ""
+"Delete the event %(name)s? This also deletes its tasks, itinerary, team, "
+"vendors, notes, and files."
+
+#: eventplanner
+msgid "¡Hoy!"
+msgstr "Today!"
+
+#: eventplanner
+msgid "Mañana"
+msgstr "Tomorrow"
+
+#: eventplanner
+msgid "en %(days)s días"
+msgstr "in %(days)s days"
+
+#: eventplanner
+msgid "categoría de proveedor"
+msgstr "vendor category"
+
+#: eventplanner
+msgid "mantenimiento de categorías de proveedores"
+msgstr "vendor category management"
+
+#: eventplanner
+msgid "nombre de la categoría"
+msgstr "category name"
+
+#: eventplanner
+msgid "Mantenimiento de categorías"
+msgstr "Category management"
+
+#: eventplanner
+msgid "Mantenimiento de categorías de proveedores"
+msgstr "Vendor category management"
+
+#: eventplanner
+msgid "Nueva categoría"
+msgstr "New category"
+
+#: eventplanner
+msgid "Editar categoría"
+msgstr "Edit category"
+
+#: eventplanner
+msgid ""
+"Estas son las categorías disponibles para proveedores y espacios (ej. "
+"Banquete, Flores, Limpieza, Maquillaje, Alquileres, Seguridad). Agrega, "
+"renombra o reordena las que tu empresa use."
+msgstr ""
+"These are the available categories for vendors and venues (e.g. Catering, "
+"Flowers, Cleaning, Makeup, Rentals, Security). Add, rename, or reorder the "
+"ones your company uses."
+
+#: eventplanner
+msgid "¿Eliminar esta categoría?"
+msgstr "Delete this category?"
+
+#: eventplanner
+msgid "Todavía no hay categorías."
+msgstr "No categories yet."
+
+#: eventplanner
+msgid "Categoría creada correctamente."
+msgstr "Category created successfully."
+
+#: eventplanner
+msgid "Categoría actualizada correctamente."
+msgstr "Category updated successfully."
+
+#: eventplanner
+msgid ""
+"No se puede eliminar una categoría que todavía tiene proveedores asignados."
+msgstr "A category that still has vendors assigned cannot be deleted."
+
+#: eventplanner
+msgid "Categoría eliminada."
+msgstr "Category deleted."
+
+#: eventplanner
+msgid "No tienes permiso para gestionar categorías de proveedores."
+msgstr "You don't have permission to manage vendor categories."
+
+#: eventplanner
+msgid "activo"
+msgstr "active"
+
+#: eventplanner
+msgid "fecha de baja"
+msgstr "deactivation date"
+
+#: eventplanner
+msgid "Un proveedor dado de baja no se puede elegir para nuevas asignaciones."
+msgstr "A deactivated vendor can't be chosen for new assignments."
+
+#: eventplanner
+msgid "Baja"
+msgstr "Inactive"
+
+#: eventplanner
+msgid "Editar proveedor / espacio"
+msgstr "Edit vendor / venue"
+
+#: eventplanner
+msgid "Dar de baja"
+msgstr "Deactivate"
+
+#: eventplanner
+msgid "Reactivar"
+msgstr "Reactivate"
+
+#: eventplanner
+msgid ""
+"¿Eliminar este proveedor? Solo es posible si no está asignado a ningún "
+"evento o tarea."
+msgstr ""
+"Delete this vendor? Only possible if it's not assigned to any event or task."
+
+#: eventplanner
+msgid "No tienes permiso para editar proveedores."
+msgstr "You don't have permission to edit vendors."
+
+#: eventplanner
+msgid "No tienes permiso para eliminar proveedores."
+msgstr "You don't have permission to delete vendors."
+
+#: eventplanner
+msgid ""
+"No se puede eliminar: está asignado a algún evento o tarea. Dalo de baja en "
+"su lugar."
+msgstr ""
+"Can't delete: it's assigned to an event or task. Deactivate it instead."
+
+#: eventplanner
+msgid "Proveedor actualizado."
+msgstr "Vendor updated."
+
+#: eventplanner
+msgid "Proveedor eliminado."
+msgstr "Vendor deleted."
+
+#: eventplanner
+msgid "No tienes permiso para dar de baja proveedores."
+msgstr "You don't have permission to deactivate vendors."
+
+#: eventplanner
+msgid "Proveedor dado de baja."
+msgstr "Vendor deactivated."
+
+#: eventplanner
+msgid "No tienes permiso para reactivar proveedores."
+msgstr "You don't have permission to reactivate vendors."
+
+#: eventplanner
+msgid "Proveedor reactivado."
+msgstr "Vendor reactivated."
+
+#: eventplanner
+msgid ""
+"Un proveedor dado de baja no se puede elegir para nuevas asignaciones a "
+"partir de la fecha indicada. Las asignaciones existentes no se modifican."
+msgstr ""
+"A deactivated vendor can't be chosen for new assignments from that date "
+"forward. Existing assignments are not affected."
+
+#: eventplanner
+msgid "Cambiar contraseña"
+msgstr "Change password"
+
+#: eventplanner
+msgid "No tienes permiso para cambiar contraseñas del equipo."
+msgstr "You don't have permission to change team passwords."
+
+#: eventplanner
+msgid "Contraseña actualizada."
+msgstr "Password updated."
+
+#: eventplanner
+msgid "Nueva contraseña"
+msgstr "New password"
+
+#: eventplanner
+msgid "Confirmar nueva contraseña"
+msgstr "Confirm new password"
+
+#: eventplanner
+msgid "Último estado"
+msgstr "Last status"
+
+#: eventplanner
+msgid "última modificación"
+msgstr "last modified"
+
+#: eventplanner
+msgid "Anticipo"
+msgstr "Advance"
+
+#: eventplanner
+msgid "Gastos"
+msgstr "Expenses"
+
+#: eventplanner
+msgid "Gastos del evento"
+msgstr "Event expenses"
+
+#: eventplanner
+msgid "Control de gastos con documentos de soporte"
+msgstr "Expense tracking with supporting documents"
+
+#: eventplanner
+msgid "Agregar gasto"
+msgstr "Add expense"
+
+#: eventplanner
+msgid "Editar gasto"
+msgstr "Edit expense"
+
+#: eventplanner
+msgid "Descripción"
+msgstr "Description"
+
+#: eventplanner
+msgid "Documento"
+msgstr "Document"
+
+#: eventplanner
+msgid "Saldo"
+msgstr "Balance"
+
+#: eventplanner
+msgid "Saldo a favor"
+msgstr "Balance in your favor"
+
+#: eventplanner
+msgid "A cobrar al cliente"
+msgstr "To charge the client"
+
+#: eventplanner
+msgid "a cobrar al cliente"
+msgstr "to charge the client"
+
+#: eventplanner
+msgid "Total gastado"
+msgstr "Total spent"
+
+#: eventplanner
+msgid "Sin gastos registrados todavía."
+msgstr "No expenses recorded yet."
+
+#: eventplanner
+msgid "Gasto agregado."
+msgstr "Expense added."
+
+#: eventplanner
+msgid "Gasto actualizado."
+msgstr "Expense updated."
+
+#: eventplanner
+msgid "Gasto eliminado."
+msgstr "Expense deleted."
+
+#: eventplanner
+msgid "¿Eliminar este gasto?"
+msgstr "Delete this expense?"
+
+#: eventplanner
+msgid "Factura, recibo u otro comprobante (opcional)."
+msgstr "Invoice, receipt, or other supporting document (optional)."
+
+#: eventplanner
+msgid ""
+"Monto de anticipo recibido del cliente para gastos del evento (puede ser 0)."
+msgstr ""
+"Advance amount received from the client for event expenses (can be 0)."
+
+#: eventplanner
+msgid "gasto"
+msgstr "expense"
+
+#: eventplanner
+msgid "gastos del evento"
+msgstr "event expenses"
+
+#: eventplanner
+msgid "anticipo"
+msgstr "advance"
+
+#: eventplanner
+msgid "Reporte de gastos"
+msgstr "Expense report"
+
+#: eventplanner
+msgid "Imprimible / PDF"
+msgstr "Printable / PDF"
+
+#: eventplanner
+msgid "Descargar Excel"
+msgstr "Download Excel"
+
+#: eventplanner
+msgid "Abonos"
+msgstr "Payments"
+
+#: eventplanner
+msgid "Abono registrado."
+msgstr "Payment recorded."
+
+#: eventplanner
+msgid "Abono eliminado."
+msgstr "Payment deleted."
+
+#: eventplanner
+msgid "Agregar abono"
+msgstr "Add payment"
+
+#: eventplanner
+msgid "Nuevo abono"
+msgstr "New payment"
+
+#: eventplanner
+msgid "Contrato"
+msgstr "Contract"
+
+#: eventplanner
+msgid "Abonado"
+msgstr "Paid"
+
+#: eventplanner
+msgid "Pagado completo"
+msgstr "Fully paid"
+
+#: eventplanner
+msgid "Sin abonos todavía."
+msgstr "No payments yet."
+
+#: eventplanner
+msgid "¿Eliminar este abono?"
+msgstr "Delete this payment?"
+
+#: eventplanner
+msgid ""
+"Este abono completa el saldo del proveedor — sube el documento de soporte."
+msgstr ""
+"This payment completes the vendor's balance — upload the supporting "
+"document."
+
+#: eventplanner
+msgid "Requerido cuando este abono completa el saldo del proveedor."
+msgstr "Required when this payment completes the vendor's balance."
+
+#: eventplanner
+msgid "Se recalcula automáticamente a partir de los abonos registrados."
+msgstr "Automatically recalculated from the recorded payments."
+
+#: eventplanner
+msgid "total abonado"
+msgstr "total paid"
+
+#: eventplanner
+msgid "abono a proveedor"
+msgstr "vendor payment"
+
+#: eventplanner
+msgid "abonos a proveedores"
+msgstr "vendor payments"
+
+#: eventplanner
+msgid "Ver"
+msgstr "View"
+
+#: eventplanner
+msgid "Reporte de proveedores"
+msgstr "Vendor report"
+
+#: eventplanner
+msgid "Reporte pagado/saldo"
+msgstr "Paid/balance report"
+
+#: eventplanner
+msgid "Proveedores: pagado y saldo"
+msgstr "Vendors: paid and balance"
+
+#: eventplanner
+msgid "Editar proveedor"
+msgstr "Edit vendor"
+
+#: eventplanner
+msgid "Reporte de comidas"
+msgstr "Meals report"
+
+#: eventplanner
+msgid "Reporte de comidas por grupo"
+msgstr "Meals report by group"
+
+#: eventplanner
+msgid "Conteo de comidas a preparar"
+msgstr "Meal counts to prepare"
+
+#: eventplanner
+msgid "Finanzas"
+msgstr "Finances"
+
+#: eventplanner
+msgid "Cotizaciones"
+msgstr "Quotations"
+
+#: eventplanner
+msgid "Crear y exportar cotizaciones a Excel"
+msgstr "Create and export quotations to Excel"
+
+#: eventplanner
+msgid "Nueva cotización"
+msgstr "New quotation"
+
+#: eventplanner
+msgid "Editar cotización"
+msgstr "Edit quotation"
+
+#: eventplanner
+msgid "Cliente"
+msgstr "Client"
+
+#: eventplanner
+msgid "Fecha de realización"
+msgstr "Realization date"
+
+#: eventplanner
+msgid "fecha de realización"
+msgstr "realization date"
+
+#: eventplanner
+msgid "Tasa de cambio"
+msgstr "Exchange rate"
+
+#: eventplanner
+msgid "tasa de cambio"
+msgstr "exchange rate"
+
+#: eventplanner
+msgid "Volver a cotizaciones"
+msgstr "Back to quotations"
+
+#: eventplanner
+msgid "Todavía no hay cotizaciones."
+msgstr "No quotations yet."
+
+#: eventplanner
+msgid "Total (DOP)"
+msgstr "Total (DOP)"
+
+#: eventplanner
+msgid "Total (USD)"
+msgstr "Total (USD)"
+
+#: eventplanner
+msgid "Exportar"
+msgstr "Export"
+
+#: eventplanner
+msgid "Excel completo (interno)"
+msgstr "Full Excel (internal)"
+
+#: eventplanner
+msgid "Excel para el cliente"
+msgstr "Client Excel"
+
+#: eventplanner
+msgid "La versión para el cliente no muestra la columna de proveedor."
+msgstr "The client version does not show the vendor column."
+
+#: eventplanner
+msgid "Proveedor / Persona"
+msgstr "Vendor / Person"
+
+#: eventplanner
+msgid "Detalle / item"
+msgstr "Detail / item"
+
+#: eventplanner
+msgid "detalle / item"
+msgstr "detail / item"
+
+#: eventplanner
+msgid "Valor DOP"
+msgstr "Value DOP"
+
+#: eventplanner
+msgid "Valor USD"
+msgstr "Value USD"
+
+#: eventplanner
+msgid "valor (DOP)"
+msgstr "value (DOP)"
+
+#: eventplanner
+msgid "GRAN TOTAL"
+msgstr "GRAND TOTAL"
+
+#: eventplanner
+msgid "Agregar línea"
+msgstr "Add line"
+
+#: eventplanner
+msgid "Sin líneas todavía."
+msgstr "No lines yet."
+
+#: eventplanner
+msgid "¿Eliminar esta línea?"
+msgstr "Delete this line?"
+
+#: eventplanner
+msgid "¿Eliminar esta cotización?"
+msgstr "Delete this quotation?"
+
+#: eventplanner
+msgid "Cotización creada."
+msgstr "Quotation created."
+
+#: eventplanner
+msgid "Cotización actualizada."
+msgstr "Quotation updated."
+
+#: eventplanner
+msgid "Cotización eliminada."
+msgstr "Quotation deleted."
+
+#: eventplanner
+msgid "Línea agregada a la cotización."
+msgstr "Line added to the quotation."
+
+#: eventplanner
+msgid "Línea eliminada."
+msgstr "Line deleted."
+
+#: eventplanner
+msgid "cotización"
+msgstr "quotation"
+
+#: eventplanner
+msgid "cotizaciones"
+msgstr "quotations"
+
+#: eventplanner
+msgid "línea de cotización"
+msgstr "quotation line"
+
+#: eventplanner
+msgid "líneas de cotización"
+msgstr "quotation lines"
+
+#: eventplanner
+msgid "creada por"
+msgstr "created by"
+
+#: eventplanner
+msgid "actualizada"
+msgstr "updated"
+
+#: eventplanner
+msgid "modificada por"
+msgstr "modified by"
+
+#: eventplanner
+msgid "registrado por"
+msgstr "recorded by"
+
+#: eventplanner
+msgid "documento"
+msgstr "document"
+
+#: eventplanner
+msgid "roles"
+msgstr "roles"
+
+#: eventplanner
+msgid "Minuto a minuto"
+msgstr "Minute by minute"
+
+#: eventplanner
+msgid "Minuto a minuto (ceremonia y recepción)"
+msgstr "Minute by minute (ceremony and reception)"
+
+#: eventplanner
+msgid "Sin actividades en esta sección."
+msgstr "No activities in this section."
+
+#: eventplanner
+msgid "Reporte del cortejo nupcial"
+msgstr "Wedding party report"
+
+#: eventplanner
+msgid "Orden de entrada, para el ensayo y para compartir"
+msgstr "Entrance order, for rehearsal and to share"
+
+#: eventplanner
+msgid "Boutonnieres, damas y orden de discursos"
+msgstr "Boutonnieres, bridesmaids, and speaker order"
+
+#: eventplanner
+msgid "Impreso el"
+msgstr "Printed on"
+
+#: eventplanner
+msgid "Ej. 'Corte', 'FATHER OF THE GROOM', 'ROBERT BROTHER'S'"
+msgstr "E.g. 'Court', 'FATHER OF THE GROOM', 'ROBERT BROTHER'S'"

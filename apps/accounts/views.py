@@ -9,7 +9,10 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import translation
 from django.utils.translation import gettext_lazy as _
 
-from .forms import CompanyRegistrationForm, LoginForm, ProfileForm, RoleForm, TeamMemberEditForm, TeamMemberForm
+from .forms import (
+    CompanyRegistrationForm, LoginForm, ProfileForm, RoleForm,
+    TeamMemberEditForm, TeamMemberForm, TeamMemberPasswordForm,
+)
 from .models import Role, User
 
 
@@ -102,6 +105,23 @@ def team_edit(request, pk):
     else:
         form = TeamMemberEditForm(instance=member, requesting_user=request.user)
     return render(request, "accounts/team_form.html", {"form": form, "is_new": False, "member": member})
+
+
+@login_required
+def team_change_password(request, pk):
+    if not _can_manage_team(request.user):
+        raise PermissionDenied(_("No tienes permiso para cambiar contraseñas del equipo."))
+    member = get_object_or_404(User, pk=pk, company=request.user.company)
+    if request.method == "POST":
+        form = TeamMemberPasswordForm(request.POST)
+        if form.is_valid():
+            member.set_password(form.cleaned_data["password1"])
+            member.save()
+            messages.success(request, _("Contraseña actualizada."))
+            return redirect("accounts:team_list")
+    else:
+        form = TeamMemberPasswordForm()
+    return render(request, "accounts/team_password_form.html", {"form": form, "member": member})
 
 
 @login_required

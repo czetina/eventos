@@ -94,6 +94,11 @@ class Event(models.Model):
         help_text=_("Identificador usado para el link público (sin login) del planograma del cortejo."),
     )
 
+    advance_amount = models.DecimalField(
+        _("anticipo"), max_digits=12, decimal_places=2, default=0,
+        help_text=_("Monto de anticipo recibido del cliente para gastos del evento (puede ser 0)."),
+    )
+
     class Meta:
         verbose_name = _("evento")
         verbose_name_plural = _("eventos")
@@ -113,6 +118,63 @@ class Event(models.Model):
         done = self.tasks.filter(status="completada").count()
         return round(done * 100 / total)
 
+    @property
+    def total_expenses(self):
+        return self.expenses.aggregate(models.Sum("amount"))["amount__sum"] or 0
+
+    @property
+    def expense_balance(self):
+        """Anticipo menos lo gastado. Negativo = hay que cobrarle más al cliente."""
+        return self.advance_amount - self.total_expenses
+
+
+class EventSectionType(models.Model):
+    """A company-maintained itinerary section/area (e.g. Ceremonia, Recepción,
+    Montaje, Desmontaje, Otro) used to group EventSession rows in reports —
+    same 'Mantenimiento' pattern as WeddingPartyListType/VendorCategory, so a
+    company can add its own areas instead of being stuck with the defaults."""
+
+    company = models.ForeignKey(
+        Company, verbose_name=_("empresa"), related_name="section_types", on_delete=models.CASCADE
+    )
+    name = models.CharField(_("nombre de la sección"), max_length=100)
+    order = models.PositiveIntegerField(_("orden"), default=0)
+
+    class Meta:
+        verbose_name = _("sección de itinerario")
+        verbose_name_plural = _("mantenimiento de secciones")
+        unique_together = [("company", "name")]
+        ordering = ["order", "name"]
+
+    def __str__(self):
+        return self.name
+
+
+DEFAULT_SECTION_TYPES = ["Ceremonia", "Recepción", "Montaje", "Desmontaje", "Otro"]
+
+# Maps the plain-string section codes produced by apps.tasks.importers (framework-free,
+# so it can't reference this model directly) to the default section type names above.
+IMPORTER_SECTION_CODE_TO_NAME = {
+    "ceremonia": "Ceremonia",
+    "recepcion": "Recepción",
+    "montaje": "Montaje",
+    "desmontaje": "Desmontaje",
+    "otro": "Otro",
+}
+
+
+def create_default_section_types(company):
+    """Lazily called wherever itinerary sections are used, so both new and
+    already-existing companies end up with the standard areas without a
+    data migration."""
+    types = {}
+    for order, name in enumerate(DEFAULT_SECTION_TYPES):
+        section_type, _created = EventSectionType.objects.get_or_create(
+            company=company, name=name, defaults={"order": order}
+        )
+        types[name] = section_type
+    return types
+
 
 class EventSession(models.Model):
     """A time block within an event's itinerary (ceremony, cocktail, reception...),
@@ -120,25 +182,11 @@ class EventSession(models.Model):
     events (rehearsal, montaje, the event day itself, desmontaje) as well as
     multiple happenings on the same day."""
 
-    SECTION_CEREMONIA = "ceremonia"
-    SECTION_RECEPCION = "recepcion"
-    SECTION_MONTAJE = "montaje"
-    SECTION_DESMONTAJE = "desmontaje"
-    SECTION_OTRO = "otro"
-
-    SECTION_CHOICES = [
-        (SECTION_CEREMONIA, _("Ceremonia")),
-        (SECTION_RECEPCION, _("Recepción")),
-        (SECTION_MONTAJE, _("Montaje")),
-        (SECTION_DESMONTAJE, _("Desmontaje")),
-        (SECTION_OTRO, _("Otro")),
-    ]
-
     event = models.ForeignKey(
         Event, verbose_name=_("evento"), related_name="sessions", on_delete=models.CASCADE
     )
-    section = models.CharField(
-        _("sección"), max_length=20, choices=SECTION_CHOICES, default=SECTION_OTRO,
+    section = models.ForeignKey(
+        EventSectionType, verbose_name=_("sección"), related_name="sessions", on_delete=models.CASCADE,
         help_text=_("Para agrupar el itinerario en reportes: ceremonia, recepción, montaje, desmontaje"),
     )
     title = models.CharField(_("actividad"), max_length=150)
@@ -358,3 +406,102 @@ class MealCount(models.Model):
 
     def __str__(self):
         return f"{self.meal_label} ({self.get_group_display()}): {self.count}"
+
+
+def expense_document_upload_path(instance, filename):
+    return f"gastos/evento_{instance.event_id}/{filename}"
+
+
+class Expense(models.Model):
+    """A real, one-off expense paid out for the event (not a vendor contract —
+    those are tracked via EventVendor/VendorPayment). Balanced against the
+    event's advance_amount so the planner can see at a glance whether there's
+    still money left from the anticipo or whether the client needs to be
+    charged more."""
+
+    event = models.ForeignKey(
+        Event, verbose_name=_("evento"), related_name="expenses", on_delete=models.CASCADE
+    )
+    date = models.DateField(_("fecha"))
+    description = models.CharField(_("descripción"), max_length=255)
+    amount = models.DecimalField(_("monto"), max_digits=12, decimal_places=2)
+    document = models.FileField(
+        _("documento"), upload_to=expense_document_upload_path, blank=True, null=True,
+        help_text=_("Factura, recibo u otro comprobante (opcional)."),
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, verbose_name=_("registrado por"), related_name="expenses_recorded",
+        on_delete=models.SET_NULL, null=True, blank=True,
+    )
+    created_at = models.DateTimeField(_("creado"), auto_now_add=True)
+
+    class Meta:
+        verbose_name = _("gasto")
+        verbose_name_plural = _("gastos del evento")
+        ordering = ["-date", "-id"]
+
+    def __str__(self):
+        return f"{self.description} ({self.amount})"
+
+
+class Quotation(models.Model):
+    """A client quote/estimate for an event, built as a dynamic list of items
+    priced in Dominican pesos (DOP) with an automatic USD conversion — mirrors
+    the planner's existing Excel workflow (fecha de realización / cliente /
+    actividad / tasa de cambio + item table)."""
+
+    event = models.ForeignKey(
+        Event, verbose_name=_("evento"), related_name="quotations", on_delete=models.CASCADE
+    )
+    realization_date = models.DateField(_("fecha de realización"))
+    client_name = models.CharField(_("cliente"), max_length=200)
+    activity = models.CharField(_("actividad"), max_length=200)
+    exchange_rate = models.DecimalField(_("tasa de cambio"), max_digits=10, decimal_places=4, default=1)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, verbose_name=_("creada por"), related_name="quotations_created",
+        on_delete=models.SET_NULL, null=True, blank=True,
+    )
+    created_at = models.DateTimeField(_("creada"), auto_now_add=True)
+    updated_at = models.DateTimeField(_("actualizada"), auto_now=True)
+
+    class Meta:
+        verbose_name = _("cotización")
+        verbose_name_plural = _("cotizaciones")
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Cotización {self.activity} — {self.client_name}"
+
+    @property
+    def total_dop(self):
+        return sum((item.value_dop for item in self.items.all()), 0)
+
+    @property
+    def total_usd(self):
+        if not self.exchange_rate:
+            return 0
+        return self.total_dop / self.exchange_rate
+
+
+class QuotationItem(models.Model):
+    quotation = models.ForeignKey(
+        Quotation, verbose_name=_("cotización"), related_name="items", on_delete=models.CASCADE
+    )
+    vendor_name = models.CharField(_("proveedor"), max_length=150, blank=True)
+    detail = models.CharField(_("detalle / item"), max_length=255)
+    quantity = models.PositiveIntegerField(_("cantidad"), default=1)
+    value_dop = models.DecimalField(_("valor (DOP)"), max_digits=12, decimal_places=2, default=0)
+    order = models.PositiveIntegerField(_("orden"), default=0)
+
+    class Meta:
+        verbose_name = _("línea de cotización")
+        verbose_name_plural = _("líneas de cotización")
+        ordering = ["order", "id"]
+
+    def __str__(self):
+        return f"{self.detail} ({self.value_dop})"
+
+    @property
+    def value_usd(self):
+        rate = self.quotation.exchange_rate
+        return (self.value_dop / rate) if rate else 0

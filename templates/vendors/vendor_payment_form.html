@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Nuevo abono" %}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-body p-4">
+        <h4 class="mb-3">
+          <i class="bi bi-cash-coin"></i> {% trans "Nuevo abono" %} — {{ event_vendor.vendor.name }}
+        </h4>
+        <div class="text-muted mb-3">
+          {% trans "Contrato" %}: {{ event_vendor.contract_amount|floatformat:2 }} ·
+          {% trans "Pagado" %}: {{ event_vendor.deposit_paid|floatformat:2 }} ·
+          {% trans "Saldo" %}: {{ event_vendor.balance_due|floatformat:2 }}
+        </div>
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <button type="submit" class="btn btn-dark">{% trans "Guardar" %}</button>
+          <a href="{% url 'vendors:event_vendor_edit' event.pk event_vendor.pk %}" class="btn btn-link">{% trans "Cancelar" %}</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

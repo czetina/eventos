@@ -29,7 +29,7 @@
         {% for session in day.list %}
         <tr>
           <td>{{ session.start_time }}{% if session.end_time %} - {{ session.end_time }}{% endif %}</td>
-          <td><span class="badge text-bg-light border">{{ session.get_section_display }}</span></td>
+          <td><span class="badge text-bg-light border">{{ session.section }}</span></td>
           <td>{{ session.title }}</td>
           <td>{{ session.venue_name|default:"—" }} {{ session.address }}</td>
           <td class="text-muted small">{{ session.notes|default:"—" }}</td>

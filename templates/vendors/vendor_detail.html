@@ -6,9 +6,26 @@
 
 <div class="d-flex justify-content-between align-items-start mb-3">
   <div>
-    <h3>{{ vendor.name }}</h3>
-    <span class="badge text-bg-secondary">{{ vendor.get_category_display }}</span>
+    <h3>{{ vendor.name }} {% if not vendor.is_active %}<span class="badge text-bg-danger">{% trans "Baja" %}{% if vendor.deactivated_on %} — {{ vendor.deactivated_on }}{% endif %}</span>{% endif %}</h3>
+    <span class="badge text-bg-secondary">{{ vendor.category.name }}</span>
   </div>
+  {% if user.can_manage_events %}
+  <div class="text-end">
+    <a href="{% url 'vendors:edit' vendor.pk %}" class="btn btn-outline-secondary"><i class="bi bi-pencil"></i> {% trans "Editar" %}</a>
+    {% if vendor.is_active %}
+    <a href="{% url 'vendors:deactivate' vendor.pk %}" class="btn btn-outline-warning"><i class="bi bi-slash-circle"></i> {% trans "Dar de baja" %}</a>
+    {% else %}
+    <form method="post" action="{% url 'vendors:reactivate' vendor.pk %}" class="d-inline">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-outline-success"><i class="bi bi-arrow-counterclockwise"></i> {% trans "Reactivar" %}</button>
+    </form>
+    {% endif %}
+    <form method="post" action="{% url 'vendors:delete' vendor.pk %}" class="d-inline" onsubmit="return confirm('{% trans "¿Eliminar este proveedor? Solo es posible si no está asignado a ningún evento o tarea." %}');">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-outline-danger"><i class="bi bi-trash"></i> {% trans "Eliminar" %}</button>
+    </form>
+  </div>
+  {% endif %}
 </div>
 
 <div class="row g-4">

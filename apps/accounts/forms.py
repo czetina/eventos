@@ -139,6 +139,27 @@ class TeamMemberEditForm(BootstrapFormMixin, forms.ModelForm):
         self._apply_bootstrap()
 
 
+class TeamMemberPasswordForm(BootstrapFormMixin, forms.Form):
+    """Lets a company_admin/planner reset a team member's password (they may not
+    remember or share their current one)."""
+
+    password1 = forms.CharField(label=_("Nueva contraseña"), widget=forms.PasswordInput)
+    password2 = forms.CharField(label=_("Confirmar nueva contraseña"), widget=forms.PasswordInput)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._apply_bootstrap()
+
+    def clean(self):
+        cleaned = super().clean()
+        p1, p2 = cleaned.get("password1"), cleaned.get("password2")
+        if p1 and p2 and p1 != p2:
+            self.add_error("password2", _("Las contraseñas no coinciden."))
+        if p1 and len(p1) < 8:
+            self.add_error("password1", _("La contraseña debe tener al menos 8 caracteres."))
+        return cleaned
+
+
 class ProfileForm(BootstrapFormMixin, forms.ModelForm):
     class Meta:
         model = User

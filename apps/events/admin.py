@@ -1,7 +1,8 @@
 from django.contrib import admin
 
 from .models import (
-    Event, EventSession, EventTeamMember, MealCount, ProcessionalEntry, WeddingPartyMember, WeddingPartyListType,
+    Event, EventSectionType, EventSession, EventTeamMember, Expense, MealCount, ProcessionalEntry,
+    Quotation, QuotationItem, WeddingPartyMember, WeddingPartyListType,
 )
 
 
@@ -23,6 +24,12 @@ class EventAdmin(admin.ModelAdmin):
     search_fields = ["name", "client_name", "city"]
     date_hierarchy = "event_date"
     inlines = [EventSessionInline, EventTeamMemberInline]
+
+
+@admin.register(EventSectionType)
+class EventSectionTypeAdmin(admin.ModelAdmin):
+    list_display = ["company", "name", "order"]
+    list_filter = ["company"]
 
 
 @admin.register(EventTeamMember)
@@ -54,3 +61,22 @@ class ProcessionalEntryAdmin(admin.ModelAdmin):
 class MealCountAdmin(admin.ModelAdmin):
     list_display = ["event", "group", "meal_label", "count"]
     list_filter = ["group"]
+
+
+@admin.register(Expense)
+class ExpenseAdmin(admin.ModelAdmin):
+    list_display = ["event", "date", "description", "amount", "created_by"]
+    list_filter = ["event"]
+    date_hierarchy = "date"
+
+
+class QuotationItemInline(admin.TabularInline):
+    model = QuotationItem
+    extra = 0
+
+
+@admin.register(Quotation)
+class QuotationAdmin(admin.ModelAdmin):
+    list_display = ["event", "activity", "client_name", "realization_date", "exchange_rate"]
+    list_filter = ["event"]
+    inlines = [QuotationItemInline]

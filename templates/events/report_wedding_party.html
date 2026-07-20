@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Reporte del cortejo nupcial" %} — {{ event.name }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-3 no-print">
+  <div>
+    <h3><i class="bi bi-flower1"></i> {% trans "Reporte del cortejo nupcial" %} — {{ event.name }}</h3>
+    <a href="{% url 'events:detail' event.pk %}" class="btn btn-link px-0">&larr; {% trans "Volver al evento" %}</a>
+  </div>
+  <button class="btn btn-sm btn-outline-dark" type="button" onclick="window.print()">
+    <i class="bi bi-printer"></i> {% trans "Imprimir / Guardar PDF" %}
+  </button>
+</div>
+<h4 class="d-none d-print-block">{% trans "Reporte del cortejo nupcial" %} — {{ event.name }}</h4>
+
+{% if not has_any_members %}
+<div class="text-muted">{% trans "Todavía no hay listas configuradas." %}</div>
+{% endif %}
+{% for list_type in list_types %}
+{% if list_type.member_list %}
+<div class="card mb-3">
+  <div class="card-header"><strong>{{ list_type.name }}</strong></div>
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead class="table-light">
+        <tr><th>{% trans "Orden" %}</th><th>{% trans "Nombre" %}</th><th>{% trans "Rol / descripción" %}</th><th>{% trans "Cantidad" %}</th><th>{% trans "Mesa" %}</th></tr>
+      </thead>
+      <tbody>
+        {% for m in list_type.member_list %}
+        <tr>
+          <td>{{ m.order }}</td>
+          <td>{{ m.name }}</td>
+          <td>{{ m.role_description|default:"—" }}</td>
+          <td>{{ m.quantity }}</td>
+          <td>{{ m.table_number|default:"—" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% empty %}
+<div class="text-muted">{% trans "Todavía no hay listas configuradas." %}</div>
+{% endfor %}
+{% endblock %}

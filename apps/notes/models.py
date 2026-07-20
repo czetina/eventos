@@ -21,6 +21,15 @@ class Note(models.Model):
         null=True,
     )
     created_at = models.DateTimeField(_("creada"), auto_now_add=True)
+    updated_at = models.DateTimeField(_("última modificación"), auto_now=True)
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name=_("modificada por"),
+        related_name="notes_modified",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
 
     class Meta:
         verbose_name = _("nota")

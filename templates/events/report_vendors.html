@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Reporte de proveedores" %} — {{ event.name }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-3 no-print">
+  <div>
+    <h3><i class="bi bi-shop"></i> {% trans "Reporte de proveedores" %} — {{ event.name }}</h3>
+    <a href="{% url 'events:detail' event.pk %}" class="btn btn-link px-0">&larr; {% trans "Volver al evento" %}</a>
+  </div>
+  <div>
+    <a href="{% url 'events:report_vendors_excel' event.pk %}" class="btn btn-sm btn-outline-success"><i class="bi bi-file-earmark-excel"></i> {% trans "Descargar Excel" %}</a>
+    <button class="btn btn-sm btn-outline-dark" type="button" onclick="window.print()">
+      <i class="bi bi-printer"></i> {% trans "Imprimir / Guardar PDF" %}
+    </button>
+  </div>
+</div>
+<h4 class="d-none d-print-block">{% trans "Reporte de proveedores" %} — {{ event.name }}</h4>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>{% trans "Proveedor" %}</th><th>{% trans "Categoría" %}</th><th>{% trans "Estado" %}</th>
+          <th>{% trans "Contrato" %}</th><th>{% trans "Abonado" %}</th><th>{% trans "Saldo" %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for booking in bookings %}
+        <tr>
+          <td>{{ booking.vendor.name }}</td>
+          <td>{{ booking.vendor.category.name }}</td>
+          <td>{{ booking.get_status_display }}</td>
+          <td>{{ booking.contract_amount }}</td>
+          <td>{{ booking.deposit_paid }}</td>
+          <td class="{% if booking.balance_due > 0 %}text-danger{% endif %}">{{ booking.balance_due }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center text-muted py-3">{% trans "Sin proveedores asociados." %}</td></tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr class="fw-bold table-light">
+          <td colspan="3">{% trans "Total general" %}</td>
+          <td>{{ total_contract }}</td>
+          <td>{{ total_paid }}</td>
+          <td>{{ total_balance }}</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+{% endblock %}

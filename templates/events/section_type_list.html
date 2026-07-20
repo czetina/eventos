@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Mantenimiento de secciones" %}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3><i class="bi bi-diagram-3"></i> {% trans "Mantenimiento de secciones" %}</h3>
+  <a href="{% url 'events:section_type_create' %}" class="btn btn-dark"><i class="bi bi-plus-lg"></i> {% trans "Nueva sección" %}</a>
+</div>
+<p class="text-muted">
+  {% trans "Estas son las áreas disponibles para agrupar el itinerario (ej. Ceremonia, Recepción, Montaje, Desmontaje, Otro). Agrega, renombra o reordena las que tu empresa use." %}
+</p>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0 align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>{% trans "Orden" %}</th>
+          <th>{% trans "Sección" %}</th>
+          <th>{% trans "Actividades" %}</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for section_type in section_types %}
+        <tr>
+          <td>{{ section_type.order }}</td>
+          <td>{{ section_type.name }}</td>
+          <td>{{ section_type.sessions.count }}</td>
+          <td class="text-end">
+            <a href="{% url 'events:section_type_edit' section_type.pk %}" class="btn btn-sm btn-outline-secondary">{% trans "Editar" %}</a>
+            <form method="post" action="{% url 'events:section_type_delete' section_type.pk %}" class="d-inline" onsubmit="return confirm('{% trans "¿Eliminar esta sección?" %}');">
+              {% csrf_token %}
+              <button class="btn btn-sm btn-outline-danger">{% trans "Eliminar" %}</button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="text-center text-muted py-4">{% trans "Todavía no hay secciones." %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

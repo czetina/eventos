@@ -166,12 +166,58 @@ class Task(models.Model):
         self.save(update_fields=[
             "status", "completed_at", "completion_recorded_at", "completed_by", "updated_at",
         ])
-        self.record_status_change(user)
+        self.record_status_change(user, changed_at=self.completed_at)
 
-    def record_status_change(self, user, note=""):
+    def record_status_change(self, user, note="", changed_at=None):
         """Appends an entry to this task's status history — call whenever `status`
-        changes (creation, manual edit, completion, bulk actions)."""
-        TaskStatusHistory.objects.create(task=self, status=self.status, changed_by=user, note=note)
+        changes (creation, manual edit, completion, bulk actions, or an explicit
+        'Cambiar estado' action that can backdate the change and explain why)."""
+        TaskStatusHistory.objects.create(
+            task=self, status=self.status, changed_by=user, note=note,
+            changed_at=changed_at or timezone.now(),
+        )
+
+    def change_status(self, user, status, changed_at=None, note=""):
+        """Explicit status change with a specific date and an explanation — used by
+        the 'Cambiar estado' action, including reverting a mistaken 'Completada'."""
+        changed_at = changed_at or timezone.now()
+        self.status = status
+        if status == self.STATUS_DONE:
+            self.completed_at = changed_at
+            self.completion_recorded_at = timezone.now()
+            self.completed_by = user
+        else:
+            self.completed_at = None
+            self.completion_recorded_at = None
+            self.completed_by = None
+        self.save(update_fields=[
+            "status", "completed_at", "completion_recorded_at", "completed_by", "updated_at",
+        ])
+        self.record_status_change(user, note=note, changed_at=changed_at)
+
+    def recompute_status_from_history(self):
+        """Keeps `status` (and the completion fields) in sync with whatever is now
+        the most recent TaskStatusHistory row — called after editing or deleting a
+        history entry, since 'the last status stays as the current status'."""
+        latest = self.status_history.order_by("-changed_at", "-pk").first()
+        if latest is None:
+            self.status = self.STATUS_PENDING
+            self.completed_at = None
+            self.completion_recorded_at = None
+            self.completed_by = None
+        else:
+            self.status = latest.status
+            if latest.status == self.STATUS_DONE:
+                self.completed_at = latest.changed_at
+                self.completed_by = latest.changed_by
+                self.completion_recorded_at = self.completion_recorded_at or latest.changed_at
+            else:
+                self.completed_at = None
+                self.completion_recorded_at = None
+                self.completed_by = None
+        self.save(update_fields=[
+            "status", "completed_at", "completion_recorded_at", "completed_by", "updated_at",
+        ])
 
 
 class TaskEvidence(models.Model):
@@ -218,7 +264,7 @@ class TaskStatusHistory(models.Model):
         Task, verbose_name=_("tarea"), related_name="status_history", on_delete=models.CASCADE
     )
     status = models.CharField(_("estado"), max_length=20, choices=Task.STATUS_CHOICES)
-    changed_at = models.DateTimeField(_("fecha del cambio"), auto_now_add=True)
+    changed_at = models.DateTimeField(_("fecha del cambio"), default=timezone.now)
     changed_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         verbose_name=_("cambiado por"),

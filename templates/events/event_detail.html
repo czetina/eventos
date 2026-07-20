@@ -11,7 +11,6 @@
   {% if user.can_manage_events %}
   <div>
     <a href="{% url 'events:edit' event.pk %}" class="btn btn-outline-secondary"><i class="bi bi-pencil"></i> {% trans "Editar" %}</a>
-    <a href="{% url 'events:delete' event.pk %}" class="btn btn-outline-danger"><i class="bi bi-trash"></i> {% trans "Eliminar" %}</a>
   </div>
   {% endif %}
 </div>
@@ -22,6 +21,7 @@
   <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-equipo">{% trans "Equipo" %}</button></li>
   <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-tareas">{% trans "Tareas" %}</button></li>
   <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-proveedores">{% trans "Proveedores" %}</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-finanzas">{% trans "Finanzas" %}</button></li>
   <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-notas">{% trans "Notas y archivos" %}</button></li>
   <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-boda">{% trans "Boda y reportes" %}</button></li>
 </ul>
@@ -32,6 +32,11 @@
       <div class="col-md-4"><div class="card p-3 text-center"><div class="fs-3 fw-bold">{{ task_total }}</div><div class="text-muted small">{% trans "Tareas totales" %}</div></div></div>
       <div class="col-md-4"><div class="card p-3 text-center"><div class="fs-3 fw-bold">{{ event.task_progress_percent }}%</div><div class="text-muted small">{% trans "Completadas" %}</div></div></div>
       <div class="col-md-4"><div class="card p-3 text-center"><div class="fs-3 fw-bold">{{ team_members|length }}</div><div class="text-muted small">{% trans "Miembros del equipo" %}</div></div></div>
+    </div>
+    <div class="row g-3 mt-1">
+      <div class="col-md-4"><div class="card p-3"><div class="text-muted small">{% trans "Anticipo" %}</div><div class="fs-5">{{ event.advance_amount|floatformat:2 }}</div></div></div>
+      <div class="col-md-4"><div class="card p-3"><div class="text-muted small">{% trans "Gastos" %}</div><div class="fs-5">{{ event.total_expenses|floatformat:2 }}</div></div></div>
+      <div class="col-md-4"><div class="card p-3"><div class="text-muted small">{% trans "Saldo" %} {% if event.expense_balance < 0 %}<span class="text-danger">({% trans "a cobrar al cliente" %})</span>{% endif %}</div><div class="fs-5 {% if event.expense_balance < 0 %}text-danger{% endif %}">{{ event.expense_balance|floatformat:2 }}</div></div></div>
     </div>
     {% if event.civil_ceremony_venue or event.religious_ceremony_venue or event.cocktail_venue %}
     <div class="row g-3 mt-1">
@@ -53,6 +58,7 @@
     {% if user.can_manage_events %}
     <a href="{% url 'events:session_create' event.pk %}" class="btn btn-sm btn-dark mb-3"><i class="bi bi-plus-lg"></i> {% trans "Agregar actividad" %}</a>
     <a href="{% url 'events:session_import' event.pk %}" class="btn btn-sm btn-outline-dark mb-3"><i class="bi bi-file-earmark-arrow-up"></i> {% trans "Importar desde Excel" %}</a>
+    <a href="{% url 'events:section_type_list' %}" class="btn btn-sm btn-outline-secondary mb-3"><i class="bi bi-gear"></i> {% trans "Mantenimiento de secciones" %}</a>
     {% endif %}
     <form method="post" action="{% url 'events:session_bulk_delete' event.pk %}" onsubmit="return confirm('{% trans "¿Eliminar las actividades seleccionadas?" %}');">
       {% csrf_token %}
@@ -63,7 +69,7 @@
           <input type="checkbox" class="form-check-input flex-shrink-0" name="session_ids" value="{{ session.pk }}">
           {% endif %}
           <div class="flex-grow-1">
-            <span class="badge text-bg-light border me-1">{{ session.get_section_display }}</span>
+            <span class="badge text-bg-light border me-1">{{ session.section }}</span>
             <strong>{{ session.date }} · {{ session.start_time }}{% if session.end_time %} - {{ session.end_time }}{% endif %}</strong>
             — {{ session.title }}
             {% if session.venue_name %}<span class="text-muted small d-block"><i class="bi bi-geo-alt"></i> {{ session.venue_name }} {{ session.address }}</span>{% endif %}
@@ -118,10 +124,14 @@
 
   <div class="tab-pane fade" id="tab-proveedores">
     <a href="{% url 'vendors:event_vendor_add' event.pk %}" class="btn btn-sm btn-dark mb-3"><i class="bi bi-plus-lg"></i> {% trans "Asociar proveedor" %}</a>
+    <a href="{% url 'events:report_vendors' event.pk %}" class="btn btn-sm btn-outline-dark mb-3"><i class="bi bi-file-earmark-bar-graph"></i> {% trans "Reporte pagado/saldo" %}</a>
+    {% if user.can_manage_events %}
+    <a href="{% url 'vendors:category_list' %}" class="btn btn-sm btn-outline-secondary mb-3"><i class="bi bi-gear"></i> {% trans "Mantenimiento de categorías" %}</a>
+    {% endif %}
     <div class="list-group">
       {% for ev in vendors %}
       <div class="list-group-item d-flex justify-content-between">
-        <span>{{ ev.vendor.name }} <span class="text-muted small">({{ ev.vendor.get_category_display }})</span></span>
+        <span>{{ ev.vendor.name }} <span class="text-muted small">({{ ev.vendor.category.name }})</span></span>
         <span>
           <span class="badge text-bg-light border">{{ ev.get_status_display }}</span>
           <span class="text-muted small">{{ ev.contract_amount }} {% trans "saldo" %}: {{ ev.balance_due }}</span>
@@ -134,6 +144,34 @@
       {% empty %}
       <div class="list-group-item text-muted">{% trans "Sin proveedores asociados." %}</div>
       {% endfor %}
+    </div>
+  </div>
+
+  <div class="tab-pane fade" id="tab-finanzas">
+    <div class="row g-3 mb-4">
+      <div class="col-md-4"><div class="card p-3"><div class="text-muted small">{% trans "Anticipo" %}</div><div class="fs-5">{{ event.advance_amount|floatformat:2 }}</div></div></div>
+      <div class="col-md-4"><div class="card p-3"><div class="text-muted small">{% trans "Gastos" %}</div><div class="fs-5">{{ event.total_expenses|floatformat:2 }}</div></div></div>
+      <div class="col-md-4"><div class="card p-3"><div class="text-muted small">{% trans "Saldo" %} {% if event.expense_balance < 0 %}<span class="text-danger">({% trans "a cobrar al cliente" %})</span>{% endif %}</div><div class="fs-5 {% if event.expense_balance < 0 %}text-danger{% endif %}">{{ event.expense_balance|floatformat:2 }}</div></div></div>
+    </div>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <a href="{% url 'events:expenses' event.pk %}" class="card p-3 text-decoration-none text-dark h-100">
+          <div class="fs-5"><i class="bi bi-cash-stack"></i> {% trans "Gastos del evento" %}</div>
+          <div class="text-muted small">{% trans "Control de gastos con documentos de soporte" %}</div>
+        </a>
+      </div>
+      <div class="col-md-4">
+        <a href="{% url 'events:quotation_list' event.pk %}" class="card p-3 text-decoration-none text-dark h-100">
+          <div class="fs-5"><i class="bi bi-receipt"></i> {% trans "Cotizaciones" %}</div>
+          <div class="text-muted small">{% trans "Crear y exportar cotizaciones a Excel" %}</div>
+        </a>
+      </div>
+      <div class="col-md-4">
+        <a href="{% url 'events:report_expenses' event.pk %}" class="card p-3 text-decoration-none text-dark h-100">
+          <div class="fs-5"><i class="bi bi-file-earmark-bar-graph"></i> {% trans "Reporte de gastos" %}</div>
+          <div class="text-muted small">{% trans "Imprimible / PDF" %}</div>
+        </a>
+      </div>
     </div>
   </div>
 
@@ -191,6 +229,11 @@
       <a href="{% url 'events:report_itinerary' event.pk %}" class="list-group-item list-group-item-action"><i class="bi bi-clock-history"></i> {% trans "Itinerario imprimible por día" %}</a>
       <a href="{% url 'events:report_tasks' event.pk %}" class="list-group-item list-group-item-action"><i class="bi bi-list-check"></i> {% trans "Tareas por responsable" %}</a>
       <a href="{% url 'events:report_status_history' event.pk %}" class="list-group-item list-group-item-action"><i class="bi bi-journal-text"></i> {% trans "Historial de cambios de estado" %}</a>
+      <a href="{% url 'events:report_minute_by_minute' event.pk %}" class="list-group-item list-group-item-action"><i class="bi bi-stopwatch"></i> {% trans "Minuto a minuto (ceremonia y recepción)" %}</a>
+      <a href="{% url 'events:report_wedding_party' event.pk %}" class="list-group-item list-group-item-action"><i class="bi bi-flower1"></i> {% trans "Reporte del cortejo nupcial" %}</a>
+      <a href="{% url 'events:report_meals' event.pk %}" class="list-group-item list-group-item-action"><i class="bi bi-egg-fried"></i> {% trans "Reporte de comidas por grupo" %}</a>
+      <a href="{% url 'events:report_vendors' event.pk %}" class="list-group-item list-group-item-action"><i class="bi bi-file-earmark-bar-graph"></i> {% trans "Proveedores: pagado y saldo" %}</a>
+      <a href="{% url 'events:report_expenses' event.pk %}" class="list-group-item list-group-item-action"><i class="bi bi-cash-stack"></i> {% trans "Gastos del evento" %}</a>
     </div>
   </div>
 </div>

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Dar de baja" %}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card border-warning">
+      <div class="card-body p-4">
+        <h4 class="mb-3 text-warning"><i class="bi bi-slash-circle"></i> {% trans "Dar de baja" %} — {{ vendor.name }}</h4>
+        <p class="text-muted small">
+          {% trans "Un proveedor dado de baja no se puede elegir para nuevas asignaciones a partir de la fecha indicada. Las asignaciones existentes no se modifican." %}
+        </p>
+        <form method="post">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <button type="submit" class="btn btn-warning">{% trans "Dar de baja" %}</button>
+          <a href="{% url 'vendors:detail' vendor.pk %}" class="btn btn-link">{% trans "Cancelar" %}</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

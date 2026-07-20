@@ -12,10 +12,18 @@
         {% if note.pinned %}<i class="bi bi-pin-angle-fill text-warning"></i>{% endif %}
         {{ note.content|linebreaks }}
         <div class="d-flex justify-content-between align-items-center">
-          <span class="text-muted small">{{ note.author }} · {{ note.created_at|date:"d/m/Y H:i" }}</span>
-          <form method="post" action="{% url 'notes:delete' event.pk note.pk %}" onsubmit="return confirm('{% trans "¿Eliminar nota?" %}');">
-            {% csrf_token %}<button class="btn btn-sm btn-link text-danger p-0">{% trans "Eliminar" %}</button>
-          </form>
+          <span class="text-muted small">
+            {{ note.author }} · {{ note.created_at|date:"d/m/Y H:i" }}
+            {% if note.updated_by %}<span class="d-block">{% blocktrans with who=note.updated_by when=note.updated_at|date:"d/m/Y H:i" %}Editada por {{ who }} el {{ when }}{% endblocktrans %}</span>{% endif %}
+          </span>
+          <span class="text-nowrap">
+            {% if request.user == note.author or user.can_manage_events %}
+            <a href="{% url 'notes:edit' event.pk note.pk %}" class="btn btn-sm btn-link p-0">{% trans "Editar" %}</a>
+            {% endif %}
+            <form method="post" action="{% url 'notes:delete' event.pk note.pk %}" class="d-inline" onsubmit="return confirm('{% trans "¿Eliminar nota?" %}');">
+              {% csrf_token %}<button class="btn btn-sm btn-link text-danger p-0">{% trans "Eliminar" %}</button>
+            </form>
+          </span>
         </div>
       </div>
     </div>

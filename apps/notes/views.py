@@ -26,6 +26,25 @@ def note_list(request, event_pk):
 
 
 @login_required
+def note_edit(request, event_pk, pk):
+    event = get_event_or_403(request.user, event_pk)
+    note = get_object_or_404(Note, pk=pk, event=event)
+    if not (request.user == note.author or request.user.can_manage_events):
+        return redirect("notes:list", event_pk=event.pk)
+    if request.method == "POST":
+        form = NoteForm(request.POST, instance=note)
+        if form.is_valid():
+            note = form.save(commit=False)
+            note.updated_by = request.user
+            note.save()
+            messages.success(request, "Nota actualizada.")
+            return redirect("notes:list", event_pk=event.pk)
+    else:
+        form = NoteForm(instance=note)
+    return render(request, "notes/note_form.html", {"event": event, "note": note, "form": form})
+
+
+@login_required
 def note_delete(request, event_pk, pk):
     event = get_event_or_403(request.user, event_pk)
     note = get_object_or_404(Note, pk=pk, event=event)

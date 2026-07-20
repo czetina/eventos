@@ -37,6 +37,12 @@
         <span>
           <strong>{{ task.title }}</strong>
           <span class="text-muted small d-block">{{ task.responsible_display }}{% if task.supervisor %} · {% trans "supervisa" %} {{ task.supervisor }}{% endif %}{% if task.due_date %} · {{ task.due_date }} {{ task.due_time|default:"" }}{% endif %}</span>
+          {% if task.latest_status_entry %}
+          <span class="text-muted small d-block">
+            {% trans "Último estado" %}: {{ task.latest_status_entry.changed_at|date:"d/m/Y H:i" }}
+            {% if task.status != 'completada' and task.latest_status_entry.note %} — {{ task.latest_status_entry.note }}{% endif %}
+          </span>
+          {% endif %}
         </span>
         <span class="badge badge-status-{{ task.status }}">{{ task.get_status_display }}</span>
       </a>

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Reporte de comidas" %} — {{ event.name }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-3 no-print">
+  <div>
+    <h3><i class="bi bi-egg-fried"></i> {% trans "Reporte de comidas" %} — {{ event.name }}</h3>
+    <a href="{% url 'events:detail' event.pk %}" class="btn btn-link px-0">&larr; {% trans "Volver al evento" %}</a>
+  </div>
+  <div>
+    <a href="{% url 'events:report_meals_excel' event.pk %}" class="btn btn-sm btn-outline-success"><i class="bi bi-file-earmark-excel"></i> {% trans "Descargar Excel" %}</a>
+    <button class="btn btn-sm btn-outline-dark" type="button" onclick="window.print()">
+      <i class="bi bi-printer"></i> {% trans "Imprimir / Guardar PDF" %}
+    </button>
+  </div>
+</div>
+<h4 class="d-none d-print-block">{% trans "Reporte de comidas" %} — {{ event.name }}</h4>
+
+{% for label, meals in groups %}
+<div class="card mb-3">
+  <div class="card-header"><strong>{{ label }}</strong></div>
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead class="table-light">
+        <tr><th>{% trans "Proveedor / Persona" %}</th><th>{% trans "Comida" %}</th><th>{% trans "Cantidad" %}</th><th>{% trans "Monto" %}</th></tr>
+      </thead>
+      <tbody>
+        {% for m in meals %}
+        <tr>
+          <td>{{ m.target_name|default:"—" }}</td>
+          <td>{{ m.meal_label }}</td>
+          <td>{{ m.count }}</td>
+          <td>{{ m.amount }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="text-center text-muted py-3">{% trans "Sin registros todavía." %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endfor %}
+
+<div class="card p-3 text-end">
+  <strong>{% trans "Total general" %}: {{ grand_total }}</strong>
+</div>
+{% endblock %}

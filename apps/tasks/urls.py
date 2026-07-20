@@ -15,4 +15,7 @@ urlpatterns = [
     path("<int:pk>/editar/", views.task_edit, name="edit"),
     path("<int:pk>/evidencia/", views.task_upload_evidence, name="upload_evidence"),
     path("<int:pk>/completar/", views.task_complete, name="complete"),
+    path("<int:pk>/cambiar-estado/", views.task_change_status, name="change_status"),
+    path("<int:pk>/historial/<int:history_pk>/editar/", views.task_status_history_edit, name="status_history_edit"),
+    path("<int:pk>/historial/<int:history_pk>/eliminar/", views.task_status_history_delete, name="status_history_delete"),
 ]

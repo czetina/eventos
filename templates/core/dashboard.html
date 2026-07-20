@@ -43,6 +43,11 @@
         </span>
         <span class="text-end">
           <span class="badge text-bg-light border">{{ event.event_date }}</span>
+          <span class="d-block small">
+            {% if event.days_until == 0 %}<span class="text-danger fw-bold">{% trans "¡Hoy!" %}</span>
+            {% elif event.days_until == 1 %}<span class="text-danger">{% trans "Mañana" %}</span>
+            {% else %}<span class="text-muted">{% blocktrans with days=event.days_until %}en {{ days }} días{% endblocktrans %}</span>{% endif %}
+          </span>
           <span class="d-block small text-muted">{{ event.task_progress_percent }}% {% trans "completado" %}</span>
         </span>
       </a>
