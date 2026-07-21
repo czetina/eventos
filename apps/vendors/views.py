@@ -251,6 +251,35 @@ def event_vendor_payment_add(request, event_pk, pk):
 
 
 @login_required
+def event_vendor_payment_edit(request, event_pk, pk, payment_pk):
+    event = get_event_or_403(request.user, event_pk)
+    if not request.user.can_manage_events:
+        raise PermissionDenied
+    ev = get_object_or_404(EventVendor, pk=pk, event=event)
+    payment = get_object_or_404(VendorPayment, pk=payment_pk, event_vendor=ev)
+    if request.method == "POST":
+        old_amount = payment.amount
+        form = VendorPaymentForm(request.POST, request.FILES, instance=payment)
+        if form.is_valid():
+            other_paid = ev.deposit_paid - old_amount
+            completes_balance = (other_paid + form.instance.amount) >= ev.contract_amount and ev.contract_amount > 0
+            if completes_balance and not form.instance.document:
+                form.add_error("document", _(
+                    "Este abono completa el saldo del proveedor — sube el documento de soporte."
+                ))
+            else:
+                form.save()
+                ev.recompute_deposit_paid()
+                messages.success(request, _("Abono actualizado."))
+                return redirect("vendors:event_vendor_edit", event_pk=event.pk, pk=ev.pk)
+    else:
+        form = VendorPaymentForm(instance=payment)
+    return render(request, "vendors/vendor_payment_form.html", {
+        "form": form, "event": event, "event_vendor": ev, "payment": payment,
+    })
+
+
+@login_required
 def event_vendor_payment_remove(request, event_pk, pk, payment_pk):
     event = get_event_or_403(request.user, event_pk)
     if not request.user.can_manage_events:

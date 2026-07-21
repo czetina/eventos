@@ -8,7 +8,9 @@ from openpyxl.styles import Alignment, Font
 from openpyxl.utils import get_column_letter
 
 
-def build_simple_workbook(title, headers, rows, totals_row=None):
+def build_simple_workbook(title, headers, rows, totals_row=None, money_columns=None):
+    """money_columns: 1-indexed column numbers to render with thousands
+    separators (e.g. [5] for a 5th "Monto" column)."""
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = title[:31] or "Reporte"
@@ -27,13 +29,18 @@ def build_simple_workbook(title, headers, rows, totals_row=None):
         cell.fill = openpyxl.styles.PatternFill("solid", fgColor="212529")
         cell.alignment = Alignment(horizontal="center")
 
+    money_columns = money_columns or []
     for row in rows:
         ws.append(row)
+        for col in money_columns:
+            ws.cell(row=ws.max_row, column=col).number_format = "#,##0.00"
 
     if totals_row:
         ws.append(totals_row)
         for col in range(1, len(totals_row) + 1):
             ws.cell(row=ws.max_row, column=col).font = Font(bold=True)
+        for col in money_columns:
+            ws.cell(row=ws.max_row, column=col).number_format = "#,##0.00"
 
     for col_idx, col_cells in enumerate(ws.columns, start=1):
         values = [str(c.value) for c in col_cells if c.value is not None]

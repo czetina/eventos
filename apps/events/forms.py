@@ -5,8 +5,9 @@ from apps.accounts.forms import BootstrapFormMixin
 from apps.accounts.models import Role, User
 
 from .models import (
-    Event, EventSectionType, EventSession, EventTeamMember, Expense, MealCount, ProcessionalEntry,
-    Quotation, QuotationItem, WeddingPartyMember, WeddingPartyListType,
+    Event, EventAdvance, EventSectionType, EventSession, EventTeamMember, Expense, Invoice,
+    InvoiceItem, MealCount, ProcessionalEntry, Quotation, QuotationItem, SeatingTable, TableGuest,
+    WeddingPartyMember, WeddingPartyListType, WeddingTableType,
 )
 
 
@@ -18,7 +19,6 @@ class EventForm(BootstrapFormMixin, forms.ModelForm):
             "country", "city", "venue_name", "venue_address",
             "civil_ceremony_venue", "religious_ceremony_venue", "cocktail_venue",
             "event_date", "start_time", "end_time", "status", "description", "planner",
-            "advance_amount",
         ]
         widgets = {
             "event_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
@@ -117,6 +117,48 @@ class WeddingPartyMemberForm(BootstrapFormMixin, forms.ModelForm):
         self._apply_bootstrap()
 
 
+class WeddingTableTypeForm(BootstrapFormMixin, forms.ModelForm):
+    class Meta:
+        model = WeddingTableType
+        fields = ["name", "order"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._apply_bootstrap()
+
+
+class SeatingTableForm(BootstrapFormMixin, forms.ModelForm):
+    class Meta:
+        model = SeatingTable
+        fields = ["table_number", "table_type", "capacity", "notes"]
+
+    def __init__(self, *args, company=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if company:
+            self.fields["table_type"].queryset = WeddingTableType.objects.filter(company=company)
+        self._apply_bootstrap()
+
+
+class TableGuestForm(BootstrapFormMixin, forms.ModelForm):
+    class Meta:
+        model = TableGuest
+        fields = ["name", "notes"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._apply_bootstrap()
+
+
+class TableGuestMoveForm(BootstrapFormMixin, forms.Form):
+    table = forms.ModelChoiceField(queryset=SeatingTable.objects.none(), label=_("Mover a la mesa"))
+
+    def __init__(self, *args, event=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if event:
+            self.fields["table"].queryset = SeatingTable.objects.filter(event=event)
+        self._apply_bootstrap()
+
+
 class ProcessionalEntryForm(BootstrapFormMixin, forms.ModelForm):
     class Meta:
         model = ProcessionalEntry
@@ -153,6 +195,18 @@ class ExpenseForm(BootstrapFormMixin, forms.ModelForm):
         self._apply_bootstrap()
 
 
+class EventAdvanceForm(BootstrapFormMixin, forms.ModelForm):
+    class Meta:
+        model = EventAdvance
+        fields = ["date", "amount", "note"]
+        widgets = {"date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d")}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["date"].input_formats = ["%Y-%m-%d"]
+        self._apply_bootstrap()
+
+
 class QuotationForm(BootstrapFormMixin, forms.ModelForm):
     class Meta:
         model = Quotation
@@ -169,6 +223,36 @@ class QuotationItemForm(BootstrapFormMixin, forms.ModelForm):
     class Meta:
         model = QuotationItem
         fields = ["vendor_name", "detail", "quantity", "value_dop", "order"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._apply_bootstrap()
+
+
+class InvoiceForm(BootstrapFormMixin, forms.ModelForm):
+    class Meta:
+        model = Invoice
+        fields = [
+            "invoice_number", "date", "issuer_name", "issuer_contact",
+            "bill_to_name", "bill_to_attn", "bill_to_city", "bill_to_country",
+            "job_name", "payment_terms", "payment_instructions",
+            "currency", "currency_symbol", "show_currency_symbol",
+        ]
+        widgets = {
+            "date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+            "payment_instructions": forms.Textarea(attrs={"rows": 3}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["date"].input_formats = ["%Y-%m-%d"]
+        self._apply_bootstrap()
+
+
+class InvoiceItemForm(BootstrapFormMixin, forms.ModelForm):
+    class Meta:
+        model = InvoiceItem
+        fields = ["description", "amount", "order"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

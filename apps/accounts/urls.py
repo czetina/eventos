@@ -18,4 +18,5 @@ urlpatterns = [
     path("roles/nuevo/", views.role_create, name="role_create"),
     path("roles/<int:pk>/editar/", views.role_edit, name="role_edit"),
     path("roles/<int:pk>/eliminar/", views.role_delete, name="role_delete"),
+    path("configuracion/", views.company_settings, name="company_settings"),
 ]

@@ -7,55 +7,89 @@
     <h3><i class="bi bi-stopwatch"></i> {% trans "Minuto a minuto" %} — {{ event.name }}</h3>
     <a href="{% url 'events:detail' event.pk %}" class="btn btn-link px-0">&larr; {% trans "Volver al evento" %}</a>
   </div>
-  <button class="btn btn-sm btn-outline-dark" type="button" onclick="window.print()">
-    <i class="bi bi-printer"></i> {% trans "Imprimir / Guardar PDF" %}
-  </button>
+  <div>
+    <a href="{% url 'events:report_minute_by_minute_excel' event.pk %}{% querystring %}" class="btn btn-sm btn-outline-success"><i class="bi bi-file-earmark-excel"></i> {% trans "Descargar Excel" %}</a>
+    <button class="btn btn-sm btn-outline-dark" type="button" onclick="window.print()">
+      <i class="bi bi-printer"></i> {% trans "Imprimir / Guardar PDF" %}
+    </button>
+  </div>
 </div>
 <h4 class="d-none d-print-block">{% trans "Minuto a minuto" %} — {{ event.name }}</h4>
 
-<h5><i class="bi bi-flower1"></i> {% trans "Ceremonia" %}</h5>
-<div class="card mb-4">
-  <div class="table-responsive">
-    <table class="table table-sm align-middle mb-0">
-      <thead class="table-light">
-        <tr><th style="width:10em;">{% trans "Hora" %}</th><th>{% trans "Actividad" %}</th><th>{% trans "Lugar" %}</th><th>{% trans "Notas" %}</th></tr>
-      </thead>
-      <tbody>
-        {% for session in ceremonia_sessions %}
-        <tr>
-          <td>{{ session.start_time }}{% if session.end_time %} - {{ session.end_time }}{% endif %}</td>
-          <td>{{ session.title }}</td>
-          <td>{{ session.venue_name|default:"—" }}</td>
-          <td class="text-muted small">{{ session.notes|default:"—" }}</td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="4" class="text-center text-muted py-3">{% trans "Sin actividades en esta sección." %}</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
+<div class="d-flex flex-wrap gap-3 mb-3 no-print">
+  <div class="btn-group btn-group-sm" role="group">
+    <a href="{% querystring seccion=None %}" class="btn {% if section_filter == 'todas' %}btn-dark{% else %}btn-outline-secondary{% endif %}">{% trans "Todas las secciones" %}</a>
+    {% for section in available_sections %}
+    <a href="{% querystring seccion=section.pk %}" class="btn {% if section_filter == section.pk|stringformat:"s" %}btn-dark{% else %}btn-outline-secondary{% endif %}">{{ section.name }}</a>
+    {% endfor %}
+  </div>
+  <div class="btn-group btn-group-sm" role="group">
+    <a href="{% querystring solo_pendientes=None %}" class="btn {% if not only_pending %}btn-dark{% else %}btn-outline-secondary{% endif %}">{% trans "Todas las tareas" %}</a>
+    <a href="{% querystring solo_pendientes="1" %}" class="btn {% if only_pending %}btn-dark{% else %}btn-outline-secondary{% endif %}">{% trans "Solo pendientes" %}</a>
+  </div>
+  <div class="btn-group btn-group-sm" role="group">
+    <a href="{% querystring lang="es" %}" class="btn {% if lang == 'es' %}btn-dark{% else %}btn-outline-secondary{% endif %}">ES</a>
+    <a href="{% querystring lang="en" %}" class="btn {% if lang == 'en' %}btn-dark{% else %}btn-outline-secondary{% endif %}">EN</a>
   </div>
 </div>
 
-<h5><i class="bi bi-cup-hot"></i> {% trans "Recepción" %}</h5>
+<form method="get" class="row g-2 align-items-end mb-3 no-print">
+  {% if section_filter != 'todas' %}<input type="hidden" name="seccion" value="{{ section_filter }}">{% endif %}
+  {% if only_pending %}<input type="hidden" name="solo_pendientes" value="1">{% endif %}
+  <input type="hidden" name="lang" value="{{ lang }}">
+  <div class="col-auto">
+    <label class="form-label small mb-0">{% trans "Fecha desde" %}</label>
+    <input type="date" name="fecha_desde" class="form-control form-control-sm" value="{{ date_from }}">
+  </div>
+  <div class="col-auto">
+    <label class="form-label small mb-0">{% trans "Fecha hasta" %}</label>
+    <input type="date" name="fecha_hasta" class="form-control form-control-sm" value="{{ date_to }}">
+  </div>
+  <div class="col-auto">
+    <label class="form-label small mb-0">{% trans "Hora desde" %}</label>
+    <input type="time" name="hora_desde" class="form-control form-control-sm" value="{{ time_from }}">
+  </div>
+  <div class="col-auto">
+    <label class="form-label small mb-0">{% trans "Hora hasta" %}</label>
+    <input type="time" name="hora_hasta" class="form-control form-control-sm" value="{{ time_to }}">
+  </div>
+  <div class="col-auto">
+    <button type="submit" class="btn btn-sm btn-dark">{% trans "Filtrar" %}</button>
+    <a href="{% querystring fecha_desde=None fecha_hasta=None hora_desde=None hora_hasta=None %}" class="btn btn-sm btn-outline-secondary">{% trans "Quitar filtros" %}</a>
+  </div>
+</form>
+
+{% for group in groups %}
+<h5><i class="bi bi-clock-history"></i> {{ group.section.name }}</h5>
 <div class="card mb-4">
   <div class="table-responsive">
     <table class="table table-sm align-middle mb-0">
       <thead class="table-light">
-        <tr><th style="width:10em;">{% trans "Hora" %}</th><th>{% trans "Actividad" %}</th><th>{% trans "Lugar" %}</th><th>{% trans "Notas" %}</th></tr>
+        <tr>
+          {% if show_date_column %}<th style="width:8em;">{% trans "Fecha" %}</th>{% endif %}
+          <th style="width:10em;">{% trans "Hora" %}</th><th>{% trans "Actividad" %}</th><th>{% trans "Lugar" %}</th><th>{% trans "Notas" %}</th><th>{% trans "Tareas relacionadas" %}</th>
+        </tr>
       </thead>
       <tbody>
-        {% for session in recepcion_sessions %}
+        {% for session in group.sessions %}
         <tr>
+          {% if show_date_column %}<td>{{ session.date }}</td>{% endif %}
           <td>{{ session.start_time }}{% if session.end_time %} - {{ session.end_time }}{% endif %}</td>
           <td>{{ session.title }}</td>
           <td>{{ session.venue_name|default:"—" }}</td>
           <td class="text-muted small">{{ session.notes|default:"—" }}</td>
+          <td class="small">
+            {% for task in session.related_tasks %}
+            <span class="badge badge-status-{{ task.status }} d-block mb-1 text-wrap text-start">{{ task.title }} — {{ task.get_status_display }}</span>
+            {% empty %}—{% endfor %}
+          </td>
         </tr>
-        {% empty %}
-        <tr><td colspan="4" class="text-center text-muted py-3">{% trans "Sin actividades en esta sección." %}</td></tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
 </div>
+{% empty %}
+<div class="text-muted">{% trans "Sin actividades en esta sección." %}</div>
+{% endfor %}
 {% endblock %}

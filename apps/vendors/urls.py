@@ -21,6 +21,10 @@ urlpatterns = [
     path("evento/<int:event_pk>/quitar/<int:pk>/", views.event_vendor_remove, name="event_vendor_remove"),
     path("evento/<int:event_pk>/<int:pk>/abonos/nuevo/", views.event_vendor_payment_add, name="event_vendor_payment_add"),
     path(
+        "evento/<int:event_pk>/<int:pk>/abonos/<int:payment_pk>/editar/",
+        views.event_vendor_payment_edit, name="event_vendor_payment_edit",
+    ),
+    path(
         "evento/<int:event_pk>/<int:pk>/abonos/<int:payment_pk>/eliminar/",
         views.event_vendor_payment_remove, name="event_vendor_payment_remove",
     ),

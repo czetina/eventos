@@ -1,16 +1,16 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n formatting %}
 {% block title %}{% trans "Gastos del evento" %}{% endblock %}
 {% block content %}
 <h3><i class="bi bi-cash-coin"></i> {% trans "Gastos del evento" %} — {{ event.name }}</h3>
 <a href="{% url 'events:detail' event.pk %}" class="btn btn-link px-0 mb-3">&larr; {% trans "Volver al evento" %}</a>
 
 <div class="row g-3 mb-4">
-  <div class="col-md-4"><div class="card p-3 text-center"><div class="fs-4 fw-bold">{{ event.advance_amount }}</div><div class="text-muted small">{% trans "Anticipo" %}</div></div></div>
-  <div class="col-md-4"><div class="card p-3 text-center"><div class="fs-4 fw-bold">{{ event.total_expenses }}</div><div class="text-muted small">{% trans "Total gastado" %}</div></div></div>
+  <div class="col-md-4"><div class="card p-3 text-center"><div class="fs-4 fw-bold">{{ event.advance_amount|money }}</div><div class="text-muted small">{% trans "Anticipo" %}</div></div></div>
+  <div class="col-md-4"><div class="card p-3 text-center"><div class="fs-4 fw-bold">{{ event.total_expenses|money }}</div><div class="text-muted small">{% trans "Total gastado" %}</div></div></div>
   <div class="col-md-4">
     <div class="card p-3 text-center">
-      <div class="fs-4 fw-bold {% if event.expense_balance < 0 %}text-danger{% else %}text-success{% endif %}">{{ event.expense_balance }}</div>
+      <div class="fs-4 fw-bold {% if event.expense_balance < 0 %}text-danger{% else %}text-success{% endif %}">{{ event.expense_balance|money }}</div>
       <div class="text-muted small">
         {% if event.expense_balance < 0 %}{% trans "A cobrar al cliente" %}{% else %}{% trans "Saldo a favor" %}{% endif %}
       </div>
@@ -18,9 +18,53 @@
   </div>
 </div>
 
+<div class="row g-4 mb-4">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header"><strong>{% trans "Anticipos recibidos" %}</strong></div>
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead class="table-light">
+            <tr><th>{% trans "Fecha" %}</th><th>{% trans "Monto" %}</th><th>{% trans "Nota" %}</th><th></th></tr>
+          </thead>
+          <tbody>
+            {% for advance in advances %}
+            <tr>
+              <td>{% cdate advance.date %}</td>
+              <td>{{ advance.amount|money }}</td>
+              <td class="text-muted small">{{ advance.note|default:"—" }}</td>
+              <td class="text-end">
+                <a href="{% url 'events:advance_edit' event.pk advance.pk %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+                <form method="post" action="{% url 'events:advance_remove' event.pk advance.pk %}" class="d-inline" onsubmit="return confirm('{% trans "¿Eliminar este anticipo?" %}');">
+                  {% csrf_token %}
+                  <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                </form>
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="text-center text-muted py-3">{% trans "Sin anticipos registrados todavía." %}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card p-3">
+      <h5>{% trans "Agregar anticipo" %}</h5>
+      <form method="post" action="{% url 'events:advance_add' event.pk %}">
+        {% csrf_token %}
+        {{ advance_form.as_p }}
+        <button type="submit" class="btn btn-dark w-100">{% trans "Agregar" %}</button>
+      </form>
+    </div>
+  </div>
+</div>
+
 <div class="row g-4">
   <div class="col-md-8">
     <div class="card">
+      <div class="card-header"><strong>{% trans "Gastos" %}</strong></div>
       <div class="table-responsive">
         <table class="table align-middle mb-0">
           <thead class="table-light">
@@ -29,9 +73,9 @@
           <tbody>
             {% for expense in expenses %}
             <tr>
-              <td>{{ expense.date }}</td>
+              <td>{% cdate expense.date %}</td>
               <td>{{ expense.description }}</td>
-              <td>{{ expense.amount }}</td>
+              <td>{{ expense.amount|money }}</td>
               <td>{% if expense.document %}<a href="{{ expense.document.url }}" target="_blank"><i class="bi bi-file-earmark"></i> {% trans "Ver" %}</a>{% else %}—{% endif %}</td>
               <td class="text-end">
                 <a href="{% url 'events:expense_edit' event.pk expense.pk %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>

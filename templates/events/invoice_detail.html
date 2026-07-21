@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% load i18n formatting %}
+{% block title %}{% trans "Factura" %} {{ invoice.invoice_number }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-3">
+  <div>
+    <h3>
+      <i class="bi bi-file-earmark-text"></i> {% trans "Factura" %} {{ invoice.invoice_number }}
+      {% if invoice.status == 'anulada' %}<span class="badge text-bg-danger">{% trans "Anulada" %}</span>{% endif %}
+      {% if invoice.payment_received %}<span class="badge text-bg-success">{% trans "Pagada" %}</span>{% endif %}
+    </h3>
+    <div class="text-muted">
+      {{ invoice.date }} · {% trans "Facturar a" %}: {{ invoice.bill_to_name }}
+      {% if invoice.status == 'anulada' %}
+      <span class="d-block small text-danger">
+        {% blocktrans with who=invoice.voided_by when=invoice.voided_at|date:"d/m/Y H:i" %}Anulada por {{ who }} el {{ when }}{% endblocktrans %}
+      </span>
+      {% endif %}
+      {% if invoice.payment_received %}
+      <span class="d-block small text-success">
+        {% blocktrans with when=invoice.payment_received_date %}Pago recibido el {{ when }}{% endblocktrans %}
+      </span>
+      {% endif %}
+    </div>
+  </div>
+  {% if user.can_manage_events %}
+  <div class="text-end">
+    <a href="{% url 'events:invoice_edit' event.pk invoice.pk %}" class="btn btn-outline-secondary"><i class="bi bi-pencil"></i> {% trans "Editar" %}</a>
+    {% if invoice.status != 'anulada' %}
+    <form method="post" action="{% url 'events:invoice_void' event.pk invoice.pk %}" class="d-inline" onsubmit="return confirm('{% trans "¿Anular esta factura? Quedará marcada como anulada pero no se borrará." %}');">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-outline-warning"><i class="bi bi-slash-circle"></i> {% trans "Anular" %}</button>
+    </form>
+    {% endif %}
+    <form method="post" action="{% url 'events:invoice_delete' event.pk invoice.pk %}" class="d-inline" onsubmit="return confirm('{% trans "¿Eliminar esta factura?" %}');">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-outline-danger"><i class="bi bi-trash"></i> {% trans "Eliminar" %}</button>
+    </form>
+  </div>
+  {% endif %}
+</div>
+<a href="{% url 'events:invoice_list' event.pk %}" class="btn btn-link px-0 mb-3">&larr; {% trans "Volver a facturas" %}</a>
+
+<div class="card mb-4">
+  <div class="card-body d-flex flex-wrap align-items-center gap-3">
+    <a href="{% url 'events:invoice_print' event.pk invoice.pk %}" target="_blank" class="btn btn-sm btn-outline-dark">
+      <i class="bi bi-printer"></i> {% trans "Ver / imprimir factura" %}
+    </a>
+    {% if user.can_manage_events %}
+      {% if invoice.payment_received %}
+      <form method="post" action="{% url 'events:invoice_unmark_paid' event.pk invoice.pk %}" class="d-inline">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-sm btn-outline-secondary"><i class="bi bi-x-circle"></i> {% trans "Quitar marca de pagada" %}</button>
+      </form>
+      {% else %}
+      <form method="post" action="{% url 'events:invoice_mark_paid' event.pk invoice.pk %}" class="d-flex align-items-center gap-2">
+        {% csrf_token %}
+        <label class="form-label small mb-0">{% trans "Pago recibido el" %}</label>
+        <input type="date" name="payment_received_date" class="form-control form-control-sm" style="width:auto;" value="{% now "Y-m-d" %}">
+        <button type="submit" class="btn btn-sm btn-success"><i class="bi bi-check-circle"></i> {% trans "Marcar como pagada" %}</button>
+      </form>
+      {% endif %}
+    {% endif %}
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead class="table-light">
+            <tr><th>{% trans "Descripción" %}</th><th>{% trans "Monto" %}</th><th></th></tr>
+          </thead>
+          <tbody>
+            {% for item in items %}
+            <tr>
+              <td>{{ item.description }}</td>
+              <td>{{ item.amount|money }}</td>
+              <td class="text-end">
+                <form method="post" action="{% url 'events:invoice_item_delete' event.pk invoice.pk item.pk %}" onsubmit="return confirm('{% trans "¿Eliminar esta línea?" %}');">
+                  {% csrf_token %}
+                  <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                </form>
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" class="text-center text-muted py-3">{% trans "Sin líneas todavía." %}</td></tr>
+            {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr class="fw-bold table-light">
+              <td>{% trans "TOTAL" %}</td>
+              <td>{{ invoice.total|money }}</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card p-3">
+      <h5>{% trans "Agregar línea" %}</h5>
+      <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-dark w-100">{% trans "Agregar" %}</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

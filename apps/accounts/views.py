@@ -10,7 +10,7 @@ from django.utils import translation
 from django.utils.translation import gettext_lazy as _
 
 from .forms import (
-    CompanyRegistrationForm, LoginForm, ProfileForm, RoleForm,
+    CompanyRegistrationForm, CompanySettingsForm, LoginForm, ProfileForm, RoleForm,
     TeamMemberEditForm, TeamMemberForm, TeamMemberPasswordForm,
 )
 from .models import Role, User
@@ -212,3 +212,19 @@ def role_delete(request, pk):
             role.delete()
             messages.success(request, _("Rol eliminado."))
     return redirect("accounts:role_list")
+
+
+@login_required
+def company_settings(request):
+    if not request.user.is_company_admin and not request.user.is_superuser:
+        raise PermissionDenied(_("Solo un administrador de empresa puede cambiar la configuración."))
+    company = request.user.company
+    if request.method == "POST":
+        form = CompanySettingsForm(request.POST, instance=company)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Configuración actualizada."))
+            return redirect("accounts:company_settings")
+    else:
+        form = CompanySettingsForm(instance=company)
+    return render(request, "accounts/company_settings.html", {"form": form})

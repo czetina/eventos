@@ -176,6 +176,16 @@ class RoleForm(BootstrapFormMixin, forms.ModelForm):
         fields = ["name", "description", "base_level"]
         widgets = {"description": forms.Textarea(attrs={"rows": 3})}
 
+
+class CompanySettingsForm(BootstrapFormMixin, forms.ModelForm):
+    class Meta:
+        model = Company
+        fields = ["date_format", "date_show_weekday"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._apply_bootstrap()
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._apply_bootstrap()

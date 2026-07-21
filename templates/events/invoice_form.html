@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% if is_new %}{% trans "Nueva factura" %}{% else %}{% trans "Editar factura" %}{% endif %}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-7">
+    <div class="card">
+      <div class="card-body p-4">
+        <h4 class="mb-3">
+          {% if is_new %}<i class="bi bi-plus-square"></i> {% trans "Nueva factura" %}
+          {% else %}<i class="bi bi-pencil"></i> {% trans "Editar factura" %}{% endif %}
+          — {{ event.name }}
+        </h4>
+        <form method="post">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <button type="submit" class="btn btn-dark">{% trans "Guardar" %}</button>
+          {% if is_new %}
+          <a href="{% url 'events:invoice_list' event.pk %}" class="btn btn-link">{% trans "Cancelar" %}</a>
+          {% else %}
+          <a href="{% url 'events:invoice_detail' event.pk invoice.pk %}" class="btn btn-link">{% trans "Cancelar" %}</a>
+          {% endif %}
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,8 +1,9 @@
 from django.contrib import admin
 
 from .models import (
-    Event, EventSectionType, EventSession, EventTeamMember, Expense, MealCount, ProcessionalEntry,
-    Quotation, QuotationItem, WeddingPartyMember, WeddingPartyListType,
+    Event, EventAdvance, EventSectionType, EventSession, EventTeamMember, Expense, Invoice,
+    InvoiceItem, MealCount, ProcessionalEntry, Quotation, QuotationItem, SeatingTable, TableGuest,
+    WeddingPartyMember, WeddingPartyListType, WeddingTableType,
 )
 
 
@@ -70,6 +71,31 @@ class ExpenseAdmin(admin.ModelAdmin):
     date_hierarchy = "date"
 
 
+@admin.register(EventAdvance)
+class EventAdvanceAdmin(admin.ModelAdmin):
+    list_display = ["event", "date", "amount", "created_by"]
+    list_filter = ["event"]
+    date_hierarchy = "date"
+
+
+@admin.register(WeddingTableType)
+class WeddingTableTypeAdmin(admin.ModelAdmin):
+    list_display = ["company", "name", "order"]
+    list_filter = ["company"]
+
+
+class TableGuestInline(admin.TabularInline):
+    model = TableGuest
+    extra = 0
+
+
+@admin.register(SeatingTable)
+class SeatingTableAdmin(admin.ModelAdmin):
+    list_display = ["event", "table_number", "table_type", "capacity"]
+    list_filter = ["event", "table_type"]
+    inlines = [TableGuestInline]
+
+
 class QuotationItemInline(admin.TabularInline):
     model = QuotationItem
     extra = 0
@@ -80,3 +106,15 @@ class QuotationAdmin(admin.ModelAdmin):
     list_display = ["event", "activity", "client_name", "realization_date", "exchange_rate"]
     list_filter = ["event"]
     inlines = [QuotationItemInline]
+
+
+class InvoiceItemInline(admin.TabularInline):
+    model = InvoiceItem
+    extra = 0
+
+
+@admin.register(Invoice)
+class InvoiceAdmin(admin.ModelAdmin):
+    list_display = ["event", "invoice_number", "date", "bill_to_name"]
+    list_filter = ["event"]
+    inlines = [InvoiceItemInline]

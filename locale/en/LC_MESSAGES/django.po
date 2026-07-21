@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eventplanner\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-19 20:38\n"
+"POT-Creation-Date: 2026-07-20 21:35\n"
 "Language: en\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -2946,3 +2946,600 @@ msgstr "Printed on"
 #: eventplanner
 msgid "Ej. 'Corte', 'FATHER OF THE GROOM', 'ROBERT BROTHER'S'"
 msgstr "E.g. 'Court', 'FATHER OF THE GROOM', 'ROBERT BROTHER'S'"
+
+#: eventplanner
+msgid "Factura"
+msgstr "Invoice"
+
+#: eventplanner
+msgid "Facturas"
+msgstr "Invoices"
+
+#: eventplanner
+msgid "factura"
+msgstr "invoice"
+
+#: eventplanner
+msgid "facturas"
+msgstr "invoices"
+
+#: eventplanner
+msgid "Nueva factura"
+msgstr "New invoice"
+
+#: eventplanner
+msgid "Editar factura"
+msgstr "Edit invoice"
+
+#: eventplanner
+msgid "Facturar al cliente e imprimir"
+msgstr "Invoice the client and print"
+
+#: eventplanner
+msgid "Facturar a"
+msgstr "Bill to"
+
+#: eventplanner
+msgid "facturar a"
+msgstr "bill to"
+
+#: eventplanner
+msgid "Número"
+msgstr "Number"
+
+#: eventplanner
+msgid "Total"
+msgstr "Total"
+
+#: eventplanner
+msgid "Todavía no hay facturas."
+msgstr "No invoices yet."
+
+#: eventplanner
+msgid "Factura creada."
+msgstr "Invoice created."
+
+#: eventplanner
+msgid "Factura actualizada."
+msgstr "Invoice updated."
+
+#: eventplanner
+msgid "Factura eliminada."
+msgstr "Invoice deleted."
+
+#: eventplanner
+msgid "Línea agregada a la factura."
+msgstr "Line added to the invoice."
+
+#: eventplanner
+msgid "¿Eliminar esta factura?"
+msgstr "Delete this invoice?"
+
+#: eventplanner
+msgid "Volver a facturas"
+msgstr "Back to invoices"
+
+#: eventplanner
+msgid "Volver a la factura"
+msgstr "Back to the invoice"
+
+#: eventplanner
+msgid "Ver / imprimir factura"
+msgstr "View / print invoice"
+
+#: eventplanner
+msgid "número de factura"
+msgstr "invoice number"
+
+#: eventplanner
+msgid "nombre de quien factura"
+msgstr "issuer name"
+
+#: eventplanner
+msgid "correo / teléfono"
+msgstr "email / phone"
+
+#: eventplanner
+msgid "atención de"
+msgstr "attention to"
+
+#: eventplanner
+msgid "trabajo / evento"
+msgstr "job / event"
+
+#: eventplanner
+msgid "términos de pago"
+msgstr "payment terms"
+
+#: eventplanner
+msgid "instrucciones de pago"
+msgstr "payment instructions"
+
+#: eventplanner
+msgid "línea de factura"
+msgstr "invoice line"
+
+#: eventplanner
+msgid "líneas de factura"
+msgstr "invoice lines"
+
+#: eventplanner
+msgid "FACTURA"
+msgstr "INVOICE"
+
+#: eventplanner
+msgid "FECHA"
+msgstr "DATE"
+
+#: eventplanner
+msgid "FACTURA #"
+msgstr "INVOICE #"
+
+#: eventplanner
+msgid "FACTURAR A"
+msgstr "BILL TO"
+
+#: eventplanner
+msgid "ATT.:"
+msgstr "ATT.:"
+
+#: eventplanner
+msgid "TRABAJO / EVENTO"
+msgstr "JOB"
+
+#: eventplanner
+msgid "TÉRMINOS DE PAGO"
+msgstr "PAYMENT TERMS"
+
+#: eventplanner
+msgid "DESCRIPCIÓN"
+msgstr "DESCRIPTION"
+
+#: eventplanner
+msgid "MONTO"
+msgstr "AMOUNT"
+
+#: eventplanner
+msgid "TOTAL"
+msgstr "TOTAL"
+
+#: eventplanner
+msgid "Thank you for your business!"
+msgstr "Thank you for your business!"
+
+#: eventplanner
+msgid "Agregar anticipo"
+msgstr "Add advance"
+
+#: eventplanner
+msgid "Editar anticipo"
+msgstr "Edit advance"
+
+#: eventplanner
+msgid "Anticipo agregado."
+msgstr "Advance added."
+
+#: eventplanner
+msgid "Anticipo actualizado."
+msgstr "Advance updated."
+
+#: eventplanner
+msgid "Anticipo eliminado."
+msgstr "Advance deleted."
+
+#: eventplanner
+msgid "Anticipos recibidos"
+msgstr "Advances received"
+
+#: eventplanner
+msgid "Sin anticipos registrados todavía."
+msgstr "No advances recorded yet."
+
+#: eventplanner
+msgid "¿Eliminar este anticipo?"
+msgstr "Delete this advance?"
+
+#: eventplanner
+msgid "anticipos del evento"
+msgstr "event advances"
+
+#: eventplanner
+msgid "Editar abono"
+msgstr "Edit payment"
+
+#: eventplanner
+msgid "Abono actualizado."
+msgstr "Payment updated."
+
+#: eventplanner
+msgid "Editar línea"
+msgstr "Edit line"
+
+#: eventplanner
+msgid "Línea actualizada."
+msgstr "Line updated."
+
+#: eventplanner
+msgid "No."
+msgstr "No."
+
+#: eventplanner
+msgid "correlativo"
+msgstr "correlative"
+
+#: eventplanner
+msgid "Anular"
+msgstr "Void"
+
+#: eventplanner
+msgid "Anulada"
+msgstr "Void"
+
+#: eventplanner
+msgid "ANULADA"
+msgstr "VOID"
+
+#: eventplanner
+msgid "Vigente"
+msgstr "Active"
+
+#: eventplanner
+msgid "Factura anulada."
+msgstr "Invoice voided."
+
+#: eventplanner
+msgid "¿Anular esta factura? Quedará marcada como anulada pero no se borrará."
+msgstr "Void this invoice? It will be marked as void but not deleted."
+
+#: eventplanner
+msgid "anulada el"
+msgstr "voided on"
+
+#: eventplanner
+msgid "anulada por"
+msgstr "voided by"
+
+#: eventplanner
+msgid "Anulada por %(who)s el %(when)s"
+msgstr "Voided by %(who)s on %(when)s"
+
+#: eventplanner
+msgid "Configuración de la empresa"
+msgstr "Company settings"
+
+#: eventplanner
+msgid "Configuración actualizada."
+msgstr "Settings updated."
+
+#: eventplanner
+msgid "Solo un administrador de empresa puede cambiar la configuración."
+msgstr "Only a company administrator can change the settings."
+
+#: eventplanner
+msgid "Formato de fecha usado en todo el sistema y en los reportes."
+msgstr "Date format used throughout the system and in reports."
+
+#: eventplanner
+msgid "formato de fecha"
+msgstr "date format"
+
+#: eventplanner
+msgid "mostrar día de la semana en las fechas"
+msgstr "show weekday in dates"
+
+#: eventplanner
+msgid "AAAA-MM-DD"
+msgstr "YYYY-MM-DD"
+
+#: eventplanner
+msgid "DD/MM/AAAA"
+msgstr "DD/MM/YYYY"
+
+#: eventplanner
+msgid "MM/DD/AAAA"
+msgstr "MM/DD/YYYY"
+
+#: eventplanner
+msgid "Grupo"
+msgstr "Group"
+
+#: eventplanner
+msgid "Comidas"
+msgstr "Meals"
+
+#: eventplanner
+msgid "Tareas relacionadas"
+msgstr "Related tasks"
+
+#: eventplanner
+msgid "Todas las tareas"
+msgstr "All tasks"
+
+#: eventplanner
+msgid "Solo pendientes"
+msgstr "Pending only"
+
+#: eventplanner
+msgid "Plan de mesas"
+msgstr "Seating chart"
+
+#: eventplanner
+msgid "Mesas"
+msgstr "Tables"
+
+#: eventplanner
+msgid "Mesas, capacidad, tipo e invitados"
+msgstr "Tables, capacity, type, and guests"
+
+#: eventplanner
+msgid "Mantenimiento de tipos de mesa"
+msgstr "Table type management"
+
+#: eventplanner
+msgid "mantenimiento de tipos de mesa"
+msgstr "table type management"
+
+#: eventplanner
+msgid "Nuevo tipo"
+msgstr "New type"
+
+#: eventplanner
+msgid "Nuevo tipo de mesa"
+msgstr "New table type"
+
+#: eventplanner
+msgid "Editar tipo de mesa"
+msgstr "Edit table type"
+
+#: eventplanner
+msgid "Tipo"
+msgstr "Type"
+
+#: eventplanner
+msgid "tipo de mesa"
+msgstr "table type"
+
+#: eventplanner
+msgid ""
+"Estos son los tipos de mesa disponibles (ej. Redonda, Cuadrada, Rectangular,"
+" Imperial, Coctelera). Agrega, renombra o reordena los que tu empresa use."
+msgstr ""
+"These are the available table types (e.g. Round, Square, Rectangular, "
+"Imperial, Cocktail). Add, rename, or reorder the ones your company uses."
+
+#: eventplanner
+msgid "Tipo de mesa creado correctamente."
+msgstr "Table type created successfully."
+
+#: eventplanner
+msgid "Tipo de mesa actualizado correctamente."
+msgstr "Table type updated successfully."
+
+#: eventplanner
+msgid "Tipo de mesa eliminado."
+msgstr "Table type deleted."
+
+#: eventplanner
+msgid "No se puede eliminar un tipo de mesa que todavía está en uso."
+msgstr "A table type that is still in use cannot be deleted."
+
+#: eventplanner
+msgid "No tienes permiso para gestionar los tipos de mesa."
+msgstr "You don't have permission to manage table types."
+
+#: eventplanner
+msgid "Todavía no hay tipos de mesa."
+msgstr "No table types yet."
+
+#: eventplanner
+msgid "¿Eliminar este tipo de mesa?"
+msgstr "Delete this table type?"
+
+#: eventplanner
+msgid "número de mesa"
+msgstr "table number"
+
+#: eventplanner
+msgid "capacidad (personas)"
+msgstr "capacity (people)"
+
+#: eventplanner
+msgid "personas"
+msgstr "people"
+
+#: eventplanner
+msgid "plan de mesas"
+msgstr "seating chart"
+
+#: eventplanner
+msgid "Agregar mesa"
+msgstr "Add table"
+
+#: eventplanner
+msgid "Editar mesa"
+msgstr "Edit table"
+
+#: eventplanner
+msgid "Mesa agregada."
+msgstr "Table added."
+
+#: eventplanner
+msgid "Mesa actualizada."
+msgstr "Table updated."
+
+#: eventplanner
+msgid "Mesa eliminada."
+msgstr "Table deleted."
+
+#: eventplanner
+msgid "Todavía no hay mesas configuradas."
+msgstr "No tables set up yet."
+
+#: eventplanner
+msgid "¿Eliminar esta mesa y sus invitados?"
+msgstr "Delete this table and its guests?"
+
+#: eventplanner
+msgid "Invitado"
+msgstr "Guest"
+
+#: eventplanner
+msgid "invitado"
+msgstr "guest"
+
+#: eventplanner
+msgid "invitados"
+msgstr "guests"
+
+#: eventplanner
+msgid "Nombre del invitado"
+msgstr "Guest name"
+
+#: eventplanner
+msgid "Invitado agregado."
+msgstr "Guest added."
+
+#: eventplanner
+msgid "Invitado actualizado."
+msgstr "Guest updated."
+
+#: eventplanner
+msgid "Invitado eliminado."
+msgstr "Guest deleted."
+
+#: eventplanner
+msgid "Editar invitado"
+msgstr "Edit guest"
+
+#: eventplanner
+msgid "Sin invitados todavía."
+msgstr "No guests yet."
+
+#: eventplanner
+msgid "¿Eliminar este invitado?"
+msgstr "Delete this guest?"
+
+#: eventplanner
+msgid "Mover a la mesa"
+msgstr "Move to table"
+
+#: eventplanner
+msgid "Invitado movido de mesa."
+msgstr "Guest moved to another table."
+
+#: eventplanner
+msgid "Solo Ceremonia"
+msgstr "Ceremony only"
+
+#: eventplanner
+msgid "Solo Recepción"
+msgstr "Reception only"
+
+#: eventplanner
+msgid "Todas las secciones"
+msgstr "All sections"
+
+#: eventplanner
+msgid "moneda"
+msgstr "currency"
+
+#: eventplanner
+msgid "signo de moneda"
+msgstr "currency symbol"
+
+#: eventplanner
+msgid "mostrar signo de moneda"
+msgstr "show currency symbol"
+
+#: eventplanner
+msgid ""
+"Por defecto el signo no se muestra en los montos, solo si se activa aquí."
+msgstr "By default the symbol is not shown on amounts, only if enabled here."
+
+#: eventplanner
+msgid "pago recibido"
+msgstr "payment received"
+
+#: eventplanner
+msgid "fecha de pago recibido"
+msgstr "payment received date"
+
+#: eventplanner
+msgid "Pagada"
+msgstr "Paid"
+
+#: eventplanner
+msgid "PAGADA"
+msgstr "PAID"
+
+#: eventplanner
+msgid "Pago recibido el"
+msgstr "Payment received on"
+
+#: eventplanner
+msgid "Marcar como pagada"
+msgstr "Mark as paid"
+
+#: eventplanner
+msgid "Quitar marca de pagada"
+msgstr "Remove paid mark"
+
+#: eventplanner
+msgid "Factura marcada como pagada."
+msgstr "Invoice marked as paid."
+
+#: eventplanner
+msgid "Se quitó la marca de pagada."
+msgstr "The paid mark was removed."
+
+#: eventplanner
+msgid "No se pudo agregar el invitado: revisa el nombre."
+msgstr "Could not add the guest: check the name."
+
+#: eventplanner
+msgid "Excede capacidad"
+msgstr "Over capacity"
+
+#: eventplanner
+msgid "Capacidad"
+msgstr "Capacity"
+
+#: eventplanner
+msgid "Invitados (cantidad)"
+msgstr "Guests (count)"
+
+#: eventplanner
+msgid "Reporte del plan de mesas"
+msgstr "Seating chart report"
+
+#: eventplanner
+msgid "Ver reporte"
+msgstr "View report"
+
+#: eventplanner
+msgid "Minuto a minuto (todas las secciones)"
+msgstr "Minute by minute (all sections)"
+
+#: eventplanner
+msgid "Fecha desde"
+msgstr "Date from"
+
+#: eventplanner
+msgid "Fecha hasta"
+msgstr "Date to"
+
+#: eventplanner
+msgid "Hora desde"
+msgstr "Time from"
+
+#: eventplanner
+msgid "Hora hasta"
+msgstr "Time to"
+
+#: eventplanner
+msgid "Filtrar"
+msgstr "Filter"
+
+#: eventplanner
+msgid "Quitar filtros"
+msgstr "Clear filters"

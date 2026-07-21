@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% if is_new %}{% trans "Nuevo tipo de mesa" %}{% else %}{% trans "Editar tipo de mesa" %}{% endif %}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-body p-4">
+        <h4 class="mb-3">
+          {% if is_new %}<i class="bi bi-plus-square"></i> {% trans "Nuevo tipo de mesa" %}
+          {% else %}<i class="bi bi-pencil"></i> {% trans "Editar tipo de mesa" %}{% endif %}
+        </h4>
+        <form method="post">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <button type="submit" class="btn btn-dark">{% trans "Guardar" %}</button>
+          <a href="{% url 'events:table_type_list' %}" class="btn btn-link">{% trans "Cancelar" %}</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

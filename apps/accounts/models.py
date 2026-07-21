@@ -7,12 +7,25 @@ from django_countries.fields import CountryField
 class Company(models.Model):
     """Tenant: a wedding/event planning agency using the platform."""
 
+    DATE_FORMAT_ISO = "iso"
+    DATE_FORMAT_DMY = "dmy"
+    DATE_FORMAT_MDY = "mdy"
+    DATE_FORMAT_CHOICES = [
+        (DATE_FORMAT_ISO, _("AAAA-MM-DD")),
+        (DATE_FORMAT_DMY, _("DD/MM/AAAA")),
+        (DATE_FORMAT_MDY, _("MM/DD/AAAA")),
+    ]
+
     name = models.CharField(_("nombre"), max_length=150)
     country = CountryField(_("país"), blank_label=_("(selecciona un país)"))
     city = models.CharField(_("ciudad"), max_length=120, blank=True)
     phone = models.CharField(_("teléfono"), max_length=40, blank=True)
     email = models.EmailField(_("correo de contacto"), blank=True)
     is_active = models.BooleanField(_("activa"), default=True)
+    date_format = models.CharField(
+        _("formato de fecha"), max_length=3, choices=DATE_FORMAT_CHOICES, default=DATE_FORMAT_DMY,
+    )
+    date_show_weekday = models.BooleanField(_("mostrar día de la semana en las fechas"), default=False)
     created_at = models.DateTimeField(_("creada"), auto_now_add=True)
 
     class Meta:

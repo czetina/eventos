@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% load i18n formatting %}
+{% block title %}{% trans "Factura" %} {{ invoice.invoice_number }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 no-print">
+  <a href="{% url 'events:invoice_detail' event.pk invoice.pk %}" class="btn btn-link px-0">&larr; {% trans "Volver a la factura" %}</a>
+  <button class="btn btn-sm btn-outline-dark" type="button" onclick="window.print()">
+    <i class="bi bi-printer"></i> {% trans "Imprimir / Guardar PDF" %}
+  </button>
+</div>
+
+<style>
+  .invoice-sheet {
+    max-width: 780px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 2rem 2.2rem;
+    font-family: 'Century Gothic', 'Futura', Arial, sans-serif;
+    color: #404040;
+  }
+  .invoice-sheet .teal { color: #18504f; }
+  .invoice-sheet .value { color: #616668; font-family: Arial, sans-serif; }
+  .invoice-sheet .plum { color: #b081b4; font-style: italic; }
+  .invoice-header { display: flex; justify-content: space-between; align-items: flex-start; }
+  .invoice-title { font-size: 1.9rem; letter-spacing: .05em; color: #18504f; text-align: right; }
+  .invoice-issuer-name { font-size: 1.3rem; color: #585858; }
+  .invoice-rule { border: none; border-top: 3px solid #18504f; margin: .6rem 0 1.1rem; }
+  .invoice-rule-thin { border: none; border-top: 1px solid #a6a6a6; margin: .5rem 0; }
+  .invoice-rule-heavy { border: none; border-top: 1.5px solid #808080; margin: .5rem 0; }
+  .invoice-label { font-size: .8rem; letter-spacing: .04em; color: #18504f; }
+  .invoice-table { width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; }
+  .invoice-table th { text-align: left; font-family: 'Century Gothic', Arial, sans-serif; color: #18504f; font-size: .85rem; padding-bottom: .4rem; }
+  .invoice-table th.amount, .invoice-table td.amount { text-align: right; }
+  .invoice-table td { padding: .35rem 0; border-bottom: 1px solid #e5e5e5; }
+  .invoice-total-row td { border-top: 1.5px solid #808080; border-bottom: none; font-weight: bold; font-family: 'Century Gothic', Arial, sans-serif; padding-top: .6rem; }
+  .invoice-void-stamp {
+    position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) rotate(-20deg);
+    font-size: 4rem; font-weight: bold; color: rgba(220, 53, 69, .35); border: .5rem solid rgba(220, 53, 69, .35);
+    padding: .2em .4em; letter-spacing: .1em; pointer-events: none; white-space: nowrap;
+  }
+  .invoice-paid-stamp {
+    position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) rotate(-20deg);
+    font-size: 4rem; font-weight: bold; color: rgba(25, 135, 84, .35); border: .5rem solid rgba(25, 135, 84, .35);
+    padding: .2em .4em; letter-spacing: .1em; pointer-events: none; white-space: nowrap;
+  }
+  @media print {
+    .invoice-sheet { padding: 0; }
+  }
+</style>
+
+<div class="invoice-sheet position-relative">
+  {% if invoice.status == 'anulada' %}
+  <div class="invoice-void-stamp">{% trans "ANULADA" %}</div>
+  {% elif invoice.payment_received %}
+  <div class="invoice-paid-stamp">{% trans "PAGADA" %}</div>
+  {% endif %}
+  <div class="invoice-header">
+    <div>
+      <div class="invoice-issuer-name">{{ invoice.issuer_name }}</div>
+      {% if invoice.issuer_contact %}<div class="teal small mt-1">{{ invoice.issuer_contact }}</div>{% endif %}
+    </div>
+    <div class="text-end">
+      <div class="invoice-title">{% trans "FACTURA" %}</div>
+    </div>
+  </div>
+  <hr class="invoice-rule">
+
+  <div class="d-flex justify-content-between">
+    <div></div>
+    <div class="text-end">
+      <div><span class="invoice-label">{% trans "FECHA" %}:</span> <span class="value">{{ invoice.date }}</span></div>
+      <div><span class="invoice-label">{% trans "FACTURA #" %}:</span> <span class="value">{{ invoice.invoice_number }}</span></div>
+    </div>
+  </div>
+
+  <div class="mt-3">
+    <div class="invoice-label">{% trans "FACTURAR A" %}</div>
+    <div class="value mt-1">
+      {{ invoice.bill_to_name }}<br>
+      {% if invoice.bill_to_attn %}{% trans "ATT.:" %} {{ invoice.bill_to_attn }}<br>{% endif %}
+      {% if invoice.bill_to_city %}{{ invoice.bill_to_city }}<br>{% endif %}
+      {% if invoice.bill_to_country %}{{ invoice.bill_to_country }}{% endif %}
+    </div>
+  </div>
+
+  <hr class="invoice-rule-thin">
+  <div class="d-flex justify-content-between">
+    <div class="invoice-label">{% trans "TRABAJO / EVENTO" %}</div>
+    <div class="invoice-label">{% trans "TÉRMINOS DE PAGO" %}</div>
+  </div>
+  <hr class="invoice-rule-heavy">
+  <div class="d-flex justify-content-between">
+    <div class="value">{{ invoice.job_name|default:"—" }}</div>
+    <div class="value">{{ invoice.payment_terms|default:"—" }}</div>
+  </div>
+
+  <table class="invoice-table mt-4">
+    <thead>
+      <tr>
+        <th>{% trans "DESCRIPCIÓN" %}</th>
+        <th class="amount">{% trans "MONTO" %}</th>
+      </tr>
+    </thead>
+    <tbody style="border-top: 3px solid #18504f;">
+      {% for item in invoice.items.all %}
+      <tr>
+        <td>{{ item.description }}</td>
+        <td class="amount">{% if invoice.show_currency_symbol %}{{ invoice.currency_symbol }}{% endif %}{{ item.amount|money }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr class="invoice-total-row">
+        <td>{% trans "TOTAL" %}{% if invoice.currency %} ({{ invoice.currency }}){% endif %}</td>
+        <td class="amount">{% if invoice.show_currency_symbol %}{{ invoice.currency_symbol }}{% endif %}{{ invoice.total|money }}</td>
+      </tr>
+    </tfoot>
+  </table>
+
+  {% if invoice.payment_received %}
+  <div class="value small mt-2">
+    {% blocktrans with when=invoice.payment_received_date %}Pago recibido el {{ when }}{% endblocktrans %}
+  </div>
+  {% endif %}
+
+  {% if invoice.payment_instructions %}
+  <div class="plum mt-4 small">{{ invoice.payment_instructions|linebreaks }}</div>
+  {% endif %}
+  <div class="plum fw-bold mt-2 small">{% trans "Thank you for your business!" %}</div>
+</div>
+{% endblock %}

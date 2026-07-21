@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n formatting %}
 {% block title %}{{ event.name }}{% endblock %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-start mb-3">
@@ -34,9 +34,9 @@
       <div class="col-md-4"><div class="card p-3 text-center"><div class="fs-3 fw-bold">{{ team_members|length }}</div><div class="text-muted small">{% trans "Miembros del equipo" %}</div></div></div>
     </div>
     <div class="row g-3 mt-1">
-      <div class="col-md-4"><div class="card p-3"><div class="text-muted small">{% trans "Anticipo" %}</div><div class="fs-5">{{ event.advance_amount|floatformat:2 }}</div></div></div>
-      <div class="col-md-4"><div class="card p-3"><div class="text-muted small">{% trans "Gastos" %}</div><div class="fs-5">{{ event.total_expenses|floatformat:2 }}</div></div></div>
-      <div class="col-md-4"><div class="card p-3"><div class="text-muted small">{% trans "Saldo" %} {% if event.expense_balance < 0 %}<span class="text-danger">({% trans "a cobrar al cliente" %})</span>{% endif %}</div><div class="fs-5 {% if event.expense_balance < 0 %}text-danger{% endif %}">{{ event.expense_balance|floatformat:2 }}</div></div></div>
+      <div class="col-md-4"><div class="card p-3"><div class="text-muted small">{% trans "Anticipo" %}</div><div class="fs-5">{{ event.advance_amount|money }}</div></div></div>
+      <div class="col-md-4"><div class="card p-3"><div class="text-muted small">{% trans "Gastos" %}</div><div class="fs-5">{{ event.total_expenses|money }}</div></div></div>
+      <div class="col-md-4"><div class="card p-3"><div class="text-muted small">{% trans "Saldo" %} {% if event.expense_balance < 0 %}<span class="text-danger">({% trans "a cobrar al cliente" %})</span>{% endif %}</div><div class="fs-5 {% if event.expense_balance < 0 %}text-danger{% endif %}">{{ event.expense_balance|money }}</div></div></div>
     </div>
     {% if event.civil_ceremony_venue or event.religious_ceremony_venue or event.cocktail_venue %}
     <div class="row g-3 mt-1">
@@ -149,9 +149,9 @@
 
   <div class="tab-pane fade" id="tab-finanzas">
     <div class="row g-3 mb-4">
-      <div class="col-md-4"><div class="card p-3"><div class="text-muted small">{% trans "Anticipo" %}</div><div class="fs-5">{{ event.advance_amount|floatformat:2 }}</div></div></div>
-      <div class="col-md-4"><div class="card p-3"><div class="text-muted small">{% trans "Gastos" %}</div><div class="fs-5">{{ event.total_expenses|floatformat:2 }}</div></div></div>
-      <div class="col-md-4"><div class="card p-3"><div class="text-muted small">{% trans "Saldo" %} {% if event.expense_balance < 0 %}<span class="text-danger">({% trans "a cobrar al cliente" %})</span>{% endif %}</div><div class="fs-5 {% if event.expense_balance < 0 %}text-danger{% endif %}">{{ event.expense_balance|floatformat:2 }}</div></div></div>
+      <div class="col-md-4"><div class="card p-3"><div class="text-muted small">{% trans "Anticipo" %}</div><div class="fs-5">{{ event.advance_amount|money }}</div></div></div>
+      <div class="col-md-4"><div class="card p-3"><div class="text-muted small">{% trans "Gastos" %}</div><div class="fs-5">{{ event.total_expenses|money }}</div></div></div>
+      <div class="col-md-4"><div class="card p-3"><div class="text-muted small">{% trans "Saldo" %} {% if event.expense_balance < 0 %}<span class="text-danger">({% trans "a cobrar al cliente" %})</span>{% endif %}</div><div class="fs-5 {% if event.expense_balance < 0 %}text-danger{% endif %}">{{ event.expense_balance|money }}</div></div></div>
     </div>
     <div class="row g-3">
       <div class="col-md-4">
@@ -170,6 +170,12 @@
         <a href="{% url 'events:report_expenses' event.pk %}" class="card p-3 text-decoration-none text-dark h-100">
           <div class="fs-5"><i class="bi bi-file-earmark-bar-graph"></i> {% trans "Reporte de gastos" %}</div>
           <div class="text-muted small">{% trans "Imprimible / PDF" %}</div>
+        </a>
+      </div>
+      <div class="col-md-4">
+        <a href="{% url 'events:invoice_list' event.pk %}" class="card p-3 text-decoration-none text-dark h-100">
+          <div class="fs-5"><i class="bi bi-file-earmark-text"></i> {% trans "Facturas" %}</div>
+          <div class="text-muted small">{% trans "Facturar al cliente e imprimir" %}</div>
         </a>
       </div>
     </div>
@@ -223,14 +229,21 @@
           <div class="text-muted small">{% trans "Conteo de comidas a preparar" %}</div>
         </a>
       </div>
+      <div class="col-md-4">
+        <a href="{% url 'events:seating_chart' event.pk %}" class="card p-3 text-decoration-none text-dark h-100">
+          <div class="fs-5"><i class="bi bi-table"></i> {% trans "Plan de mesas" %}</div>
+          <div class="text-muted small">{% trans "Mesas, capacidad, tipo e invitados" %}</div>
+        </a>
+      </div>
     </div>
     <h6>{% trans "Reportes" %}</h6>
     <div class="list-group">
       <a href="{% url 'events:report_itinerary' event.pk %}" class="list-group-item list-group-item-action"><i class="bi bi-clock-history"></i> {% trans "Itinerario imprimible por día" %}</a>
       <a href="{% url 'events:report_tasks' event.pk %}" class="list-group-item list-group-item-action"><i class="bi bi-list-check"></i> {% trans "Tareas por responsable" %}</a>
       <a href="{% url 'events:report_status_history' event.pk %}" class="list-group-item list-group-item-action"><i class="bi bi-journal-text"></i> {% trans "Historial de cambios de estado" %}</a>
-      <a href="{% url 'events:report_minute_by_minute' event.pk %}" class="list-group-item list-group-item-action"><i class="bi bi-stopwatch"></i> {% trans "Minuto a minuto (ceremonia y recepción)" %}</a>
+      <a href="{% url 'events:report_minute_by_minute' event.pk %}" class="list-group-item list-group-item-action"><i class="bi bi-stopwatch"></i> {% trans "Minuto a minuto (todas las secciones)" %}</a>
       <a href="{% url 'events:report_wedding_party' event.pk %}" class="list-group-item list-group-item-action"><i class="bi bi-flower1"></i> {% trans "Reporte del cortejo nupcial" %}</a>
+      <a href="{% url 'events:report_seating_chart' event.pk %}" class="list-group-item list-group-item-action"><i class="bi bi-table"></i> {% trans "Reporte del plan de mesas" %}</a>
       <a href="{% url 'events:report_meals' event.pk %}" class="list-group-item list-group-item-action"><i class="bi bi-egg-fried"></i> {% trans "Reporte de comidas por grupo" %}</a>
       <a href="{% url 'events:report_vendors' event.pk %}" class="list-group-item list-group-item-action"><i class="bi bi-file-earmark-bar-graph"></i> {% trans "Proveedores: pagado y saldo" %}</a>
       <a href="{% url 'events:report_expenses' event.pk %}" class="list-group-item list-group-item-action"><i class="bi bi-cash-stack"></i> {% trans "Gastos del evento" %}</a>

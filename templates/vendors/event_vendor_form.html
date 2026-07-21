@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n formatting %}
 {% block title %}{% if is_new %}{% trans "Asociar proveedor" %}{% else %}{% trans "Editar proveedor del evento" %}{% endif %}{% endblock %}
 {% block content %}
 <div class="row justify-content-center">
@@ -35,9 +35,9 @@
           </a>
         </div>
         <div class="mb-2 text-muted">
-          {% trans "Contrato" %}: {{ event_vendor.contract_amount|floatformat:2 }} ·
-          {% trans "Pagado" %}: {{ event_vendor.deposit_paid|floatformat:2 }} ·
-          {% trans "Saldo" %}: {{ event_vendor.balance_due|floatformat:2 }}
+          {% trans "Contrato" %}: {{ event_vendor.contract_amount|money }} ·
+          {% trans "Pagado" %}: {{ event_vendor.deposit_paid|money }} ·
+          {% trans "Saldo" %}: {{ event_vendor.balance_due|money }}
         </div>
         <table class="table table-sm align-middle mb-0">
           <thead class="table-light">
@@ -47,7 +47,7 @@
             {% for payment in payments %}
             <tr>
               <td>{{ payment.date }}</td>
-              <td>{{ payment.amount|floatformat:2 }}</td>
+              <td>{{ payment.amount|money }}</td>
               <td class="text-muted small">{{ payment.note|default:"—" }}</td>
               <td>
                 {% if payment.document %}
@@ -55,7 +55,8 @@
                 {% else %}—{% endif %}
               </td>
               <td class="text-end">
-                <form method="post" action="{% url 'vendors:event_vendor_payment_remove' event.pk event_vendor.pk payment.pk %}" onsubmit="return confirm('{% trans "¿Eliminar este abono?" %}');">
+                <a href="{% url 'vendors:event_vendor_payment_edit' event.pk event_vendor.pk payment.pk %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+                <form method="post" action="{% url 'vendors:event_vendor_payment_remove' event.pk event_vendor.pk payment.pk %}" class="d-inline" onsubmit="return confirm('{% trans "¿Eliminar este abono?" %}');">
                   {% csrf_token %}
                   <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                 </form>

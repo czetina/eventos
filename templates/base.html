@@ -67,6 +67,9 @@
             <li><span class="dropdown-item-text text-muted small">{{ user.role.name|default:"—" }}{% if current_company %} · {{ current_company.name }}{% endif %}</span></li>
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">{% trans "Mi perfil" %}</a></li>
+            {% if user.is_company_admin or user.is_superuser %}
+            <li><a class="dropdown-item" href="{% url 'accounts:company_settings' %}">{% trans "Configuración de la empresa" %}</a></li>
+            {% endif %}
             <li>
               <form action="{% url 'accounts:logout' %}" method="post">
                 {% csrf_token %}

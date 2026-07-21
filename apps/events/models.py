@@ -94,11 +94,6 @@ class Event(models.Model):
         help_text=_("Identificador usado para el link público (sin login) del planograma del cortejo."),
     )
 
-    advance_amount = models.DecimalField(
-        _("anticipo"), max_digits=12, decimal_places=2, default=0,
-        help_text=_("Monto de anticipo recibido del cliente para gastos del evento (puede ser 0)."),
-    )
-
     class Meta:
         verbose_name = _("evento")
         verbose_name_plural = _("eventos")
@@ -121,6 +116,10 @@ class Event(models.Model):
     @property
     def total_expenses(self):
         return self.expenses.aggregate(models.Sum("amount"))["amount__sum"] or 0
+
+    @property
+    def advance_amount(self):
+        return self.advances.aggregate(models.Sum("amount"))["amount__sum"] or 0
 
     @property
     def expense_balance(self):
@@ -321,6 +320,88 @@ class WeddingPartyMember(models.Model):
         return f"{self.name} ({self.list_type})"
 
 
+class WeddingTableType(models.Model):
+    """A company-maintained table shape/style (e.g. Redonda, Cuadrada,
+    Rectangular, Imperial, Coctelera) — same 'Mantenimiento' pattern as
+    WeddingPartyListType/VendorCategory."""
+
+    company = models.ForeignKey(
+        Company, verbose_name=_("empresa"), related_name="table_types", on_delete=models.CASCADE
+    )
+    name = models.CharField(_("nombre"), max_length=100)
+    order = models.PositiveIntegerField(_("orden"), default=0)
+
+    class Meta:
+        verbose_name = _("tipo de mesa")
+        verbose_name_plural = _("mantenimiento de tipos de mesa")
+        unique_together = [("company", "name")]
+        ordering = ["order", "name"]
+
+    def __str__(self):
+        return self.name
+
+
+DEFAULT_TABLE_TYPES = ["Redonda", "Cuadrada", "Rectangular", "Imperial", "Coctelera"]
+
+
+def create_default_table_types(company):
+    types = {}
+    for order, name in enumerate(DEFAULT_TABLE_TYPES):
+        table_type, _created = WeddingTableType.objects.get_or_create(
+            company=company, name=name, defaults={"order": order}
+        )
+        types[name] = table_type
+    return types
+
+
+class SeatingTable(models.Model):
+    """One table in the event's seating chart (plan de mesas): its number,
+    shape/type, seat capacity, and the guests assigned to it."""
+
+    event = models.ForeignKey(
+        Event, verbose_name=_("evento"), related_name="seating_tables", on_delete=models.CASCADE
+    )
+    table_number = models.CharField(_("número de mesa"), max_length=20)
+    table_type = models.ForeignKey(
+        WeddingTableType, verbose_name=_("tipo de mesa"), related_name="tables", on_delete=models.CASCADE
+    )
+    capacity = models.PositiveIntegerField(_("capacidad (personas)"), default=8)
+    notes = models.CharField(_("notas"), max_length=255, blank=True)
+
+    class Meta:
+        verbose_name = _("mesa")
+        verbose_name_plural = _("plan de mesas")
+        ordering = ["table_number"]
+
+    def __str__(self):
+        return f"Mesa {self.table_number}"
+
+    @property
+    def guest_count(self):
+        return self.guests.count()
+
+    @property
+    def is_over_capacity(self):
+        return self.guest_count > self.capacity
+
+
+class TableGuest(models.Model):
+    table = models.ForeignKey(
+        SeatingTable, verbose_name=_("mesa"), related_name="guests", on_delete=models.CASCADE
+    )
+    name = models.CharField(_("nombre"), max_length=150)
+    notes = models.CharField(_("notas"), max_length=255, blank=True)
+    order = models.PositiveIntegerField(_("orden"), default=0)
+
+    class Meta:
+        verbose_name = _("invitado")
+        verbose_name_plural = _("invitados")
+        ordering = ["order", "name"]
+
+    def __str__(self):
+        return self.name
+
+
 class ProcessionalEntry(models.Model):
     """One step of the church processional order — who enters (or exits) on
     each side of the aisle (plus an optional center position for someone who
@@ -444,6 +525,31 @@ class Expense(models.Model):
         return f"{self.description} ({self.amount})"
 
 
+class EventAdvance(models.Model):
+    """A deposit/advance payment received from the client toward event
+    expenses. There can be more than one — Event.advance_amount sums these."""
+
+    event = models.ForeignKey(
+        Event, verbose_name=_("evento"), related_name="advances", on_delete=models.CASCADE
+    )
+    date = models.DateField(_("fecha"))
+    amount = models.DecimalField(_("monto"), max_digits=12, decimal_places=2)
+    note = models.CharField(_("nota"), max_length=255, blank=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, verbose_name=_("registrado por"), related_name="advances_recorded",
+        on_delete=models.SET_NULL, null=True, blank=True,
+    )
+    created_at = models.DateTimeField(_("creado"), auto_now_add=True)
+
+    class Meta:
+        verbose_name = _("anticipo")
+        verbose_name_plural = _("anticipos del evento")
+        ordering = ["-date", "-id"]
+
+    def __str__(self):
+        return f"Anticipo {self.amount} ({self.date})"
+
+
 class Quotation(models.Model):
     """A client quote/estimate for an event, built as a dynamic list of items
     priced in Dominican pesos (DOP) with an automatic USD conversion — mirrors
@@ -453,6 +559,7 @@ class Quotation(models.Model):
     event = models.ForeignKey(
         Event, verbose_name=_("evento"), related_name="quotations", on_delete=models.CASCADE
     )
+    correlative = models.PositiveIntegerField(_("correlativo"), default=0)
     realization_date = models.DateField(_("fecha de realización"))
     client_name = models.CharField(_("cliente"), max_length=200)
     activity = models.CharField(_("actividad"), max_length=200)
@@ -505,3 +612,80 @@ class QuotationItem(models.Model):
     def value_usd(self):
         rate = self.quotation.exchange_rate
         return (self.value_dop / rate) if rate else 0
+
+
+class Invoice(models.Model):
+    """A client invoice for an event, printed over the planner's own invoice
+    format: issuer header, bill-to block, job/payment terms, item table with
+    total, and free-text payment instructions."""
+
+    STATUS_ACTIVE = "vigente"
+    STATUS_VOID = "anulada"
+    STATUS_CHOICES = [
+        (STATUS_ACTIVE, _("Vigente")),
+        (STATUS_VOID, _("Anulada")),
+    ]
+
+    event = models.ForeignKey(
+        Event, verbose_name=_("evento"), related_name="invoices", on_delete=models.CASCADE
+    )
+    status = models.CharField(_("estado"), max_length=10, choices=STATUS_CHOICES, default=STATUS_ACTIVE)
+    voided_at = models.DateTimeField(_("anulada el"), null=True, blank=True)
+    voided_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, verbose_name=_("anulada por"), related_name="invoices_voided",
+        on_delete=models.SET_NULL, null=True, blank=True,
+    )
+    invoice_number = models.CharField(_("número de factura"), max_length=30)
+    date = models.DateField(_("fecha"))
+    issuer_name = models.CharField(_("nombre de quien factura"), max_length=200)
+    issuer_contact = models.CharField(_("correo / teléfono"), max_length=200, blank=True)
+    bill_to_name = models.CharField(_("facturar a"), max_length=200)
+    bill_to_attn = models.CharField(_("atención de"), max_length=200, blank=True)
+    bill_to_city = models.CharField(_("ciudad"), max_length=150, blank=True)
+    bill_to_country = models.CharField(_("país"), max_length=150, blank=True)
+    job_name = models.CharField(_("trabajo / evento"), max_length=200, blank=True)
+    payment_terms = models.CharField(_("términos de pago"), max_length=200, blank=True)
+    payment_instructions = models.TextField(_("instrucciones de pago"), blank=True)
+    currency = models.CharField(_("moneda"), max_length=10, blank=True, default="USD")
+    currency_symbol = models.CharField(_("signo de moneda"), max_length=5, blank=True, default="$")
+    show_currency_symbol = models.BooleanField(
+        _("mostrar signo de moneda"), default=False,
+        help_text=_("Por defecto el signo no se muestra en los montos, solo si se activa aquí."),
+    )
+    payment_received = models.BooleanField(_("pago recibido"), default=False)
+    payment_received_date = models.DateField(_("fecha de pago recibido"), null=True, blank=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, verbose_name=_("creada por"), related_name="invoices_created",
+        on_delete=models.SET_NULL, null=True, blank=True,
+    )
+    created_at = models.DateTimeField(_("creada"), auto_now_add=True)
+    updated_at = models.DateTimeField(_("actualizada"), auto_now=True)
+
+    class Meta:
+        verbose_name = _("factura")
+        verbose_name_plural = _("facturas")
+        ordering = ["-date", "-created_at"]
+
+    def __str__(self):
+        return f"Factura {self.invoice_number} — {self.bill_to_name}"
+
+    @property
+    def total(self):
+        return sum((item.amount for item in self.items.all()), 0)
+
+
+class InvoiceItem(models.Model):
+    invoice = models.ForeignKey(
+        Invoice, verbose_name=_("factura"), related_name="items", on_delete=models.CASCADE
+    )
+    description = models.CharField(_("descripción"), max_length=255)
+    amount = models.DecimalField(_("monto"), max_digits=12, decimal_places=2, default=0)
+    order = models.PositiveIntegerField(_("orden"), default=0)
+
+    class Meta:
+        verbose_name = _("línea de factura")
+        verbose_name_plural = _("líneas de factura")
+        ordering = ["order", "id"]
+
+    def __str__(self):
+        return f"{self.description} ({self.amount})"
