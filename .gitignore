@@ -6,3 +6,4 @@ media/
 staticfiles/
 .env
 *.log
+deploy/
