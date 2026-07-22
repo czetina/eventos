@@ -392,6 +392,12 @@ class TableGuest(models.Model):
     name = models.CharField(_("nombre"), max_length=150)
     notes = models.CharField(_("notas"), max_length=255, blank=True)
     order = models.PositiveIntegerField(_("orden"), default=0)
+    gives_speech = models.BooleanField(_("da discurso"), default=False)
+    speech_member = models.ForeignKey(
+        "WeddingPartyMember", verbose_name=_("registro en discursos"), null=True, blank=True,
+        on_delete=models.SET_NULL, related_name="+",
+        help_text=_("Registro creado automáticamente en Cortejo nupcial › Discursos."),
+    )
 
     class Meta:
         verbose_name = _("invitado")
@@ -408,12 +414,16 @@ class ProcessionalEntry(models.Model):
     walks alone down the middle), in walking order, feeding the auto-generated
     top-down diagram used for the ceremony rehearsal.
 
-    The altar is always drawn at the top of the diagram and the church doors
-    at the bottom, matching how a planner reads a floor plan. For the
-    'entrada' phase, order=1 is shown right at the altar (top) and the last
-    order is shown at the church entrance (bottom); for 'salida' it's the
-    reverse (order=1 at the exit/bottom, last order at the altar/top), so the
-    two phases are rendered in opposite row order."""
+    For the 'entrada' phase, the altar is drawn at the top and the church
+    doors at the bottom: order=1 is shown right at the altar and the last
+    order at the entrance, matching the direction people actually walk in.
+
+    For the 'salida' phase the diagram is flipped — the doors are drawn at
+    the top and the altar at the bottom, since order=1 (first to walk out)
+    ends up closest to the door and the highest order (last to leave the
+    altar) stays near the altar. Order 0 is reserved for a fixed reference
+    at the altar that doesn't walk out (e.g. the officiant) and is always
+    placed last/closest to the altar regardless of everyone else's order."""
 
     PHASE_ENTRADA = "entrada"
     PHASE_SALIDA = "salida"

@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eventplanner\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-20 21:35\n"
+"POT-Creation-Date: 2026-07-22 11:40\n"
 "Language: en\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -1902,6 +1902,10 @@ msgid "Sin entradas registradas todavía."
 msgstr "No entries registered yet."
 
 #: eventplanner
+msgid "Flecha:"
+msgstr "Arrow:"
+
+#: eventplanner
 msgid "token para compartir"
 msgstr "share token"
 
@@ -3543,3 +3547,51 @@ msgstr "Filter"
 #: eventplanner
 msgid "Quitar filtros"
 msgstr "Clear filters"
+
+#: eventplanner
+msgid "Planograma del Cortejo"
+msgstr "Wedding Party Floor Plan"
+
+#: eventplanner
+msgid "Buscar invitado por nombre..."
+msgstr "Search guest by name..."
+
+#: eventplanner
+msgid "Da discurso"
+msgstr "Gives a speech"
+
+#: eventplanner
+msgid "da discurso"
+msgstr "gives a speech"
+
+#: eventplanner
+msgid "Discurso"
+msgstr "Speech"
+
+#: eventplanner
+msgid "registro en discursos"
+msgstr "speeches record"
+
+#: eventplanner
+msgid "Registro creado automáticamente en Cortejo nupcial › Discursos."
+msgstr "Record created automatically in Wedding Party › Speeches."
+
+#: eventplanner
+msgid "Invitado agregado a Cortejo nupcial › Discursos."
+msgstr "Guest added to Wedding Party › Speeches."
+
+#: eventplanner
+msgid "Invitado quitado de Cortejo nupcial › Discursos."
+msgstr "Guest removed from Wedding Party › Speeches."
+
+#: eventplanner
+msgid "1 día de atraso"
+msgstr "1 day overdue"
+
+#: eventplanner
+msgid "atrasada hoy"
+msgstr "overdue today"
+
+#: eventplanner
+msgid "%(days)s días de atraso"
+msgstr "%(days)s days overdue"

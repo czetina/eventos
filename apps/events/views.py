@@ -594,6 +594,41 @@ def event_seating_table_remove(request, pk, table_pk):
     return redirect("events:seating_chart", pk=event.pk)
 
 
+def _sync_guest_speech(guest, event):
+    """Keeps TableGuest.gives_speech in sync with a WeddingPartyMember in the
+    company's 'Discursos' list — created/renamed/removed automatically so the
+    seating chart and Cortejo nupcial never disagree about who is speaking."""
+    if guest.gives_speech:
+        if guest.speech_member_id:
+            member = guest.speech_member
+            changed = []
+            if member.name != guest.name:
+                member.name = guest.name
+                changed.append("name")
+            if member.table_number != guest.table.table_number:
+                member.table_number = guest.table.table_number
+                changed.append("table_number")
+            if changed:
+                member.save(update_fields=changed)
+        else:
+            types = create_default_wedding_party_list_types(event.company)
+            discursos = types["Discursos"]
+            next_order = (
+                WeddingPartyMember.objects.filter(event=event, list_type=discursos)
+                .aggregate(Max("order"))["order__max"] or 0
+            ) + 1
+            member = WeddingPartyMember.objects.create(
+                event=event, list_type=discursos, name=guest.name, quantity=1,
+                order=next_order, table_number=guest.table.table_number,
+            )
+            guest.speech_member = member
+            guest.save(update_fields=["speech_member"])
+    elif guest.speech_member_id:
+        guest.speech_member.delete()
+        guest.speech_member = None
+        guest.save(update_fields=["speech_member"])
+
+
 @login_required
 def event_table_guest_add(request, pk, table_pk):
     event = get_event_or_403(request.user, pk)
@@ -608,6 +643,7 @@ def event_table_guest_add(request, pk, table_pk):
             guest.table = table
             guest.order = next_order
             guest.save()
+            _sync_guest_speech(guest, event)
             messages.success(request, _("Invitado agregado."))
         else:
             messages.error(request, _("No se pudo agregar el invitado: revisa el nombre."))
@@ -625,6 +661,7 @@ def event_table_guest_edit(request, pk, table_pk, guest_pk):
         form = TableGuestForm(request.POST, instance=guest)
         if form.is_valid():
             form.save()
+            _sync_guest_speech(guest, event)
             messages.success(request, _("Invitado actualizado."))
             return redirect("events:seating_chart", pk=event.pk)
     else:
@@ -640,8 +677,28 @@ def event_table_guest_remove(request, pk, table_pk, guest_pk):
     table = get_object_or_404(SeatingTable, pk=table_pk, event=event)
     guest = get_object_or_404(TableGuest, pk=guest_pk, table=table)
     if request.method == "POST":
+        if guest.speech_member_id:
+            guest.speech_member.delete()
         guest.delete()
         messages.success(request, _("Invitado eliminado."))
+    return redirect("events:seating_chart", pk=event.pk)
+
+
+@login_required
+def event_table_guest_toggle_speech(request, pk, table_pk, guest_pk):
+    event = get_event_or_403(request.user, pk)
+    if not request.user.can_manage_events:
+        raise PermissionDenied
+    table = get_object_or_404(SeatingTable, pk=table_pk, event=event)
+    guest = get_object_or_404(TableGuest, pk=guest_pk, table=table)
+    if request.method == "POST":
+        guest.gives_speech = not guest.gives_speech
+        guest.save(update_fields=["gives_speech"])
+        _sync_guest_speech(guest, event)
+        if guest.gives_speech:
+            messages.success(request, _("Invitado agregado a Cortejo nupcial › Discursos."))
+        else:
+            messages.success(request, _("Invitado quitado de Cortejo nupcial › Discursos."))
     return redirect("events:seating_chart", pk=event.pk)
 
 
@@ -710,6 +767,16 @@ def report_seating_chart_excel(request, pk):
     return workbook_response(wb, f"plan_de_mesas_{event.pk}.xlsx")
 
 
+def _salida_diagram_order(entries_salida):
+    """For the salida (exit) diagram, the top of the church is the door and
+    the bottom is the altar: order 1 (first to walk out) belongs at the top
+    near the door, and walking order increases toward the altar. Order 0 is
+    reserved for a fixed reference at the altar (e.g. the officiant, who
+    doesn't walk out with the rest), so it's always placed last/closest to
+    the altar regardless of the numeric order of everyone else."""
+    return sorted(entries_salida, key=lambda entry: (entry.order == 0, entry.order))
+
+
 @login_required
 def event_processional(request, pk):
     event = get_event_or_403(request.user, pk)
@@ -737,7 +804,7 @@ def event_processional(request, pk):
         "entries_entrada": entries_entrada,
         "entries_salida": entries_salida,
         "diagram_entries_entrada": entries_entrada.order_by("order"),
-        "diagram_entries_salida": entries_salida.order_by("-order"),
+        "diagram_entries_salida": _salida_diagram_order(entries_salida),
         "public_url": public_url,
     })
 
@@ -781,9 +848,9 @@ def processional_public(request, token):
         "diagram_entries_entrada": event.processional_entries.filter(
             phase=ProcessionalEntry.PHASE_ENTRADA
         ).order_by("order"),
-        "diagram_entries_salida": event.processional_entries.filter(
-            phase=ProcessionalEntry.PHASE_SALIDA
-        ).order_by("-order"),
+        "diagram_entries_salida": _salida_diagram_order(
+            event.processional_entries.filter(phase=ProcessionalEntry.PHASE_SALIDA)
+        ),
     })
 
 

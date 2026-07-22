@@ -489,6 +489,7 @@ TRANSLATIONS = {
     "Entrada de la iglesia": "Church entrance",
     "Altar": "Altar",
     "Sin entradas registradas todavía.": "No entries registered yet.",
+    "Flecha:": "Arrow:",
     "token para compartir": "share token",
     "Identificador usado para el link público (sin login) del planograma del cortejo.": "Identifier used for the public (no-login) link to the processional diagram.",
     # Meal counts (#39)
@@ -933,6 +934,19 @@ TRANSLATIONS = {
     "Hora hasta": "Time to",
     "Filtrar": "Filter",
     "Quitar filtros": "Clear filters",
+    "Planograma del Cortejo": "Wedding Party Floor Plan",
+    "Buscar invitado por nombre...": "Search guest by name...",
+    "Da discurso": "Gives a speech",
+    "da discurso": "gives a speech",
+    "Discurso": "Speech",
+    "registro en discursos": "speeches record",
+    "Registro creado automáticamente en Cortejo nupcial › Discursos.": "Record created automatically in Wedding Party › Speeches.",
+    "Invitado agregado a Cortejo nupcial › Discursos.": "Guest added to Wedding Party › Speeches.",
+    "Invitado quitado de Cortejo nupcial › Discursos.": "Guest removed from Wedding Party › Speeches.",
+    # Dashboard: overdue task days
+    "1 día de atraso": "1 day overdue",
+    "atrasada hoy": "overdue today",
+    "%(days)s días de atraso": "%(days)s days overdue",
 }
 
 

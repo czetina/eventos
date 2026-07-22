@@ -142,10 +142,11 @@ class SeatingTableForm(BootstrapFormMixin, forms.ModelForm):
 class TableGuestForm(BootstrapFormMixin, forms.ModelForm):
     class Meta:
         model = TableGuest
-        fields = ["name", "notes"]
+        fields = ["name", "notes", "gives_speech"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields["gives_speech"].required = False
         self._apply_bootstrap()
 
 

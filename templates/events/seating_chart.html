@@ -11,10 +11,17 @@
 </div>
 <a href="{% url 'events:detail' event.pk %}" class="btn btn-link px-0 mb-3">&larr; {% trans "Volver al evento" %}</a>
 
+<div class="mb-3">
+  <div class="input-group" style="max-width: 24rem;">
+    <span class="input-group-text"><i class="bi bi-search"></i></span>
+    <input type="text" id="guestSearch" class="form-control" placeholder="{% trans "Buscar invitado por nombre..." %}" oninput="filterGuests()">
+  </div>
+</div>
+
 <div class="row g-4">
   <div class="col-md-8">
     {% for table in tables %}
-    <div class="card mb-3">
+    <div class="card mb-3 seating-table-card">
       <div class="card-header d-flex justify-content-between align-items-center">
         <div>
           <strong>{% trans "Mesa" %} {{ table.table_number }}</strong>
@@ -36,13 +43,25 @@
       <div class="table-responsive">
         <table class="table table-sm align-middle mb-0">
           <thead class="table-light">
-            <tr><th>{% trans "Invitado" %}</th><th>{% trans "Notas" %}</th><th style="width:14em;">{% trans "Mover a la mesa" %}</th><th></th></tr>
+            <tr>
+              <th>{% trans "Invitado" %}</th><th>{% trans "Notas" %}</th>
+              <th style="width:8em;">{% trans "Discurso" %}</th>
+              <th style="width:14em;">{% trans "Mover a la mesa" %}</th><th></th>
+            </tr>
           </thead>
           <tbody>
             {% for guest in table.guests.all %}
-            <tr>
+            <tr class="guest-row" data-guest-name="{{ guest.name|lower }}">
               <td>{{ guest.name }}</td>
               <td class="text-muted small">{{ guest.notes|default:"—" }}</td>
+              <td>
+                <form method="post" action="{% url 'events:table_guest_toggle_speech' event.pk table.pk guest.pk %}">
+                  {% csrf_token %}
+                  <div class="form-check">
+                    <input type="checkbox" class="form-check-input" onchange="this.form.submit()" {% if guest.gives_speech %}checked{% endif %}>
+                  </div>
+                </form>
+              </td>
               <td>
                 <form method="post" action="{% url 'events:table_guest_move' event.pk table.pk guest.pk %}" class="d-flex gap-1">
                   {% csrf_token %}
@@ -62,7 +81,7 @@
               </td>
             </tr>
             {% empty %}
-            <tr><td colspan="4" class="text-center text-muted py-2">{% trans "Sin invitados todavía." %}</td></tr>
+            <tr><td colspan="5" class="text-center text-muted py-2">{% trans "Sin invitados todavía." %}</td></tr>
             {% endfor %}
           </tbody>
         </table>
@@ -70,11 +89,17 @@
       <div class="card-body py-2">
         <form method="post" action="{% url 'events:table_guest_add' event.pk table.pk %}" class="row g-2 align-items-end">
           {% csrf_token %}
-          <div class="col-sm-5">
+          <div class="col-sm-4">
             <input type="text" name="name" class="form-control form-control-sm" placeholder="{% trans "Nombre del invitado" %}" required>
           </div>
-          <div class="col-sm-5">
+          <div class="col-sm-4">
             <input type="text" name="notes" class="form-control form-control-sm" placeholder="{% trans "Notas" %}">
+          </div>
+          <div class="col-sm-2">
+            <div class="form-check">
+              <input type="checkbox" class="form-check-input" name="gives_speech" id="speech-{{ table.pk }}">
+              <label class="form-check-label small" for="speech-{{ table.pk }}">{% trans "Da discurso" %}</label>
+            </div>
           </div>
           <div class="col-sm-2">
             <button type="submit" class="btn btn-sm btn-dark w-100"><i class="bi bi-plus-lg"></i> {% trans "Agregar" %}</button>
@@ -97,4 +122,22 @@
     </div>
   </div>
 </div>
+
+<script>
+  function filterGuests() {
+    var q = document.getElementById('guestSearch').value.trim().toLowerCase();
+    document.querySelectorAll('.seating-table-card').forEach(function (card) {
+      var anyVisible = false;
+      var rows = card.querySelectorAll('.guest-row');
+      rows.forEach(function (row) {
+        var match = !q || row.dataset.guestName.indexOf(q) !== -1;
+        row.style.display = match ? '' : 'none';
+        if (match) anyVisible = true;
+      });
+      if (rows.length) {
+        card.style.display = (q && !anyVisible) ? 'none' : '';
+      }
+    });
+  }
+</script>
 {% endblock %}

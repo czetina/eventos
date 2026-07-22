@@ -154,6 +154,12 @@ class Task(models.Model):
             return timezone.localtime().time() > self.due_time
         return False
 
+    @property
+    def days_overdue(self):
+        if not self.is_overdue:
+            return 0
+        return (timezone.localdate() - self.due_date).days
+
     def can_be_completed_by(self, user):
         return user == self.assigned_to or user.has_role_at_least(Role.LEVEL_SUPERVISOR)
 

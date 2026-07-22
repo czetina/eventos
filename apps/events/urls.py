@@ -49,6 +49,10 @@ urlpatterns = [
         "<int:pk>/mesas/<int:table_pk>/invitados/<int:guest_pk>/mover/",
         views.event_table_guest_move, name="table_guest_move",
     ),
+    path(
+        "<int:pk>/mesas/<int:table_pk>/invitados/<int:guest_pk>/discurso/",
+        views.event_table_guest_toggle_speech, name="table_guest_toggle_speech",
+    ),
     path("<int:pk>/planograma/", views.event_processional, name="processional"),
     path("<int:pk>/planograma/<int:entry_pk>/editar/", views.event_processional_edit, name="processional_edit"),
     path("<int:pk>/planograma/<int:entry_pk>/quitar/", views.event_processional_remove, name="processional_remove"),
