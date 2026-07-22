@@ -18,9 +18,7 @@
   <div class="d-inline-flex align-items-center ms-2">
     <label class="small text-muted me-1 mb-0">{% trans "Flecha:" %}</label>
     <div class="btn-group btn-group-sm" role="group">
-      <input type="radio" class="btn-check" name="arrowPos" id="arrowCenter" value="center" checked onchange="setArrowPos(this.value)">
-      <label class="btn btn-outline-secondary" for="arrowCenter">{% trans "Centro" %}</label>
-      <input type="radio" class="btn-check" name="arrowPos" id="arrowLeft" value="left" onchange="setArrowPos(this.value)">
+      <input type="radio" class="btn-check" name="arrowPos" id="arrowLeft" value="left" checked onchange="setArrowPos(this.value)">
       <label class="btn btn-outline-secondary" for="arrowLeft">{% trans "Izquierda" %}</label>
       <input type="radio" class="btn-check" name="arrowPos" id="arrowRight" value="right" onchange="setArrowPos(this.value)">
       <label class="btn btn-outline-secondary" for="arrowRight">{% trans "Derecha" %}</label>
@@ -34,9 +32,7 @@
     window.print();
   }
   function setArrowPos(pos) {
-    document.body.classList.remove('arrow-pos-left', 'arrow-pos-right');
-    if (pos === 'left') document.body.classList.add('arrow-pos-left');
-    if (pos === 'right') document.body.classList.add('arrow-pos-right');
+    document.body.classList.toggle('arrow-pos-right', pos === 'right');
   }
 </script>
 

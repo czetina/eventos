@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eventplanner\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-22 11:40\n"
+"POT-Creation-Date: 2026-07-22 14:52\n"
 "Language: en\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -1904,6 +1904,10 @@ msgstr "No entries registered yet."
 #: eventplanner
 msgid "Flecha:"
 msgstr "Arrow:"
+
+#: eventplanner
+msgid "Sentido del recorrido"
+msgstr "Direction of travel"
 
 #: eventplanner
 msgid "token para compartir"
