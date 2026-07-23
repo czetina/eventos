@@ -113,7 +113,20 @@
     <div class="list-group">
       {% for task in tasks %}
       <a href="{% url 'tasks:detail' task.pk %}" class="list-group-item list-group-item-action d-flex justify-content-between">
-        <span>{{ task.title }} <span class="text-muted small d-block">{{ task.responsible_display }}{% if task.due_date %} · {{ task.due_date }} {{ task.due_time|default:"" }}{% endif %}</span></span>
+        <span>{{ task.title }}
+          <span class="text-muted small d-block">
+            {{ task.responsible_display }}{% if task.due_date %} · {{ task.due_date }} {{ task.due_time|default:"" }}{% endif %}
+            {% if task.is_overdue %}
+            {% if task.days_overdue == 1 %}
+            <span class="text-danger">({% trans "1 día de atraso" %})</span>
+            {% elif task.days_overdue > 1 %}
+            <span class="text-danger">({% blocktrans with days=task.days_overdue %}{{ days }} días de atraso{% endblocktrans %})</span>
+            {% else %}
+            <span class="text-danger">({% trans "atrasada hoy" %})</span>
+            {% endif %}
+            {% endif %}
+          </span>
+        </span>
         <span class="badge badge-status-{{ task.status }}">{{ task.get_status_display }}</span>
       </a>
       {% empty %}

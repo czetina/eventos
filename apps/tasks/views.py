@@ -43,17 +43,21 @@ def my_tasks(request):
 @login_required
 def task_list(request, event_pk):
     event = get_event_or_403(request.user, event_pk)
-    tasks = event.tasks.select_related("assigned_to", "supervisor")
+    tasks = event.tasks.select_related("assigned_to", "supervisor", "itinerary_session")
     if not request.user.can_manage_events:
         tasks = tasks.filter(assigned_to=request.user)
     status = request.GET.get("status")
     if status:
         tasks = tasks.filter(status=status)
+    show_overdue = request.GET.get("atrasadas") == "1"
     tasks = list(tasks)
+    if show_overdue:
+        tasks = [t for t in tasks if t.is_overdue]
     for task in tasks:
         task.latest_status_entry = task.status_history.select_related("changed_by").first()
     return render(request, "tasks/task_list.html", {
-        "event": event, "tasks": tasks, "status_choices": Task.STATUS_CHOICES, "active_status": status,
+        "event": event, "tasks": tasks, "status_choices": Task.STATUS_CHOICES,
+        "active_status": status, "show_overdue": show_overdue,
     })
 
 

@@ -81,6 +81,10 @@ class Task(models.Model):
         blank=True,
         help_text=_("Vincula esta tarea a un momento específico del itinerario (opcional)"),
     )
+    is_guion = models.BooleanField(
+        _("en el guión"), default=False,
+        help_text=_("Marca si esta tarea forma parte del guión (minuto a minuto) del evento."),
+    )
 
     due_date = models.DateField(_("fecha límite"), null=True, blank=True)
     due_time = models.TimeField(_("hora límite"), null=True, blank=True)

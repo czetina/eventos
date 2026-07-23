@@ -27,6 +27,11 @@
     <a href="{% querystring solo_pendientes=None %}" class="btn {% if not only_pending %}btn-dark{% else %}btn-outline-secondary{% endif %}">{% trans "Todas las tareas" %}</a>
     <a href="{% querystring solo_pendientes="1" %}" class="btn {% if only_pending %}btn-dark{% else %}btn-outline-secondary{% endif %}">{% trans "Solo pendientes" %}</a>
   </div>
+  {% if guion_only %}
+  <a href="{% querystring guion=None %}" class="btn btn-sm btn-danger"><i class="bi bi-check-square"></i> {% trans "Guión" %}</a>
+  {% else %}
+  <a href="{% querystring guion="1" %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-square"></i> {% trans "Guión" %}</a>
+  {% endif %}
   <div class="btn-group btn-group-sm" role="group">
     <a href="{% querystring lang="es" %}" class="btn {% if lang == 'es' %}btn-dark{% else %}btn-outline-secondary{% endif %}">ES</a>
     <a href="{% querystring lang="en" %}" class="btn {% if lang == 'en' %}btn-dark{% else %}btn-outline-secondary{% endif %}">EN</a>
@@ -36,6 +41,7 @@
 <form method="get" class="row g-2 align-items-end mb-3 no-print">
   {% if section_filter != 'todas' %}<input type="hidden" name="seccion" value="{{ section_filter }}">{% endif %}
   {% if only_pending %}<input type="hidden" name="solo_pendientes" value="1">{% endif %}
+  {% if guion_only %}<input type="hidden" name="guion" value="1">{% endif %}
   <input type="hidden" name="lang" value="{{ lang }}">
   <div class="col-auto">
     <label class="form-label small mb-0">{% trans "Fecha desde" %}</label>

@@ -491,6 +491,9 @@ TRANSLATIONS = {
     "Sin entradas registradas todavía.": "No entries registered yet.",
     "Flecha:": "Arrow:",
     "Sentido del recorrido": "Direction of travel",
+    "Atrasadas": "Overdue",
+    "Guión": "Script",
+    "Guión:": "Script:",
     "token para compartir": "share token",
     "Identificador usado para el link público (sin login) del planograma del cortejo.": "Identifier used for the public (no-login) link to the processional diagram.",
     # Meal counts (#39)

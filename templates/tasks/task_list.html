@@ -16,10 +16,11 @@
 </div>
 
 <div class="mb-3">
-  <a href="?" class="btn btn-sm {% if not active_status %}btn-dark{% else %}btn-outline-secondary{% endif %}">{% trans "Todas" %}</a>
+  <a href="?" class="btn btn-sm {% if not active_status and not show_overdue %}btn-dark{% else %}btn-outline-secondary{% endif %}">{% trans "Todas" %}</a>
   {% for value, label in status_choices %}
-  <a href="?status={{ value }}" class="btn btn-sm {% if active_status == value %}btn-dark{% else %}btn-outline-secondary{% endif %}">{{ label }}</a>
+  <a href="?status={{ value }}" class="btn btn-sm {% if active_status == value and not show_overdue %}btn-dark{% else %}btn-outline-secondary{% endif %}">{{ label }}</a>
   {% endfor %}
+  <a href="?atrasadas=1" class="btn btn-sm {% if show_overdue %}btn-danger{% else %}btn-outline-danger{% endif %}">{% trans "Atrasadas" %}</a>
 </div>
 
 <form method="post" action="{% url 'tasks:bulk_complete' %}" id="bulk-complete-form">
@@ -37,7 +38,21 @@
       <a href="{% url 'tasks:detail' task.pk %}" class="flex-grow-1 d-flex justify-content-between align-items-center text-decoration-none text-dark">
         <span>
           <strong>{{ task.title }}</strong>
-          <span class="text-muted small d-block">{{ task.responsible_display }}{% if task.supervisor %} · {% trans "supervisa" %} {{ task.supervisor }}{% endif %}{% if task.due_date %} · {{ task.due_date }} {{ task.due_time|default:"" }}{% endif %}</span>
+          {% if task.is_guion %}
+          <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle small ms-1"><i class="bi bi-check-circle"></i> {% trans "Guión" %}</span>
+          {% endif %}
+          <span class="text-muted small d-block">
+            {{ task.responsible_display }}{% if task.supervisor %} · {% trans "supervisa" %} {{ task.supervisor }}{% endif %}{% if task.due_date %} · {{ task.due_date }} {{ task.due_time|default:"" }}{% endif %}
+            {% if task.is_overdue %}
+            {% if task.days_overdue == 1 %}
+            <span class="text-danger">({% trans "1 día de atraso" %})</span>
+            {% elif task.days_overdue > 1 %}
+            <span class="text-danger">({% blocktrans with days=task.days_overdue %}{{ days }} días de atraso{% endblocktrans %})</span>
+            {% else %}
+            <span class="text-danger">({% trans "atrasada hoy" %})</span>
+            {% endif %}
+            {% endif %}
+          </span>
           {% if task.latest_status_entry %}
           <span class="text-muted small d-block">
             {% trans "Último estado" %}: {{ task.latest_status_entry.changed_at|date:"d/m/Y H:i" }}

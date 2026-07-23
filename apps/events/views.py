@@ -1510,10 +1510,14 @@ def report_meals_excel(request, pk):
     return workbook_response(wb, f"comidas_{event.pk}.xlsx")
 
 
-def _minute_by_minute_groups(event, only_pending, date_from="", date_to="", time_from="", time_to=""):
+def _minute_by_minute_groups(event, only_pending, date_from="", date_to="", time_from="", time_to="", guion_only=False):
     """Groups every itinerary session by its (company-maintained) section,
     in section order — not just Ceremonia/Recepción, whatever sections the
-    event actually uses."""
+    event actually uses.
+
+    `guion_only=True` trims each session's task list down to tasks marked
+    `is_guion`, the same way `only_pending` trims it down to non-completed
+    tasks — the two filters compose independently."""
     sessions = event.sessions.select_related("section").prefetch_related("tasks").order_by(
         "section__order", "date", "start_time"
     )
@@ -1534,6 +1538,8 @@ def _minute_by_minute_groups(event, only_pending, date_from="", date_to="", time
             groups_by_section[section.pk] = {"section": section, "sessions": []}
             order.append(section.pk)
         session_tasks = session.tasks.all()
+        if guion_only:
+            session_tasks = [t for t in session_tasks if t.is_guion]
         if only_pending:
             session_tasks = [t for t in session_tasks if t.status != "completada"]
         session.related_tasks = session_tasks
@@ -1544,12 +1550,13 @@ def _minute_by_minute_groups(event, only_pending, date_from="", date_to="", time
 def _minute_by_minute_filters(request):
     only_pending = request.GET.get("solo_pendientes") == "1"
     section_filter = request.GET.get("seccion", "todas")
+    guion_only = request.GET.get("guion") == "1"
     lang = request.GET.get("lang") or getattr(request, "LANGUAGE_CODE", None) or translation.get_language()
     date_from = request.GET.get("fecha_desde") or ""
     date_to = request.GET.get("fecha_hasta") or ""
     time_from = request.GET.get("hora_desde") or ""
     time_to = request.GET.get("hora_hasta") or ""
-    return only_pending, section_filter, lang, date_from, date_to, time_from, time_to
+    return only_pending, section_filter, guion_only, lang, date_from, date_to, time_from, time_to
 
 
 def _minute_by_minute_has_multiple_dates(groups):
@@ -1560,8 +1567,8 @@ def _minute_by_minute_has_multiple_dates(groups):
 @login_required
 def report_minute_by_minute(request, pk):
     event = get_event_or_403(request.user, pk)
-    only_pending, section_filter, lang, date_from, date_to, time_from, time_to = _minute_by_minute_filters(request)
-    groups = _minute_by_minute_groups(event, only_pending, date_from, date_to, time_from, time_to)
+    only_pending, section_filter, guion_only, lang, date_from, date_to, time_from, time_to = _minute_by_minute_filters(request)
+    groups = _minute_by_minute_groups(event, only_pending, date_from, date_to, time_from, time_to, guion_only)
     available_sections = [g["section"] for g in groups]
     show_date_column = _minute_by_minute_has_multiple_dates(groups)
     if section_filter != "todas":
@@ -1573,6 +1580,7 @@ def report_minute_by_minute(request, pk):
             "available_sections": available_sections,
             "only_pending": only_pending,
             "section_filter": section_filter,
+            "guion_only": guion_only,
             "lang": lang,
             "date_from": date_from,
             "date_to": date_to,
@@ -1587,8 +1595,8 @@ def report_minute_by_minute_excel(request, pk):
     from .xlsx_export import build_simple_workbook, workbook_response
 
     event = get_event_or_403(request.user, pk)
-    only_pending, section_filter, lang, date_from, date_to, time_from, time_to = _minute_by_minute_filters(request)
-    groups = _minute_by_minute_groups(event, only_pending, date_from, date_to, time_from, time_to)
+    only_pending, section_filter, guion_only, lang, date_from, date_to, time_from, time_to = _minute_by_minute_filters(request)
+    groups = _minute_by_minute_groups(event, only_pending, date_from, date_to, time_from, time_to, guion_only)
     show_date_column = _minute_by_minute_has_multiple_dates(groups)
     if section_filter != "todas":
         groups = [g for g in groups if str(g["section"].pk) == section_filter]

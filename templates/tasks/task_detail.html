@@ -17,6 +17,9 @@
           {% if user.can_manage_events or user.is_supervisor %}
           <a href="{% url 'tasks:edit' task.pk %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i> {% trans "Editar" %}</a>
           {% endif %}
+          {% if task.is_guion %}
+          <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle"><i class="bi bi-check-circle"></i> {% trans "Guión" %}</span>
+          {% endif %}
           {% if can_complete %}
           <a href="{% url 'tasks:change_status' task.pk %}" class="btn btn-sm btn-outline-dark"><i class="bi bi-arrow-repeat"></i> {% trans "Cambiar estado" %}</a>
           {% endif %}
