@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Revisar importación" %}{% endblock %}
+{% block content %}
+<h4><i class="bi bi-eye"></i> {% trans "Revisa antes de confirmar" %} — {{ event.name }}</h4>
+<p class="text-muted">
+  {% blocktrans with total=rows|length %}Invitados listos para importar: {{ total }}.{% endblocktrans %}
+  {% trans "Nada se guarda todavía." %}
+</p>
+
+<div class="alert alert-danger">
+  <i class="bi bi-exclamation-triangle"></i>
+  {% blocktrans %}Al confirmar se borrarán los {{ existing_count }} invitados actuales del evento y se reemplazarán por esta lista.{% endblocktrans %}
+</div>
+
+<div class="row mb-3">
+  {% if new_tables %}
+  <div class="col-md-8">
+    <div class="small">
+      <strong>{% trans "Mesas nuevas que se crearán:" %}</strong> {{ new_tables|join:", " }}
+    </div>
+  </div>
+  {% endif %}
+  {% if unassigned_count %}
+  <div class="col-md-4">
+    <div class="small text-muted">
+      <i class="bi bi-info-circle"></i>
+      {% blocktrans count c=unassigned_count %}{{ c }} invitado sin mesa asignada.{% plural %}{{ c }} invitados sin mesa asignada.{% endblocktrans %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<div class="card mb-3">
+  <div class="table-responsive" style="max-height: 60vh;">
+    <table class="table table-sm align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>{% trans "Nombre" %}</th>
+          <th>{% trans "Apellido" %}</th>
+          <th>{% trans "Mesa" %}</th>
+          <th>{% trans "Sexo" %}</th>
+          <th>{% trans "Invita" %}</th>
+          <th>{% trans "Rol" %}</th>
+          <th>{% trans "Familia" %}</th>
+          <th>{% trans "RSVP" %}</th>
+          <th>{% trans "Restricciones" %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+        <tr>
+          <td>{{ row.first_name }}</td>
+          <td>{{ row.last_name|default:"—" }}</td>
+          <td>{{ row.table_number|default:"—" }}</td>
+          <td>{{ row.sexo_display|default:"—" }}</td>
+          <td>{{ row.invita_display|default:"—" }}</td>
+          <td>{{ row.relationship|default:"—" }}</td>
+          <td class="text-muted small">{{ row.family|default:"—" }}</td>
+          <td class="text-muted small">{{ row.rsvp|default:"—" }}</td>
+          <td class="text-danger small">{{ row.dietary_restrictions|default:"" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<form method="post" action="{% url 'events:guest_import_confirm' event.pk %}">
+  {% csrf_token %}
+  <textarea name="payload" style="display:none">{{ payload_json }}</textarea>
+  <button type="submit" class="btn btn-success"><i class="bi bi-check2-circle"></i> {% trans "Confirmar importación" %}</button>
+  <a href="{% url 'events:guest_import' event.pk %}" class="btn btn-link">{% trans "Cancelar" %}</a>
+</form>
+{% endblock %}

@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eventplanner\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-23 11:42\n"
+"POT-Creation-Date: 2026-07-26 18:42\n"
 "Language: en\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -3611,3 +3611,291 @@ msgstr "overdue today"
 #: eventplanner
 msgid "%(days)s días de atraso"
 msgstr "%(days)s days overdue"
+
+#: eventplanner
+msgid "Reemplazar tareas existentes"
+msgstr "Replace existing tasks"
+
+#: eventplanner
+msgid ""
+"Borra todas las tareas actuales del evento (incluidas completadas) antes de "
+"cargar las nuevas, para no duplicar."
+msgstr ""
+"Deletes all of the event's current tasks (including completed ones) before "
+"loading the new ones, to avoid duplicates."
+
+#: eventplanner
+msgid ""
+"Al confirmar se borrarán todas las tareas actuales del evento (incluidas "
+"completadas) antes de cargar estas."
+msgstr ""
+"Confirming will delete all of the event's current tasks (including completed"
+" ones) before loading these."
+
+#: eventplanner
+msgid "Se borraron %(count)s tareas existentes antes de importar."
+msgstr "%(count)s existing tasks were deleted before importing."
+
+#: eventplanner
+msgid "Vacío si el invitado todavía no tiene mesa asignada."
+msgstr "Empty if the guest doesn't have a table assigned yet."
+
+#: eventplanner
+msgid "invita"
+msgstr "invited by"
+
+#: eventplanner
+msgid "Invita"
+msgstr "Invited by"
+
+#: eventplanner
+msgid "sexo"
+msgstr "sex"
+
+#: eventplanner
+msgid "Sexo"
+msgstr "Sex"
+
+#: eventplanner
+msgid "Novio"
+msgstr "Groom"
+
+#: eventplanner
+msgid "Novia"
+msgstr "Bride"
+
+#: eventplanner
+msgid "Ambos"
+msgstr "Both"
+
+#: eventplanner
+msgid "Hombre"
+msgstr "Man"
+
+#: eventplanner
+msgid "Mujer"
+msgstr "Woman"
+
+#: eventplanner
+msgid "Niño"
+msgstr "Boy"
+
+#: eventplanner
+msgid "Niña"
+msgstr "Girl"
+
+#: eventplanner
+msgid "Nombre completo"
+msgstr "Full name"
+
+#: eventplanner
+msgid "Se crea automáticamente si no existe."
+msgstr "Created automatically if it doesn't exist."
+
+#: eventplanner
+msgid "Importar invitados"
+msgstr "Import guests"
+
+#: eventplanner
+msgid "Importar Excel"
+msgstr "Import Excel"
+
+#: eventplanner
+msgid "Importar invitados desde Excel"
+msgstr "Import guests from Excel"
+
+#: eventplanner
+msgid "Archivo Excel (.xlsx) — lista de invitados"
+msgstr "Excel file (.xlsx) — guest list"
+
+#: eventplanner
+msgid ""
+"Sube la lista de invitados exportada (nombre, apellido, mesa, invita, sexo)."
+" Podrás revisar todo antes de confirmar."
+msgstr ""
+"Upload the exported guest list (first name, last name, table, invited by, "
+"sex). You'll be able to review everything before confirming."
+
+#: eventplanner
+msgid ""
+"Al confirmar la importación se borrarán todos los invitados actuales del "
+"evento y se reemplazarán por los del archivo, para no duplicar datos."
+msgstr ""
+"Confirming the import will delete all of the event's current guests and "
+"replace them with the ones in the file, to avoid duplicate data."
+
+#: eventplanner
+msgid "Nada se guarda todavía."
+msgstr "Nothing is saved yet."
+
+#: eventplanner
+msgid "Mesas nuevas que se crearán:"
+msgstr "New tables that will be created:"
+
+#: eventplanner
+msgid "Se importaron %(count)s invitados correctamente."
+msgstr "%(count)s guests were imported successfully."
+
+#: eventplanner
+msgid "Se borraron %(count)s invitados existentes antes de importar."
+msgstr "%(count)s existing guests were deleted before importing."
+
+#: eventplanner
+msgid "Solo planificadores o administradores pueden importar invitados."
+msgstr "Only planners or administrators can import guests."
+
+#: eventplanner
+msgid "Captura rápida"
+msgstr "Quick entry"
+
+#: eventplanner
+msgid "Captura rápida de invitados"
+msgstr "Guest quick entry"
+
+#: eventplanner
+msgid ""
+"Escribe el nombre, la mesa (se crea sola si no existe), sexo e invita, y "
+"presiona Enter para agregar y seguir con el siguiente."
+msgstr ""
+"Type the name, table (created automatically if it doesn't exist), sex and "
+"invited-by, then press Enter to add and move on to the next one."
+
+#: eventplanner
+msgid "Volver al plan de mesas"
+msgstr "Back to the seating chart"
+
+#: eventplanner
+msgid "Últimos agregados"
+msgstr "Recently added"
+
+#: eventplanner
+msgid "Sin mesa"
+msgstr "No table"
+
+#: eventplanner
+msgid "Invitado agregado: %(name)s."
+msgstr "Guest added: %(name)s."
+
+#: eventplanner
+msgid "Sin mesa asignada"
+msgstr "No table assigned"
+
+#: eventplanner
+msgid "Elegir mesa..."
+msgstr "Choose a table..."
+
+#: eventplanner
+msgid "Asignar"
+msgstr "Assign"
+
+#: eventplanner
+msgid "Invitado asignado a mesa %(table)s."
+msgstr "Guest assigned to table %(table)s."
+
+#: eventplanner
+msgid "apellido"
+msgstr "last name"
+
+#: eventplanner
+msgid "familia"
+msgstr "family"
+
+#: eventplanner
+msgid "Familia"
+msgstr "Family"
+
+#: eventplanner
+msgid "plato principal"
+msgstr "main dish"
+
+#: eventplanner
+msgid "Plato"
+msgstr "Dish"
+
+#: eventplanner
+msgid "Plato principal"
+msgstr "Main dish"
+
+#: eventplanner
+msgid "restricciones alimenticias"
+msgstr "dietary restrictions"
+
+#: eventplanner
+msgid "Restricciones"
+msgstr "Restrictions"
+
+#: eventplanner
+msgid "rol / parentesco"
+msgstr "role / relationship"
+
+#: eventplanner
+msgid "anotaciones"
+msgstr "notes"
+
+#: eventplanner
+msgid "Rol / parentesco"
+msgstr "Role / relationship"
+
+#: eventplanner
+msgid "Sin invitados que coincidan con el filtro."
+msgstr "No guests match this filter."
+
+#: eventplanner
+msgid "Total de invitados"
+msgstr "Total guests"
+
+#: eventplanner
+msgid "Confirmados"
+msgstr "Confirmed"
+
+#: eventplanner
+msgid "Pendientes"
+msgstr "Pending"
+
+#: eventplanner
+msgid "Sin RSVP"
+msgstr "No RSVP"
+
+#: eventplanner
+msgid "Hombres"
+msgstr "Men"
+
+#: eventplanner
+msgid "Mujeres"
+msgstr "Women"
+
+#: eventplanner
+msgid "Niños"
+msgstr "Boys"
+
+#: eventplanner
+msgid "Niñas"
+msgstr "Girls"
+
+#: eventplanner
+msgid "Lado del novio"
+msgstr "Groom's side"
+
+#: eventplanner
+msgid "Lado de la novia"
+msgstr "Bride's side"
+
+#: eventplanner
+msgid "Ambos lados"
+msgstr "Both sides"
+
+#: eventplanner
+msgid "Sin tareas relacionadas."
+msgstr "No related tasks."
+
+#: eventplanner
+msgid "Esta factura está anulada o pagada; no se puede modificar."
+msgstr "This invoice is void or paid; it can't be modified."
+
+#: eventplanner
+msgid ""
+"Esta factura está anulada o pagada — las líneas y los datos de encabezado ya"
+" no se pueden modificar."
+msgstr ""
+"This invoice is void or paid — the line items and header details can no "
+"longer be modified."

@@ -68,6 +68,10 @@ class TaskImportForm(BootstrapFormMixin, forms.Form):
 
     source_type = forms.ChoiceField(label=_("Tipo de archivo"), choices=SOURCE_CHOICES)
     file = forms.FileField(label=_("Archivo Excel (.xlsx)"))
+    replace_existing = forms.BooleanField(
+        label=_("Reemplazar tareas existentes"), required=False,
+        help_text=_("Borra todas las tareas actuales del evento (incluidas completadas) antes de cargar las nuevas, para no duplicar."),
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -1,5 +1,5 @@
 import json
-from datetime import time as dt_time
+from datetime import date as dt_date, time as dt_time
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -16,9 +16,10 @@ from apps.notes.forms import NoteForm
 from . import importers
 from .forms import (
     EventAdvanceForm, EventForm, EventSectionTypeForm, EventSessionForm, EventTeamMemberForm,
-    ExpenseForm, InvoiceForm, InvoiceItemForm, MealCountForm, ProcessionalEntryForm, QuotationForm,
-    QuotationItemForm, SeatingTableForm, SessionImportForm, TableGuestForm, TableGuestMoveForm,
-    WeddingPartyMemberForm, WeddingPartyListTypeForm, WeddingTableTypeForm,
+    ExpenseForm, GuestImportForm, GuestQuickEntryForm, InvoiceForm, InvoiceItemForm, MealCountForm,
+    ProcessionalEntryForm, QuotationForm, QuotationItemForm, SeatingTableForm, SessionImportForm,
+    TableGuestForm, TableGuestMoveForm, WeddingPartyMemberForm, WeddingPartyListTypeForm,
+    WeddingTableTypeForm,
 )
 from .models import (
     Event, EventAdvance, EventSectionType, EventSession, EventTeamMember, Expense, Invoice,
@@ -559,9 +560,11 @@ def event_seating_chart(request, pk):
     tables = event.seating_tables.select_related("table_type").prefetch_related("guests")
     guest_form = TableGuestForm()
     move_form = TableGuestMoveForm(event=event)
+    unassigned_guests = event.all_guests.filter(table__isnull=True).order_by("first_name", "last_name")
     return render(request, "events/seating_chart.html", {
         "event": event, "form": form, "tables": tables,
         "guest_form": guest_form, "move_form": move_form,
+        "unassigned_guests": unassigned_guests,
     })
 
 
@@ -640,6 +643,7 @@ def event_table_guest_add(request, pk, table_pk):
         if form.is_valid():
             next_order = (table.guests.aggregate(Max("order"))["order__max"] or 0) + 1
             guest = form.save(commit=False)
+            guest.event = event
             guest.table = table
             guest.order = next_order
             guest.save()
@@ -719,51 +723,301 @@ def event_table_guest_move(request, pk, table_pk, guest_pk):
 
 
 @login_required
+def event_guest_assign_table(request, pk, guest_pk):
+    event = get_event_or_403(request.user, pk)
+    if not request.user.can_manage_events:
+        raise PermissionDenied
+    guest = get_object_or_404(TableGuest, pk=guest_pk, event=event)
+    if request.method == "POST":
+        form = TableGuestMoveForm(request.POST, event=event)
+        if form.is_valid():
+            table = form.cleaned_data["table"]
+            next_order = (table.guests.aggregate(Max("order"))["order__max"] or 0) + 1
+            guest.table = table
+            guest.order = next_order
+            guest.save(update_fields=["table", "order"])
+            messages.success(request, _("Invitado asignado a mesa %(table)s.") % {"table": table.table_number})
+    return redirect("events:seating_chart", pk=event.pk)
+
+
+_SEXO_LABELS = {code: str(label) for code, label in TableGuest.SEXO_CHOICES}
+_INVITA_LABELS = {code: str(label) for code, label in TableGuest.INVITA_CHOICES}
+
+
+def _row_to_guest_payload(row):
+    return {
+        "first_name": row.first_name,
+        "last_name": row.last_name,
+        "name": row.name,
+        "table_number": row.table_number,
+        "invita": row.invita,
+        "invita_display": _INVITA_LABELS.get(row.invita, ""),
+        "sexo": row.sexo,
+        "sexo_display": _SEXO_LABELS.get(row.sexo, ""),
+        "family": row.family,
+        "rsvp": row.rsvp,
+        "main_dish": row.main_dish,
+        "dietary_restrictions": row.dietary_restrictions,
+        "notes": row.notes,
+        "relationship": row.relationship,
+    }
+
+
+@login_required
+def event_guest_import(request, pk):
+    event = get_event_or_403(request.user, pk)
+    if not request.user.can_manage_events:
+        raise PermissionDenied(_("Solo planificadores o administradores pueden importar invitados."))
+
+    if request.method == "POST":
+        form = GuestImportForm(request.POST, request.FILES)
+        if form.is_valid():
+            try:
+                rows = importers.parse_guest_list(form.cleaned_data["file"])
+            except ValueError as exc:
+                messages.error(request, str(exc))
+                return render(request, "events/guest_import.html", {"form": form, "event": event})
+
+            if not rows:
+                messages.error(request, _("No se encontraron filas para importar en ese archivo."))
+                return render(request, "events/guest_import.html", {"form": form, "event": event})
+
+            payload = [_row_to_guest_payload(r) for r in rows]
+            existing_tables = set(event.seating_tables.values_list("table_number", flat=True))
+            new_tables = sorted(
+                {r.table_number for r in rows if r.table_number} - existing_tables,
+                key=lambda n: (0, int(n)) if n.isdigit() else (1, n),
+            )
+            unassigned_count = sum(1 for r in rows if not r.table_number)
+            existing_count = event.all_guests.count()
+
+            return render(request, "events/guest_import_preview.html", {
+                "event": event,
+                "rows": payload,
+                "payload_json": json.dumps(payload),
+                "new_tables": new_tables,
+                "unassigned_count": unassigned_count,
+                "existing_count": existing_count,
+            })
+    else:
+        form = GuestImportForm()
+    return render(request, "events/guest_import.html", {"form": form, "event": event})
+
+
+@login_required
+def event_guest_import_confirm(request, pk):
+    event = get_event_or_403(request.user, pk)
+    if not request.user.can_manage_events:
+        raise PermissionDenied(_("Solo planificadores o administradores pueden importar invitados."))
+    if request.method != "POST":
+        return redirect("events:guest_import", pk=event.pk)
+
+    try:
+        rows = json.loads(request.POST.get("payload", "[]"))
+    except json.JSONDecodeError:
+        messages.error(request, _("No se pudo leer la información a importar."))
+        return redirect("events:guest_import", pk=event.pk)
+
+    replaced = event.all_guests.count()
+    event.all_guests.all().delete()
+
+    table_types = create_default_table_types(event.company)
+    default_type = table_types["Redonda"]
+    tables_by_number = {t.table_number: t for t in event.seating_tables.all()}
+
+    created = 0
+    for row in rows:
+        table = None
+        table_number = row.get("table_number", "").strip()
+        if table_number:
+            table = tables_by_number.get(table_number)
+            if table is None:
+                table = SeatingTable.objects.create(
+                    event=event, table_number=table_number, table_type=default_type,
+                )
+                tables_by_number[table_number] = table
+        next_order = (table.guests.aggregate(Max("order"))["order__max"] or 0) + 1 if table else 0
+        TableGuest.objects.create(
+            event=event, table=table,
+            first_name=row["first_name"], last_name=row.get("last_name", ""),
+            invita=row.get("invita", ""), sexo=row.get("sexo", ""),
+            family=row.get("family", ""), rsvp=row.get("rsvp", ""),
+            main_dish=row.get("main_dish", ""), dietary_restrictions=row.get("dietary_restrictions", ""),
+            notes=row.get("notes", ""), relationship=row.get("relationship", ""),
+            order=next_order,
+        )
+        created += 1
+
+    messages.success(request, _("Se importaron %(count)s invitados correctamente.") % {"count": created})
+    if replaced:
+        messages.info(request, _("Se borraron %(count)s invitados existentes antes de importar.") % {"count": replaced})
+    return redirect("events:seating_chart", pk=event.pk)
+
+
+@login_required
+def event_guest_quick_entry(request, pk):
+    event = get_event_or_403(request.user, pk)
+    if not request.user.can_manage_events:
+        raise PermissionDenied
+    table_types = create_default_table_types(event.company)
+    if request.method == "POST":
+        form = GuestQuickEntryForm(request.POST)
+        if form.is_valid():
+            table = None
+            table_number = form.cleaned_data["table_number"].strip()
+            if table_number:
+                table, tbl_created = SeatingTable.objects.get_or_create(
+                    event=event, table_number=table_number,
+                    defaults={"table_type": table_types["Redonda"]},
+                )
+            next_order = (table.guests.aggregate(Max("order"))["order__max"] or 0) + 1 if table else 0
+            guest = TableGuest.objects.create(
+                event=event, table=table,
+                first_name=form.cleaned_data["first_name"], last_name=form.cleaned_data["last_name"],
+                sexo=form.cleaned_data["sexo"], invita=form.cleaned_data["invita"],
+                order=next_order,
+            )
+            messages.success(request, _("Invitado agregado: %(name)s.") % {"name": guest.name})
+            return redirect("events:guest_quick_entry", pk=event.pk)
+    else:
+        form = GuestQuickEntryForm()
+    recent_guests = event.all_guests.select_related("table").order_by("-id")[:15]
+    return render(request, "events/guest_quick_entry.html", {
+        "event": event, "form": form, "recent_guests": recent_guests,
+    })
+
+
+def _guest_sort_key(guest):
+    if guest.table:
+        tn = guest.table.table_number
+        mesa_key = (0, int(tn)) if tn.isdigit() else (1, tn)
+    else:
+        mesa_key = (2, "")
+    return mesa_key + (guest.first_name.lower(), guest.last_name.lower())
+
+
+def _seating_report_filters(request, event):
+    """Reads mesa/familia/sexo/rol from the querystring, applies them to the
+    event's guests, and returns (filtered guests as a list, dict of active
+    filter values, dict of the option lists to populate the filter selects)."""
+    mesa = request.GET.get("mesa", "")
+    familia = request.GET.get("familia", "")
+    sexo = request.GET.get("sexo", "")
+    rol = request.GET.get("rol", "")
+
+    guests = event.all_guests.select_related("table")
+    if mesa == "sin":
+        guests = guests.filter(table__isnull=True)
+    elif mesa:
+        guests = guests.filter(table_id=mesa)
+    if familia:
+        guests = guests.filter(family=familia)
+    if sexo:
+        guests = guests.filter(sexo=sexo)
+    if rol:
+        guests = guests.filter(relationship=rol)
+
+    guests = sorted(guests, key=_guest_sort_key)
+
+    all_guests = event.all_guests.select_related("table")
+    family_options = sorted({g.family for g in all_guests if g.family})
+    role_options = sorted({g.relationship for g in all_guests if g.relationship})
+    table_options = sorted(
+        event.seating_tables.all(), key=lambda t: (0, int(t.table_number)) if t.table_number.isdigit() else (1, t.table_number)
+    )
+
+    return guests, {"mesa": mesa, "familia": familia, "sexo": sexo, "rol": rol}, {
+        "family_options": family_options, "role_options": role_options, "table_options": table_options,
+    }
+
+
+def _seating_report_resumen(guests):
+    def count(pred):
+        return sum(1 for g in guests if pred(g))
+
+    return {
+        "total": len(guests),
+        "confirmados": count(lambda g: "confirmad" in g.rsvp.lower()),
+        "pendientes": count(lambda g: "pendient" in g.rsvp.lower()),
+        "sin_rsvp": count(lambda g: not g.rsvp),
+        "hombres": count(lambda g: g.sexo == TableGuest.SEXO_HOMBRE),
+        "mujeres": count(lambda g: g.sexo == TableGuest.SEXO_MUJER),
+        "ninos": count(lambda g: g.sexo == TableGuest.SEXO_NINO),
+        "ninas": count(lambda g: g.sexo == TableGuest.SEXO_NINA),
+        "novio": count(lambda g: g.invita == TableGuest.INVITA_NOVIO),
+        "novia": count(lambda g: g.invita == TableGuest.INVITA_NOVIA),
+        "ambos": count(lambda g: g.invita == TableGuest.INVITA_AMBOS),
+        "sin_mesa": count(lambda g: not g.table_id),
+    }
+
+
+@login_required
 def report_seating_chart(request, pk):
     event = get_event_or_403(request.user, pk)
     lang = request.GET.get("lang") or getattr(request, "LANGUAGE_CODE", None) or translation.get_language()
-    tables = event.seating_tables.select_related("table_type").prefetch_related("guests")
+    tables = event.seating_tables.select_related("table_type")
     total_capacity = sum(t.capacity for t in tables)
-    total_guests = sum(t.guest_count for t in tables)
+
     with translation.override(lang):
+        guests, active_filters, filter_options = _seating_report_filters(request, event)
+        resumen = _seating_report_resumen(guests)
         return render(request, "events/report_seating_chart.html", {
-            "event": event, "tables": tables, "lang": lang,
-            "total_capacity": total_capacity, "total_guests": total_guests,
+            "event": event, "lang": lang, "guests": guests,
+            "total_capacity": total_capacity, "resumen": resumen,
+            "active_filters": active_filters, "sexo_choices": TableGuest.SEXO_CHOICES,
+            **filter_options,
         })
 
 
 @login_required
 def report_seating_chart_excel(request, pk):
     from .xlsx_export import build_simple_workbook, workbook_response
+    import openpyxl
+    from openpyxl.styles import Font
 
     event = get_event_or_403(request.user, pk)
     lang = request.GET.get("lang") or getattr(request, "LANGUAGE_CODE", None) or translation.get_language()
-    tables = event.seating_tables.select_related("table_type").prefetch_related("guests")
 
     with translation.override(lang):
-        rows = []
-        for table in tables:
-            guests = list(table.guests.all())
-            if guests:
-                for idx, guest in enumerate(guests):
-                    rows.append([
-                        table.table_number if idx == 0 else "",
-                        table.table_type.name if idx == 0 else "",
-                        table.capacity if idx == 0 else "",
-                        table.guest_count if idx == 0 else "",
-                        guest.name, guest.notes,
-                    ])
-            else:
-                rows.append([table.table_number, table.table_type.name, table.capacity, table.guest_count, "", ""])
+        guests, _active_filters, _filter_options = _seating_report_filters(request, event)
+        resumen = _seating_report_resumen(guests)
+
+        rows = [[
+            g.table.table_number if g.table else "", g.first_name, g.last_name, g.family,
+            g.get_sexo_display() if g.sexo else "", g.get_invita_display() if g.invita else "",
+            g.relationship, g.rsvp, g.main_dish, g.dietary_restrictions, g.notes,
+        ] for g in guests]
 
         wb = build_simple_workbook(
             f"{_('Plan de mesas')} - {event.name}",
             [
-                str(_("Mesa")), str(_("Tipo")), str(_("Capacidad")), str(_("Invitados (cantidad)")),
-                str(_("Invitado")), str(_("Notas")),
+                str(_("Mesa")), str(_("Nombre")), str(_("Apellido")), str(_("Familia")),
+                str(_("Sexo")), str(_("Invita")), str(_("Rol")), str(_("RSVP")),
+                str(_("Plato principal")), str(_("Restricciones")), str(_("Anotaciones")),
             ],
             rows,
         )
+        ws = wb.active
+        ws.append([])
+        ws.append([str(_("Resumen"))])
+        ws.cell(row=ws.max_row, column=1).font = Font(bold=True, size=12)
+        summary_lines = [
+            (_("Total de invitados"), resumen["total"]),
+            (_("Confirmados"), resumen["confirmados"]),
+            (_("Pendientes"), resumen["pendientes"]),
+            (_("Sin RSVP"), resumen["sin_rsvp"]),
+            (_("Hombres"), resumen["hombres"]),
+            (_("Mujeres"), resumen["mujeres"]),
+            (_("Niños"), resumen["ninos"]),
+            (_("Niñas"), resumen["ninas"]),
+            (_("Lado del novio"), resumen["novio"]),
+            (_("Lado de la novia"), resumen["novia"]),
+            (_("Ambos lados"), resumen["ambos"]),
+            (_("Sin mesa asignada"), resumen["sin_mesa"]),
+        ]
+        for label, value in summary_lines:
+            ws.append([str(label), value])
+            ws.cell(row=ws.max_row, column=1).font = Font(bold=True)
     return workbook_response(wb, f"plan_de_mesas_{event.pk}.xlsx")
 
 
@@ -1283,6 +1537,9 @@ def invoice_edit(request, pk, invoice_pk):
     if not request.user.can_manage_events:
         raise PermissionDenied
     invoice = get_object_or_404(Invoice, pk=invoice_pk, event=event)
+    if invoice.is_locked:
+        messages.error(request, _("Esta factura está anulada o pagada; no se puede modificar."))
+        return redirect("events:invoice_detail", pk=event.pk, invoice_pk=invoice.pk)
     if request.method == "POST":
         form = InvoiceForm(request.POST, instance=invoice)
         if form.is_valid():
@@ -1360,6 +1617,9 @@ def invoice_detail(request, pk, invoice_pk):
     if request.method == "POST":
         if not request.user.can_manage_events:
             raise PermissionDenied
+        if invoice.is_locked:
+            messages.error(request, _("Esta factura está anulada o pagada; no se puede modificar."))
+            return redirect("events:invoice_detail", pk=event.pk, invoice_pk=invoice.pk)
         next_order = (invoice.items.aggregate(Max("order"))["order__max"] or 0) + 1
         form = InvoiceItemForm(request.POST)
         if form.is_valid():
@@ -1377,12 +1637,38 @@ def invoice_detail(request, pk, invoice_pk):
 
 
 @login_required
+def invoice_item_edit(request, pk, invoice_pk, item_pk):
+    event = get_event_or_403(request.user, pk)
+    if not request.user.can_manage_events:
+        raise PermissionDenied
+    invoice = get_object_or_404(Invoice, pk=invoice_pk, event=event)
+    item = get_object_or_404(InvoiceItem, pk=item_pk, invoice=invoice)
+    if invoice.is_locked:
+        messages.error(request, _("Esta factura está anulada o pagada; no se puede modificar."))
+        return redirect("events:invoice_detail", pk=event.pk, invoice_pk=invoice.pk)
+    if request.method == "POST":
+        form = InvoiceItemForm(request.POST, instance=item)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Línea actualizada."))
+            return redirect("events:invoice_detail", pk=event.pk, invoice_pk=invoice.pk)
+    else:
+        form = InvoiceItemForm(instance=item)
+    return render(request, "events/invoice_item_form.html", {
+        "form": form, "event": event, "invoice": invoice, "item": item,
+    })
+
+
+@login_required
 def invoice_item_delete(request, pk, invoice_pk, item_pk):
     event = get_event_or_403(request.user, pk)
     if not request.user.can_manage_events:
         raise PermissionDenied
     invoice = get_object_or_404(Invoice, pk=invoice_pk, event=event)
     item = get_object_or_404(InvoiceItem, pk=item_pk, invoice=invoice)
+    if invoice.is_locked:
+        messages.error(request, _("Esta factura está anulada o pagada; no se puede modificar."))
+        return redirect("events:invoice_detail", pk=event.pk, invoice_pk=invoice.pk)
     if request.method == "POST":
         item.delete()
         messages.success(request, _("Línea eliminada."))
@@ -1542,7 +1828,9 @@ def _minute_by_minute_groups(event, only_pending, date_from="", date_to="", time
             session_tasks = [t for t in session_tasks if t.is_guion]
         if only_pending:
             session_tasks = [t for t in session_tasks if t.status != "completada"]
-        session.related_tasks = session_tasks
+        session.related_tasks = sorted(
+            session_tasks, key=lambda t: (t.due_date or dt_date.max, t.due_time or dt_time.max)
+        )
         groups_by_section[section.pk]["sessions"].append(session)
     return [groups_by_section[pk] for pk in order]
 
@@ -1559,18 +1847,12 @@ def _minute_by_minute_filters(request):
     return only_pending, section_filter, guion_only, lang, date_from, date_to, time_from, time_to
 
 
-def _minute_by_minute_has_multiple_dates(groups):
-    dates = {session.date for group in groups for session in group["sessions"]}
-    return len(dates) > 1
-
-
 @login_required
 def report_minute_by_minute(request, pk):
     event = get_event_or_403(request.user, pk)
     only_pending, section_filter, guion_only, lang, date_from, date_to, time_from, time_to = _minute_by_minute_filters(request)
     groups = _minute_by_minute_groups(event, only_pending, date_from, date_to, time_from, time_to, guion_only)
     available_sections = [g["section"] for g in groups]
-    show_date_column = _minute_by_minute_has_multiple_dates(groups)
     if section_filter != "todas":
         groups = [g for g in groups if str(g["section"].pk) == section_filter]
     with translation.override(lang):
@@ -1586,43 +1868,44 @@ def report_minute_by_minute(request, pk):
             "date_to": date_to,
             "time_from": time_from,
             "time_to": time_to,
-            "show_date_column": show_date_column,
         })
 
 
 @login_required
 def report_minute_by_minute_excel(request, pk):
     from .xlsx_export import build_simple_workbook, workbook_response
+    from openpyxl.styles import Font
 
     event = get_event_or_403(request.user, pk)
     only_pending, section_filter, guion_only, lang, date_from, date_to, time_from, time_to = _minute_by_minute_filters(request)
     groups = _minute_by_minute_groups(event, only_pending, date_from, date_to, time_from, time_to, guion_only)
-    show_date_column = _minute_by_minute_has_multiple_dates(groups)
     if section_filter != "todas":
         groups = [g for g in groups if str(g["section"].pk) == section_filter]
 
     with translation.override(lang):
         rows = []
+        itinerary_row_numbers = []
         for group in groups:
             section_name = group["section"].name
             for session in group["sessions"]:
-                hora = str(session.start_time)
+                hora = session.start_time.strftime("%H:%M")
                 if session.end_time:
-                    hora += f" - {session.end_time}"
-                tareas = "; ".join(
-                    f"{t.title} ({t.get_status_display()})" for t in session.related_tasks
-                ) or "—"
-                row = [section_name]
-                if show_date_column:
-                    row.append(str(session.date))
-                row += [hora, session.title, session.venue_name or "", session.notes or "", tareas]
-                rows.append(row)
+                    hora += f" - {session.end_time.strftime('%H:%M')}"
+                rows.append([
+                    section_name, str(session.date), hora,
+                    f"{_('Itinerario')}: {session.title}", session.venue_name or "", "", session.notes or "",
+                ])
+                itinerary_row_numbers.append(len(rows))
+                for task in session.related_tasks:
+                    task_hora = task.due_time.strftime("%H:%M") if task.due_time else ""
+                    rows.append([
+                        "", str(task.due_date) if task.due_date else "", task_hora,
+                        f"{task.title} ({task.get_status_display()})", "", task.responsible_display, "",
+                    ])
 
-        headers = [str(_("Sección"))]
-        if show_date_column:
-            headers.append(str(_("Fecha")))
-        headers += [
-            str(_("Hora")), str(_("Actividad")), str(_("Lugar")), str(_("Notas")), str(_("Tareas relacionadas")),
+        headers = [
+            str(_("Sección")), str(_("Fecha")), str(_("Hora")),
+            str(_("Itinerario")), str(_("Lugar")), str(_("Responsable")), str(_("Notas")),
         ]
 
         wb = build_simple_workbook(
@@ -1630,6 +1913,11 @@ def report_minute_by_minute_excel(request, pk):
             headers,
             rows,
         )
+        ws = wb.active
+        header_offset = ws.max_row - len(rows)
+        for row_num in itinerary_row_numbers:
+            for col in range(1, len(headers) + 1):
+                ws.cell(row=header_offset + row_num, column=col).font = Font(bold=True)
     return workbook_response(wb, f"minuto_a_minuto_{event.pk}.xlsx")
 
 

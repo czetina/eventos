@@ -9,10 +9,12 @@ BOOTSTRAP_WIDGETS = (forms.TextInput, forms.EmailInput, forms.PasswordInput, for
 
 
 class BootstrapFormMixin:
-    """Adds the 'form-control'/'form-select' Bootstrap 5 classes to every field."""
+    """Adds the 'form-control'/'form-select' Bootstrap 5 classes to every field,
+    and marks required fields with a trailing '*' on their label so it's clear
+    at a glance, on any creation/edit form, which fields must be filled in."""
 
     def _apply_bootstrap(self):
-        for field in self.fields.values():
+        for name, field in self.fields.items():
             widget = field.widget
             if isinstance(widget, forms.CheckboxInput):
                 widget.attrs.setdefault("class", "form-check-input")
@@ -20,6 +22,10 @@ class BootstrapFormMixin:
                 widget.attrs.setdefault("class", "form-select")
             elif isinstance(widget, BOOTSTRAP_WIDGETS):
                 widget.attrs.setdefault("class", "form-control")
+            if field.required and not isinstance(widget, forms.CheckboxInput):
+                label = field.label if field.label is not None else name.replace("_", " ").capitalize()
+                if not str(label).endswith("*"):
+                    field.label = f"{label} *"
 
 
 class LoginForm(BootstrapFormMixin, AuthenticationForm):

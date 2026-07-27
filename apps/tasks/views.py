@@ -367,6 +367,7 @@ def task_import(request, event_pk):
                 "itinerary_rows": itinerary_payload,
                 "itinerary_payload_json": json.dumps(itinerary_payload),
                 "section_choices": [(t.pk, t.name) for t in EventSectionType.objects.filter(company=event.company)],
+                "replace_existing": form.cleaned_data["replace_existing"],
             })
     else:
         form = TaskImportForm()
@@ -386,6 +387,11 @@ def task_import_confirm(request, event_pk):
     except json.JSONDecodeError:
         messages.error(request, _("No se pudo leer la información a importar."))
         return redirect("tasks:import", event_pk=event.pk)
+
+    replaced = 0
+    if request.POST.get("replace_existing") == "1":
+        replaced = event.tasks.count()
+        event.tasks.all().delete()
 
     created = 0
     for index, row in enumerate(rows):
@@ -466,4 +472,6 @@ def task_import_confirm(request, event_pk):
         })
     else:
         messages.success(request, _("Se importaron %(count)s tareas correctamente.") % {"count": created})
+    if replaced:
+        messages.info(request, _("Se borraron %(count)s tareas existentes antes de importar.") % {"count": replaced})
     return redirect("tasks:list", event_pk=event.pk)

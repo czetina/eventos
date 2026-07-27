@@ -139,14 +139,47 @@ class SeatingTableForm(BootstrapFormMixin, forms.ModelForm):
         self._apply_bootstrap()
 
 
+class GuestImportForm(BootstrapFormMixin, forms.Form):
+    file = forms.FileField(label=_("Archivo Excel (.xlsx) — lista de invitados"))
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._apply_bootstrap()
+
+    def clean_file(self):
+        f = self.cleaned_data["file"]
+        if not f.name.lower().endswith((".xlsx", ".xlsm")):
+            raise forms.ValidationError(_("Sube un archivo Excel (.xlsx)."))
+        return f
+
+
+class GuestQuickEntryForm(BootstrapFormMixin, forms.Form):
+    first_name = forms.CharField(label=_("Nombre"), max_length=100)
+    last_name = forms.CharField(label=_("Apellido"), max_length=100, required=False)
+    table_number = forms.CharField(label=_("Mesa"), max_length=20, required=False,
+                                    help_text=_("Se crea automáticamente si no existe."))
+    sexo = forms.ChoiceField(label=_("Sexo"), choices=[("", "—")] + TableGuest.SEXO_CHOICES, required=False)
+    invita = forms.ChoiceField(label=_("Invita"), choices=[("", "—")] + TableGuest.INVITA_CHOICES, required=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._apply_bootstrap()
+
+
 class TableGuestForm(BootstrapFormMixin, forms.ModelForm):
     class Meta:
         model = TableGuest
-        fields = ["name", "notes", "gives_speech"]
+        fields = [
+            "first_name", "last_name", "sexo", "invita", "relationship", "family",
+            "rsvp", "main_dish", "dietary_restrictions", "notes", "gives_speech",
+        ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["gives_speech"].required = False
+        self.fields["sexo"].required = False
+        self.fields["invita"].required = False
+        self.fields["last_name"].required = False
         self._apply_bootstrap()
 
 

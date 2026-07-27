@@ -34,6 +34,10 @@ urlpatterns = [
     path("mesas/tipos/<int:pk>/editar/", views.table_type_edit, name="table_type_edit"),
     path("mesas/tipos/<int:pk>/eliminar/", views.table_type_delete, name="table_type_delete"),
     path("<int:pk>/mesas/", views.event_seating_chart, name="seating_chart"),
+    path("<int:pk>/mesas/importar/", views.event_guest_import, name="guest_import"),
+    path("<int:pk>/mesas/importar/confirmar/", views.event_guest_import_confirm, name="guest_import_confirm"),
+    path("<int:pk>/mesas/captura-rapida/", views.event_guest_quick_entry, name="guest_quick_entry"),
+    path("<int:pk>/mesas/invitados/<int:guest_pk>/asignar/", views.event_guest_assign_table, name="guest_assign_table"),
     path("<int:pk>/mesas/<int:table_pk>/editar/", views.event_seating_table_edit, name="seating_table_edit"),
     path("<int:pk>/mesas/<int:table_pk>/eliminar/", views.event_seating_table_remove, name="seating_table_remove"),
     path("<int:pk>/mesas/<int:table_pk>/invitados/nuevo/", views.event_table_guest_add, name="table_guest_add"),
@@ -94,6 +98,10 @@ urlpatterns = [
     path("<int:pk>/facturas/<int:invoice_pk>/anular/", views.invoice_void, name="invoice_void"),
     path("<int:pk>/facturas/<int:invoice_pk>/marcar-pagada/", views.invoice_mark_paid, name="invoice_mark_paid"),
     path("<int:pk>/facturas/<int:invoice_pk>/quitar-pagada/", views.invoice_unmark_paid, name="invoice_unmark_paid"),
+    path(
+        "<int:pk>/facturas/<int:invoice_pk>/items/<int:item_pk>/editar/",
+        views.invoice_item_edit, name="invoice_item_edit",
+    ),
     path(
         "<int:pk>/facturas/<int:invoice_pk>/items/<int:item_pk>/eliminar/",
         views.invoice_item_delete, name="invoice_item_delete",

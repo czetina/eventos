@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Captura rápida de invitados" %}{% endblock %}
+{% block content %}
+<h4><i class="bi bi-lightning-charge"></i> {% trans "Captura rápida de invitados" %} — {{ event.name }}</h4>
+<p class="text-muted">
+  {% trans "Escribe el nombre, la mesa (se crea sola si no existe), sexo e invita, y presiona Enter para agregar y seguir con el siguiente." %}
+</p>
+<a href="{% url 'events:seating_chart' event.pk %}" class="btn btn-link px-0 mb-2">&larr; {% trans "Volver al plan de mesas" %}</a>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <form method="post" class="row g-2 align-items-end">
+      {% csrf_token %}
+      <div class="col-sm-3">
+        <label class="form-label small mb-0">{{ form.first_name.label }}</label>
+        {{ form.first_name }}
+      </div>
+      <div class="col-sm-3">
+        <label class="form-label small mb-0">{{ form.last_name.label }}</label>
+        {{ form.last_name }}
+      </div>
+      <div class="col-sm-2">
+        <label class="form-label small mb-0">{{ form.table_number.label }}</label>
+        {{ form.table_number }}
+      </div>
+      <div class="col-sm-2">
+        <label class="form-label small mb-0">{{ form.sexo.label }}</label>
+        {{ form.sexo }}
+      </div>
+      <div class="col-sm-1">
+        <label class="form-label small mb-0">{{ form.invita.label }}</label>
+        {{ form.invita }}
+      </div>
+      <div class="col-sm-1">
+        <button type="submit" class="btn btn-dark w-100"><i class="bi bi-plus-lg"></i></button>
+      </div>
+      {% if form.first_name.errors %}<div class="text-danger small mt-1">{{ form.first_name.errors }}</div>{% endif %}
+    </form>
+  </div>
+</div>
+
+{% if recent_guests %}
+<h6 class="text-muted">{% trans "Últimos agregados" %}</h6>
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>{% trans "Nombre" %}</th><th>{% trans "Mesa" %}</th><th>{% trans "Sexo" %}</th><th>{% trans "Invita" %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for guest in recent_guests %}
+        <tr>
+          <td>{{ guest.name }}</td>
+          <td>{% if guest.table %}{% trans "Mesa" %} {{ guest.table.table_number }}{% else %}<span class="text-muted">{% trans "Sin mesa" %}</span>{% endif %}</td>
+          <td>{{ guest.get_sexo_display|default:"—" }}</td>
+          <td>{{ guest.get_invita_display|default:"—" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var nameField = document.getElementById('id_first_name');
+    if (nameField) nameField.focus();
+  });
+</script>
+{% endblock %}

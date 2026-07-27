@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Importar invitados" %}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-7">
+    <div class="card">
+      <div class="card-body p-4">
+        <h4 class="mb-3"><i class="bi bi-file-earmark-arrow-up"></i> {% trans "Importar invitados desde Excel" %} — {{ event.name }}</h4>
+        <p class="text-muted">
+          {% trans "Sube la lista de invitados exportada (nombre, apellido, mesa, invita, sexo). Podrás revisar todo antes de confirmar." %}
+        </p>
+        <div class="alert alert-warning small">
+          <i class="bi bi-exclamation-triangle"></i>
+          {% trans "Al confirmar la importación se borrarán todos los invitados actuales del evento y se reemplazarán por los del archivo, para no duplicar datos." %}
+        </div>
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <button type="submit" class="btn btn-dark">{% trans "Analizar archivo" %}</button>
+          <a href="{% url 'events:seating_chart' event.pk %}" class="btn btn-link">{% trans "Cancelar" %}</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

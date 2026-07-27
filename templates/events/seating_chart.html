@@ -5,6 +5,8 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h3><i class="bi bi-table"></i> {% trans "Plan de mesas" %} — {{ event.name }}</h3>
   <div>
+    <a href="{% url 'events:guest_quick_entry' event.pk %}" class="btn btn-dark"><i class="bi bi-lightning-charge"></i> {% trans "Captura rápida" %}</a>
+    <a href="{% url 'events:guest_import' event.pk %}" class="btn btn-outline-dark"><i class="bi bi-file-earmark-arrow-up"></i> {% trans "Importar Excel" %}</a>
     <a href="{% url 'events:report_seating_chart' event.pk %}" class="btn btn-outline-dark"><i class="bi bi-file-earmark-text"></i> {% trans "Ver reporte" %}</a>
     <a href="{% url 'events:table_type_list' %}" class="btn btn-outline-secondary"><i class="bi bi-gear"></i> {% trans "Mantenimiento de tipos de mesa" %}</a>
   </div>
@@ -52,7 +54,16 @@
           <tbody>
             {% for guest in table.guests.all %}
             <tr class="guest-row" data-guest-name="{{ guest.name|lower }}">
-              <td>{{ guest.name }}</td>
+              <td>
+                {{ guest.name }}
+                {% if guest.sexo %}<span class="badge text-bg-light border">{{ guest.get_sexo_display }}</span>{% endif %}
+                {% if guest.invita %}<span class="badge text-bg-light border">{{ guest.get_invita_display }}</span>{% endif %}
+                {% if guest.relationship %}<span class="badge text-bg-light border">{{ guest.relationship }}</span>{% endif %}
+                {% if guest.rsvp %}<span class="badge {% if 'confirmad' in guest.rsvp|lower %}text-bg-success{% else %}text-bg-warning{% endif %}">{{ guest.rsvp }}</span>{% endif %}
+                {% if guest.dietary_restrictions %}<span class="badge text-bg-danger" title="{{ guest.dietary_restrictions }}"><i class="bi bi-exclamation-triangle"></i> {% trans "Restricciones" %}</span>{% endif %}
+                {% if guest.family %}<div class="text-muted small">{% trans "Familia" %}: {{ guest.family }}</div>{% endif %}
+                {% if guest.main_dish %}<div class="text-muted small">{% trans "Plato" %}: {{ guest.main_dish }}</div>{% endif %}
+              </td>
               <td class="text-muted small">{{ guest.notes|default:"—" }}</td>
               <td>
                 <form method="post" action="{% url 'events:table_guest_toggle_speech' event.pk table.pk guest.pk %}">
@@ -89,10 +100,13 @@
       <div class="card-body py-2">
         <form method="post" action="{% url 'events:table_guest_add' event.pk table.pk %}" class="row g-2 align-items-end">
           {% csrf_token %}
-          <div class="col-sm-4">
-            <input type="text" name="name" class="form-control form-control-sm" placeholder="{% trans "Nombre del invitado" %}" required>
+          <div class="col-sm-3">
+            <input type="text" name="first_name" class="form-control form-control-sm" placeholder="{% trans "Nombre" %}" required>
           </div>
-          <div class="col-sm-4">
+          <div class="col-sm-3">
+            <input type="text" name="last_name" class="form-control form-control-sm" placeholder="{% trans "Apellido" %}">
+          </div>
+          <div class="col-sm-3">
             <input type="text" name="notes" class="form-control form-control-sm" placeholder="{% trans "Notas" %}">
           </div>
           <div class="col-sm-2">
@@ -101,8 +115,8 @@
               <label class="form-check-label small" for="speech-{{ table.pk }}">{% trans "Da discurso" %}</label>
             </div>
           </div>
-          <div class="col-sm-2">
-            <button type="submit" class="btn btn-sm btn-dark w-100"><i class="bi bi-plus-lg"></i> {% trans "Agregar" %}</button>
+          <div class="col-sm-1">
+            <button type="submit" class="btn btn-sm btn-dark w-100"><i class="bi bi-plus-lg"></i></button>
           </div>
         </form>
       </div>
@@ -112,6 +126,35 @@
     {% endfor %}
   </div>
   <div class="col-md-4">
+    {% if unassigned_guests %}
+    <div class="card p-3 mb-3">
+      <h5><i class="bi bi-person-exclamation"></i> {% trans "Sin mesa asignada" %} ({{ unassigned_guests|length }})</h5>
+      <ul class="list-group list-group-flush">
+        {% for guest in unassigned_guests %}
+        <li class="list-group-item px-0">
+          <div class="d-flex justify-content-between align-items-center">
+            <span>
+              {{ guest.name }}
+              {% if guest.sexo %}<span class="badge text-bg-light border">{{ guest.get_sexo_display }}</span>{% endif %}
+              {% if guest.invita %}<span class="badge text-bg-light border">{{ guest.get_invita_display }}</span>{% endif %}
+              {% if guest.relationship %}<span class="badge text-bg-light border">{{ guest.relationship }}</span>{% endif %}
+            </span>
+          </div>
+          <form method="post" action="{% url 'events:guest_assign_table' event.pk guest.pk %}" class="d-flex gap-1 mt-1">
+            {% csrf_token %}
+            <select name="table" class="form-select form-select-sm" required>
+              <option value="">{% trans "Elegir mesa..." %}</option>
+              {% for t in tables %}
+              <option value="{{ t.pk }}">{% trans "Mesa" %} {{ t.table_number }}</option>
+              {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-sm btn-outline-dark">{% trans "Asignar" %}</button>
+          </form>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
     <div class="card p-3">
       <h5>{% trans "Agregar mesa" %}</h5>
       <form method="post">

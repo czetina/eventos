@@ -72,24 +72,36 @@
     <table class="table table-sm align-middle mb-0">
       <thead class="table-light">
         <tr>
-          {% if show_date_column %}<th style="width:8em;">{% trans "Fecha" %}</th>{% endif %}
-          <th style="width:10em;">{% trans "Hora" %}</th><th>{% trans "Actividad" %}</th><th>{% trans "Lugar" %}</th><th>{% trans "Notas" %}</th><th>{% trans "Tareas relacionadas" %}</th>
+          <th style="width:8em;">{% trans "Fecha" %}</th>
+          <th style="width:10em;">{% trans "Hora" %}</th><th>{% trans "Itinerario" %}</th><th>{% trans "Lugar" %}</th><th>{% trans "Responsable" %}</th><th>{% trans "Notas" %}</th>
         </tr>
       </thead>
       <tbody>
         {% for session in group.sessions %}
-        <tr>
-          {% if show_date_column %}<td>{{ session.date }}</td>{% endif %}
+        <tr class="table-light">
+          <td>{{ session.date }}</td>
           <td>{{ session.start_time }}{% if session.end_time %} - {{ session.end_time }}{% endif %}</td>
-          <td>{{ session.title }}</td>
+          <td><strong>{{ session.title }}</strong></td>
           <td>{{ session.venue_name|default:"—" }}</td>
+          <td></td>
           <td class="text-muted small">{{ session.notes|default:"—" }}</td>
-          <td class="small">
-            {% for task in session.related_tasks %}
-            <span class="badge badge-status-{{ task.status }} d-block mb-1 text-wrap text-start">{{ task.title }} — {{ task.get_status_display }}</span>
-            {% empty %}—{% endfor %}
-          </td>
         </tr>
+        {% for task in session.related_tasks %}
+        <tr>
+          <td class="text-muted small ps-4">{{ task.due_date|default:"—" }}</td>
+          <td class="text-muted small">{{ task.due_time|default:"—" }}</td>
+          <td class="small ps-4">
+            <span class="badge badge-status-{{ task.status }}">{{ task.get_status_display }}</span> {{ task.title }}
+          </td>
+          <td></td>
+          <td class="text-muted small">{{ task.responsible_display }}</td>
+          <td></td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td></td><td></td><td class="small text-muted ps-4">{% trans "Sin tareas relacionadas." %}</td><td></td><td></td><td></td>
+        </tr>
+        {% endfor %}
         {% endfor %}
       </tbody>
     </table>

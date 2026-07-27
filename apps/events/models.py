@@ -386,13 +386,46 @@ class SeatingTable(models.Model):
 
 
 class TableGuest(models.Model):
-    table = models.ForeignKey(
-        SeatingTable, verbose_name=_("mesa"), related_name="guests", on_delete=models.CASCADE
+    INVITA_NOVIO = "novio"
+    INVITA_NOVIA = "novia"
+    INVITA_AMBOS = "ambos"
+    INVITA_CHOICES = [
+        (INVITA_NOVIO, _("Novio")),
+        (INVITA_NOVIA, _("Novia")),
+        (INVITA_AMBOS, _("Ambos")),
+    ]
+
+    SEXO_HOMBRE = "hombre"
+    SEXO_MUJER = "mujer"
+    SEXO_NINO = "nino"
+    SEXO_NINA = "nina"
+    SEXO_CHOICES = [
+        (SEXO_HOMBRE, _("Hombre")),
+        (SEXO_MUJER, _("Mujer")),
+        (SEXO_NINO, _("Niño")),
+        (SEXO_NINA, _("Niña")),
+    ]
+
+    event = models.ForeignKey(
+        Event, verbose_name=_("evento"), related_name="all_guests", on_delete=models.CASCADE
     )
-    name = models.CharField(_("nombre"), max_length=150)
-    notes = models.CharField(_("notas"), max_length=255, blank=True)
+    table = models.ForeignKey(
+        SeatingTable, verbose_name=_("mesa"), related_name="guests", on_delete=models.SET_NULL,
+        null=True, blank=True,
+        help_text=_("Vacío si el invitado todavía no tiene mesa asignada."),
+    )
+    first_name = models.CharField(_("nombre"), max_length=100, default="")
+    last_name = models.CharField(_("apellido"), max_length=100, blank=True, default="")
+    family = models.CharField(_("familia"), max_length=150, blank=True, default="")
+    rsvp = models.CharField(_("RSVP"), max_length=100, blank=True, default="")
+    main_dish = models.CharField(_("plato principal"), max_length=100, blank=True, default="")
+    dietary_restrictions = models.CharField(_("restricciones alimenticias"), max_length=255, blank=True, default="")
+    relationship = models.CharField(_("rol / parentesco"), max_length=50, blank=True, default="")
+    notes = models.CharField(_("anotaciones"), max_length=255, blank=True)
     order = models.PositiveIntegerField(_("orden"), default=0)
     gives_speech = models.BooleanField(_("da discurso"), default=False)
+    invita = models.CharField(_("invita"), max_length=10, choices=INVITA_CHOICES, blank=True)
+    sexo = models.CharField(_("sexo"), max_length=10, choices=SEXO_CHOICES, blank=True)
     speech_member = models.ForeignKey(
         "WeddingPartyMember", verbose_name=_("registro en discursos"), null=True, blank=True,
         on_delete=models.SET_NULL, related_name="+",
@@ -402,10 +435,14 @@ class TableGuest(models.Model):
     class Meta:
         verbose_name = _("invitado")
         verbose_name_plural = _("invitados")
-        ordering = ["order", "name"]
+        ordering = ["order", "first_name", "last_name"]
 
     def __str__(self):
         return self.name
+
+    @property
+    def name(self):
+        return f"{self.first_name} {self.last_name}".strip()
 
 
 class ProcessionalEntry(models.Model):
@@ -682,6 +719,12 @@ class Invoice(models.Model):
     @property
     def total(self):
         return sum((item.amount for item in self.items.all()), 0)
+
+    @property
+    def is_locked(self):
+        """Anulada or pagada invoices are frozen — no editing header or lines,
+        so the printed/paid record can't drift from what was actually issued."""
+        return self.status == self.STATUS_VOID or self.payment_received
 
 
 class InvoiceItem(models.Model):

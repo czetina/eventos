@@ -951,6 +951,87 @@ TRANSLATIONS = {
     "1 día de atraso": "1 day overdue",
     "atrasada hoy": "overdue today",
     "%(days)s días de atraso": "%(days)s days overdue",
+    # Task import: replace-existing option
+    "Reemplazar tareas existentes": "Replace existing tasks",
+    "Borra todas las tareas actuales del evento (incluidas completadas) antes de cargar las nuevas, para no duplicar.":
+        "Deletes all of the event's current tasks (including completed ones) before loading the new ones, to avoid duplicates.",
+    "Al confirmar se borrarán todas las tareas actuales del evento (incluidas completadas) antes de cargar estas.":
+        "Confirming will delete all of the event's current tasks (including completed ones) before loading these.",
+    "Se borraron %(count)s tareas existentes antes de importar.": "%(count)s existing tasks were deleted before importing.",
+    # Guest list: model fields / choices
+    "Vacío si el invitado todavía no tiene mesa asignada.": "Empty if the guest doesn't have a table assigned yet.",
+    "invita": "invited by",
+    "Invita": "Invited by",
+    "sexo": "sex",
+    "Sexo": "Sex",
+    "Novio": "Groom",
+    "Novia": "Bride",
+    "Ambos": "Both",
+    "Hombre": "Man",
+    "Mujer": "Woman",
+    "Niño": "Boy",
+    "Niña": "Girl",
+    "Nombre completo": "Full name",
+    "Se crea automáticamente si no existe.": "Created automatically if it doesn't exist.",
+    # Guest list: import
+    "Importar invitados": "Import guests",
+    "Importar Excel": "Import Excel",
+    "Importar invitados desde Excel": "Import guests from Excel",
+    "Archivo Excel (.xlsx) — lista de invitados": "Excel file (.xlsx) — guest list",
+    "Sube la lista de invitados exportada (nombre, apellido, mesa, invita, sexo). Podrás revisar todo antes de confirmar.":
+        "Upload the exported guest list (first name, last name, table, invited by, sex). You'll be able to review everything before confirming.",
+    "Al confirmar la importación se borrarán todos los invitados actuales del evento y se reemplazarán por los del archivo, para no duplicar datos.":
+        "Confirming the import will delete all of the event's current guests and replace them with the ones in the file, to avoid duplicate data.",
+    "Nada se guarda todavía.": "Nothing is saved yet.",
+    "Mesas nuevas que se crearán:": "New tables that will be created:",
+    "Se importaron %(count)s invitados correctamente.": "%(count)s guests were imported successfully.",
+    "Se borraron %(count)s invitados existentes antes de importar.": "%(count)s existing guests were deleted before importing.",
+    "Solo planificadores o administradores pueden importar invitados.": "Only planners or administrators can import guests.",
+    # Guest list: quick entry
+    "Captura rápida": "Quick entry",
+    "Captura rápida de invitados": "Guest quick entry",
+    "Escribe el nombre, la mesa (se crea sola si no existe), sexo e invita, y presiona Enter para agregar y seguir con el siguiente.":
+        "Type the name, table (created automatically if it doesn't exist), sex and invited-by, then press Enter to add and move on to the next one.",
+    "Volver al plan de mesas": "Back to the seating chart",
+    "Últimos agregados": "Recently added",
+    "Sin mesa": "No table",
+    "Invitado agregado: %(name)s.": "Guest added: %(name)s.",
+    # Guest list: unassigned guests
+    "Sin mesa asignada": "No table assigned",
+    "Elegir mesa...": "Choose a table...",
+    "Asignar": "Assign",
+    "Invitado asignado a mesa %(table)s.": "Guest assigned to table %(table)s.",
+    # Guest list: split name + extra fields (RSVP, family, dish, dietary restrictions, role)
+    "apellido": "last name",
+    "familia": "family",
+    "Familia": "Family",
+    "plato principal": "main dish",
+    "Plato": "Dish",
+    "Plato principal": "Main dish",
+    "restricciones alimenticias": "dietary restrictions",
+    "Restricciones": "Restrictions",
+    "rol / parentesco": "role / relationship",
+    "anotaciones": "notes",
+    # Plan de mesas report: filters + resumen
+    "Rol / parentesco": "Role / relationship",
+    "Sin invitados que coincidan con el filtro.": "No guests match this filter.",
+    "Total de invitados": "Total guests",
+    "Confirmados": "Confirmed",
+    "Pendientes": "Pending",
+    "Sin RSVP": "No RSVP",
+    "Hombres": "Men",
+    "Mujeres": "Women",
+    "Niños": "Boys",
+    "Niñas": "Girls",
+    "Lado del novio": "Groom's side",
+    "Lado de la novia": "Bride's side",
+    "Ambos lados": "Both sides",
+    # Minuto a minuto: tasks listed individually under each itinerary item
+    "Sin tareas relacionadas.": "No related tasks.",
+    # Invoice: locked once void or paid, editable line items
+    "Esta factura está anulada o pagada; no se puede modificar.": "This invoice is void or paid; it can't be modified.",
+    "Esta factura está anulada o pagada — las líneas y los datos de encabezado ya no se pueden modificar.":
+        "This invoice is void or paid — the line items and header details can no longer be modified.",
 }
 
 

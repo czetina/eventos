@@ -14,8 +14,15 @@
   — {% trans "se abre en otra pestaña; cuando termines, vuelve a analizar el archivo para que aparezca en la lista." %}
 </p>
 
+{% if replace_existing %}
+<div class="alert alert-danger">
+  <i class="bi bi-exclamation-triangle"></i>
+  {% trans "Al confirmar se borrarán todas las tareas actuales del evento (incluidas completadas) antes de cargar estas." %}
+</div>
+{% endif %}
 <form method="post" action="{% url 'tasks:import_confirm' event.pk %}">
   {% csrf_token %}
+  {% if replace_existing %}<input type="hidden" name="replace_existing" value="1">{% endif %}
   <textarea name="payload" style="display:none">{{ payload_json }}</textarea>
 
   <div class="card mb-3">

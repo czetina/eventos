@@ -98,6 +98,10 @@ LANGUAGES = [
 
 LOCALE_PATHS = [BASE_DIR / "locale"]
 
+# Times are always displayed in 24h ("hora militar") regardless of language —
+# Django's English locale defaults to 12h AM/PM otherwise.
+FORMAT_MODULE_PATH = ["config.formats"]
+
 TIME_ZONE = "America/Mexico_City"
 
 USE_I18N = True

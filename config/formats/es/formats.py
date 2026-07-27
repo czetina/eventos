@@ -1,0 +1,5 @@
+TIME_FORMAT = "H:i"
+SHORT_TIME_FORMAT = "H:i"
+DATETIME_FORMAT = "j \\d\\e N \\d\\e Y, H:i"
+SHORT_DATETIME_FORMAT = "d/m/Y H:i"
+TIME_INPUT_FORMATS = ["%H:%M", "%H:%M:%S"]
