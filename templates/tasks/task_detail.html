@@ -77,6 +77,10 @@
           <div class="card-body p-2">
             <div class="small text-muted">{{ evidence.uploaded_by }} · {{ evidence.uploaded_at|date:"d/m/Y H:i" }}</div>
             {% if evidence.comment %}<div class="small">{{ evidence.comment }}</div>{% endif %}
+            <form method="post" action="{% url 'tasks:delete_evidence' task.pk evidence.pk %}" class="mt-1" onsubmit="return confirm('{% trans "¿Eliminar esta evidencia?" %}');">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> {% trans "Eliminar" %}</button>
+            </form>
           </div>
         </div>
       </div>

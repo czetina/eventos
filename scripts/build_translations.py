@@ -1032,6 +1032,9 @@ TRANSLATIONS = {
     "Esta factura está anulada o pagada; no se puede modificar.": "This invoice is void or paid; it can't be modified.",
     "Esta factura está anulada o pagada — las líneas y los datos de encabezado ya no se pueden modificar.":
         "This invoice is void or paid — the line items and header details can no longer be modified.",
+    # Task evidence: delete uploaded file (and its copy on disk)
+    "¿Eliminar esta evidencia?": "Delete this evidence?",
+    "Evidencia eliminada.": "Evidence deleted.",
 }
 
 

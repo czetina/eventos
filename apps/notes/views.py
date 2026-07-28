@@ -78,6 +78,7 @@ def file_delete(request, event_pk, pk):
         return redirect("notes:files", event_pk=event.pk)
     ef = get_object_or_404(EventFile, pk=pk, event=event)
     if request.method == "POST":
+        ef.file.delete(save=False)
         ef.delete()
         messages.success(request, "Archivo eliminado.")
     return redirect("notes:files", event_pk=event.pk)

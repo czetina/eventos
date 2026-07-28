@@ -259,6 +259,7 @@ def event_vendor_payment_edit(request, event_pk, pk, payment_pk):
     payment = get_object_or_404(VendorPayment, pk=payment_pk, event_vendor=ev)
     if request.method == "POST":
         old_amount = payment.amount
+        old_document_name = payment.document.name if payment.document else None
         form = VendorPaymentForm(request.POST, request.FILES, instance=payment)
         if form.is_valid():
             other_paid = ev.deposit_paid - old_amount
@@ -269,6 +270,9 @@ def event_vendor_payment_edit(request, event_pk, pk, payment_pk):
                 ))
             else:
                 form.save()
+                new_document_name = payment.document.name if payment.document else None
+                if old_document_name and old_document_name != new_document_name:
+                    payment.document.storage.delete(old_document_name)
                 ev.recompute_deposit_paid()
                 messages.success(request, _("Abono actualizado."))
                 return redirect("vendors:event_vendor_edit", event_pk=event.pk, pk=ev.pk)
@@ -287,6 +291,8 @@ def event_vendor_payment_remove(request, event_pk, pk, payment_pk):
     ev = get_object_or_404(EventVendor, pk=pk, event=event)
     payment = get_object_or_404(VendorPayment, pk=payment_pk, event_vendor=ev)
     if request.method == "POST":
+        if payment.document:
+            payment.document.delete(save=False)
         payment.delete()
         ev.recompute_deposit_paid()
         messages.success(request, _("Abono eliminado."))

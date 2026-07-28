@@ -137,6 +137,17 @@ def task_upload_evidence(request, pk):
     return redirect("tasks:detail", pk=task.pk)
 
 
+@login_required
+def task_delete_evidence(request, pk, evidence_pk):
+    task, event = _get_task_scoped(request.user, pk)
+    evidence = get_object_or_404(TaskEvidence, pk=evidence_pk, task=task)
+    if request.method == "POST":
+        evidence.file.delete(save=False)
+        evidence.delete()
+        messages.success(request, _("Evidencia eliminada."))
+    return redirect("tasks:detail", pk=task.pk)
+
+
 def _parse_completed_at(request):
     raw = request.POST.get("completed_at", "").strip()
     if not raw:

@@ -1198,9 +1198,13 @@ def event_expense_edit(request, pk, expense_pk):
         raise PermissionDenied
     expense = get_object_or_404(Expense, pk=expense_pk, event=event)
     if request.method == "POST":
+        old_document_name = expense.document.name if expense.document else None
         form = ExpenseForm(request.POST, request.FILES, instance=expense)
         if form.is_valid():
             form.save()
+            new_document_name = expense.document.name if expense.document else None
+            if old_document_name and old_document_name != new_document_name:
+                expense.document.storage.delete(old_document_name)
             messages.success(request, _("Gasto actualizado."))
             return redirect("events:expenses", pk=event.pk)
     else:
@@ -1215,6 +1219,8 @@ def event_expense_remove(request, pk, expense_pk):
         raise PermissionDenied
     expense = get_object_or_404(Expense, pk=expense_pk, event=event)
     if request.method == "POST":
+        if expense.document:
+            expense.document.delete(save=False)
         expense.delete()
         messages.success(request, _("Gasto eliminado."))
     return redirect("events:expenses", pk=event.pk)
