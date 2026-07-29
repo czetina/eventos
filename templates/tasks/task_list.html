@@ -23,13 +23,21 @@
   <a href="?atrasadas=1" class="btn btn-sm {% if show_overdue %}btn-danger{% else %}btn-outline-danger{% endif %}">{% trans "Atrasadas" %}</a>
 </div>
 
+<div class="mb-3">
+  <div class="input-group input-group-sm" style="max-width: 24rem;">
+    <span class="input-group-text"><i class="bi bi-search"></i></span>
+    <input type="text" id="taskSearch" class="form-control" autocomplete="off" placeholder="{% trans "Buscar tarea por título o responsable..." %}" oninput="filterTasks()" onkeyup="filterTasks()">
+  </div>
+  <div class="form-text" id="taskSearchCount"></div>
+</div>
+
 <form method="post" action="{% url 'tasks:bulk_complete' %}" id="bulk-complete-form">
   {% csrf_token %}
   <input type="hidden" name="next" value="{{ request.path }}{% if active_status %}?status={{ active_status }}{% endif %}">
 
   <div class="list-group mb-2">
     {% for task in tasks %}
-    <div class="list-group-item d-flex justify-content-between align-items-center gap-2">
+    <div class="list-group-item d-flex justify-content-between align-items-center gap-2 task-row" data-task-search="{{ task.title|lower }} {{ task.responsible_display|lower }}">
       {% if task.status != 'completada' %}
       <input type="checkbox" class="form-check-input flex-shrink-0" name="task_ids" value="{{ task.pk }}">
       {% else %}
@@ -66,6 +74,7 @@
     {% empty %}
     <div class="list-group-item text-muted">{% trans "No hay tareas." %}</div>
     {% endfor %}
+    <div class="list-group-item text-muted d-none" id="taskSearchEmpty">{% trans "Ninguna tarea coincide con la búsqueda." %}</div>
   </div>
 
   {% if tasks %}
@@ -85,4 +94,38 @@
   </div>
   {% endif %}
 </form>
+
+<script>
+  var DIACRITICS_RE = new RegExp('[' + String.fromCharCode(0x0300) + '-' + String.fromCharCode(0x036f) + ']', 'g');
+  function normalizeSearchText(s) {
+    return s.normalize('NFD').replace(DIACRITICS_RE, '');
+  }
+  function filterTasks() {
+    var box = document.getElementById('taskSearch');
+    var q = normalizeSearchText(box.value.trim().toLowerCase());
+    var rows = document.querySelectorAll('.task-row');
+    var visibleCount = 0;
+    rows.forEach(function (row) {
+      var haystack = normalizeSearchText(row.dataset.taskSearch);
+      var match = !q || haystack.indexOf(q) !== -1;
+      row.classList.toggle('d-none', !match);
+      if (match) visibleCount++;
+    });
+    var emptyMsg = document.getElementById('taskSearchEmpty');
+    if (emptyMsg) {
+      emptyMsg.classList.toggle('d-none', !(q && rows.length && !visibleCount));
+    }
+    var counter = document.getElementById('taskSearchCount');
+    if (counter) {
+      counter.textContent = q ? (visibleCount + ' / ' + rows.length) : '';
+    }
+  }
+
+  var searchBox = document.getElementById('taskSearch');
+  if (searchBox) {
+    searchBox.addEventListener('input', filterTasks);
+    searchBox.addEventListener('keyup', filterTasks);
+    searchBox.addEventListener('change', filterTasks);
+  }
+</script>
 {% endblock %}

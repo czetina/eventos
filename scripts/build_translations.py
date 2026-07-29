@@ -1035,6 +1035,9 @@ TRANSLATIONS = {
     # Task evidence: delete uploaded file (and its copy on disk)
     "¿Eliminar esta evidencia?": "Delete this evidence?",
     "Evidencia eliminada.": "Evidence deleted.",
+    # Task list: client-side search box
+    "Buscar tarea por título o responsable...": "Search task by title or responsible...",
+    "Ninguna tarea coincide con la búsqueda.": "No task matches the search.",
 }
 
 
