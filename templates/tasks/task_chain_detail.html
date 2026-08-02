@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{{ chain.name }} — {{ event.name }}{% endblock %}
+{% block content %}
+<a href="{% url 'tasks:chain_list' event.pk %}" class="btn btn-link px-0 mb-2">&larr; {% trans "Volver a cadenas de tareas" %}</a>
+<div class="d-flex justify-content-between align-items-start mb-3">
+  <div>
+    <h3><i class="bi bi-link-45deg"></i> {{ chain.name }}</h3>
+    {% if chain.description %}<div class="text-muted">{{ chain.description }}</div>{% endif %}
+  </div>
+  {% if can_manage_chains %}
+  <div class="text-end">
+    <a href="{% url 'tasks:chain_edit' chain.pk %}" class="btn btn-outline-secondary"><i class="bi bi-pencil"></i> {% trans "Editar" %}</a>
+    <form method="post" action="{% url 'tasks:chain_delete' chain.pk %}" class="d-inline" onsubmit="return confirm('{% trans "¿Eliminar esta cadena? Las tareas no se borrarán." %}');">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-outline-danger"><i class="bi bi-trash"></i> {% trans "Eliminar" %}</button>
+    </form>
+  </div>
+  {% endif %}
+</div>
+
+<div class="card mb-3">
+  <div class="list-group list-group-flush">
+    {% for task in tasks %}
+    <div class="list-group-item">
+      <div class="d-flex justify-content-between align-items-start gap-2">
+        <div class="d-flex align-items-start gap-2">
+          <span class="fs-5">
+            {% if task.status == 'completada' %}<i class="bi bi-check-circle-fill text-success"></i>
+            {% elif task.status == 'en_progreso' %}<i class="bi bi-arrow-right-circle-fill text-primary"></i>
+            {% elif task.status == 'con_problema' %}<i class="bi bi-exclamation-circle-fill text-danger"></i>
+            {% else %}<i class="bi bi-circle text-muted"></i>{% endif %}
+          </span>
+          <div>
+            <a href="{% url 'tasks:detail' task.pk %}" class="text-decoration-none text-dark">
+              <strong>{{ forloop.counter }}. {{ task.title }}</strong>
+            </a>
+            <span class="text-muted small d-block">
+              {{ task.responsible_display }}{% if task.supervisor %} · {% trans "supervisa" %} {{ task.supervisor }}{% endif %}{% if task.due_date %} · {{ task.due_date }} {{ task.due_time|default:"" }}{% endif %}
+              {% if task.is_overdue %}
+              {% if task.days_overdue == 1 %}
+              <span class="text-danger">({% trans "1 día de atraso" %})</span>
+              {% elif task.days_overdue > 1 %}
+              <span class="text-danger">({% blocktrans with days=task.days_overdue %}{{ days }} días de atraso{% endblocktrans %})</span>
+              {% else %}
+              <span class="text-danger">({% trans "atrasada hoy" %})</span>
+              {% endif %}
+              {% endif %}
+            </span>
+          </div>
+        </div>
+        <div class="text-end text-nowrap">
+          <span class="badge badge-status-{{ task.status }}">{{ task.get_status_display }}</span>
+          {% if can_manage_chains %}
+          <div class="btn-group btn-group-sm mt-1">
+            <form method="post" action="{% url 'tasks:chain_move_task' chain.pk task.pk 'up' %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-outline-secondary" {% if forloop.first %}disabled{% endif %}><i class="bi bi-arrow-up"></i></button>
+            </form>
+            <form method="post" action="{% url 'tasks:chain_move_task' chain.pk task.pk 'down' %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-outline-secondary" {% if forloop.last %}disabled{% endif %}><i class="bi bi-arrow-down"></i></button>
+            </form>
+            <form method="post" action="{% url 'tasks:chain_remove_task' chain.pk task.pk %}" onsubmit="return confirm('{% trans "¿Quitar esta tarea de la cadena? La tarea no se eliminará." %}');">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-outline-danger"><i class="bi bi-x-lg"></i></button>
+            </form>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="list-group-item text-muted">{% trans "Todavía no hay tareas en esta cadena." %}</div>
+    {% endfor %}
+  </div>
+</div>
+
+{% if can_manage_chains %}
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="card p-3">
+      <h5>{% trans "Nueva tarea en esta cadena" %}</h5>
+      <p class="text-muted small">{% trans "Usa el mismo formulario completo de tareas — responsable, fecha, evidencia, etc." %}</p>
+      <a href="{% url 'tasks:chain_create_task' chain.pk %}" class="btn btn-dark"><i class="bi bi-plus-lg"></i> {% trans "Nueva tarea" %}</a>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card p-3">
+      <h5>{% trans "Agregar tarea existente" %}</h5>
+      {% if available_tasks %}
+      <form method="post" action="{% url 'tasks:chain_add_task' chain.pk %}" class="d-flex gap-2">
+        {% csrf_token %}
+        <select name="task_id" class="form-select" required>
+          <option value="">{% trans "Elegir tarea..." %}</option>
+          {% for t in available_tasks %}
+          <option value="{{ t.pk }}">{{ t.title }}</option>
+          {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-outline-dark text-nowrap">{% trans "Agregar" %}</button>
+      </form>
+      {% else %}
+      <p class="text-muted small mb-0">{% trans "No hay tareas sueltas en este evento para agregar." %}</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

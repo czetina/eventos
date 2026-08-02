@@ -139,6 +139,10 @@ class User(AbstractUser):
         blank=True,
     )
     phone = models.CharField(_("teléfono"), max_length=40, blank=True)
+    iniciales = models.CharField(
+        _("iniciales"), max_length=10, blank=True,
+        help_text=_("Se usa en el reporte minuto a minuto para no mostrar el nombre completo. Ej. JCJ."),
+    )
     preferred_language = models.CharField(
         _("idioma preferido"), max_length=5, choices=LANGUAGE_CHOICES, default="es"
     )
@@ -158,6 +162,14 @@ class User(AbstractUser):
 
     def has_role_at_least(self, base_level):
         return self.role_level >= Role.LEVEL_RANKS.get(base_level, 0)
+
+    @property
+    def initials_display(self):
+        if self.iniciales:
+            return self.iniciales
+        parts = [self.first_name[:1], self.last_name[:1]]
+        computed = "".join(p for p in parts if p).upper()
+        return computed or self.username[:2].upper()
 
     @property
     def is_company_admin(self):

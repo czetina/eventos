@@ -1699,7 +1699,7 @@ def report_itinerary(request, pk):
 @login_required
 def report_tasks(request, pk):
     event = get_event_or_403(request.user, pk)
-    tasks = list(event.tasks.select_related("assigned_to", "vendor", "supervisor").order_by(
+    tasks = list(event.tasks.select_related("assigned_to", "vendor", "supervisor", "chain").order_by(
         "assigned_to__first_name", "assigned_to__last_name", "category"
     ))
     responsibles = sorted({t.responsible_display for t in tasks})
@@ -1810,9 +1810,13 @@ def _minute_by_minute_groups(event, only_pending, date_from="", date_to="", time
     `guion_only=True` trims each session's task list down to tasks marked
     `is_guion`, the same way `only_pending` trims it down to non-completed
     tasks — the two filters compose independently."""
-    sessions = event.sessions.select_related("section").prefetch_related("tasks").order_by(
-        "section__order", "date", "start_time"
-    )
+    from django.db.models import Prefetch
+
+    from apps.tasks.models import Task
+
+    sessions = event.sessions.select_related("section").prefetch_related(
+        Prefetch("tasks", queryset=Task.objects.select_related("chain"))
+    ).order_by("section__order", "date", "start_time")
     if date_from:
         sessions = sessions.filter(date__gte=date_from)
     if date_to:
@@ -1906,7 +1910,7 @@ def report_minute_by_minute_excel(request, pk):
                     task_hora = task.due_time.strftime("%H:%M") if task.due_time else ""
                     rows.append([
                         "", str(task.due_date) if task.due_date else "", task_hora,
-                        f"{task.title} ({task.get_status_display()})", "", task.responsible_display, "",
+                        f"{task.title} ({task.get_status_display()})", "", task.responsible_initials_display, "",
                     ])
 
         headers = [

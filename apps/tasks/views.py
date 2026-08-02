@@ -1,10 +1,12 @@
 import json
-from datetime import date, datetime, time as dt_time
+from datetime import date, datetime, time as dt_time, timedelta
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
+from django.db import transaction
 from django.db.models import Max
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -18,23 +20,40 @@ from apps.vendors.models import Vendor
 
 from . import importers
 from .forms import (
-    TaskEvidenceForm, TaskForm, TaskImportForm, TaskStatusChangeForm, TaskStatusHistoryEditForm,
+    TaskChainForm, TaskEvidenceForm, TaskForm, TaskImportForm, TaskStatusChangeForm, TaskStatusHistoryEditForm,
 )
-from .models import Task, TaskEvidence, TaskStatusHistory
+from .models import Task, TaskChain, TaskEvidence, TaskStatusHistory
+
+
+def _annotate_chain_step(tasks):
+    """Attaches .chain_step/.chain_total (this task's position within its chain,
+    if any) to each task in a single extra query, regardless of how many
+    distinct chains are involved — avoids a per-task query in list templates."""
+    tasks = list(tasks)
+    chain_ids = {t.chain_id for t in tasks if t.chain_id}
+    ids_by_chain = {}
+    if chain_ids:
+        for row in Task.objects.filter(chain_id__in=chain_ids).order_by("chain_order").values("id", "chain_id"):
+            ids_by_chain.setdefault(row["chain_id"], []).append(row["id"])
+    for t in tasks:
+        chain_task_ids = ids_by_chain.get(t.chain_id, []) if t.chain_id else []
+        t.chain_total = len(chain_task_ids)
+        t.chain_step = chain_task_ids.index(t.id) + 1 if t.id in chain_task_ids else None
+    return tasks
 
 
 @login_required
 def my_tasks(request):
     """Mobile-friendly checklist: everything assigned to the logged-in user, across events."""
-    tasks = (
+    tasks = _annotate_chain_step(
         Task.objects.filter(assigned_to=request.user)
         .exclude(status=Task.STATUS_DONE)
-        .select_related("event")
+        .select_related("event", "chain")
         .order_by("due_date", "due_time")
     )
-    done_tasks = (
+    done_tasks = _annotate_chain_step(
         Task.objects.filter(assigned_to=request.user, status=Task.STATUS_DONE)
-        .select_related("event")
+        .select_related("event", "chain")
         .order_by("-completed_at")[:20]
     )
     return render(request, "tasks/my_tasks.html", {"tasks": tasks, "done_tasks": done_tasks})
@@ -43,7 +62,7 @@ def my_tasks(request):
 @login_required
 def task_list(request, event_pk):
     event = get_event_or_403(request.user, event_pk)
-    tasks = event.tasks.select_related("assigned_to", "supervisor", "itinerary_session")
+    tasks = event.tasks.select_related("assigned_to", "supervisor", "itinerary_session", "chain")
     if not request.user.can_manage_events:
         tasks = tasks.filter(assigned_to=request.user)
     status = request.GET.get("status")
@@ -112,12 +131,19 @@ def _get_task_scoped(user, pk):
 def task_detail(request, pk):
     task, event = _get_task_scoped(request.user, pk)
     evidence_form = TaskEvidenceForm()
+    chain_step, chain_total = None, None
+    if task.chain_id:
+        chain_task_ids = list(task.chain.tasks.order_by("chain_order").values_list("id", flat=True))
+        chain_total = len(chain_task_ids)
+        if task.id in chain_task_ids:
+            chain_step = chain_task_ids.index(task.id) + 1
     return render(request, "tasks/task_detail.html", {
         "task": task, "event": event,
         "evidences": task.evidences.select_related("uploaded_by"),
         "evidence_form": evidence_form,
         "can_complete": task.can_be_completed_by(request.user),
         "status_history": task.status_history.select_related("changed_by"),
+        "chain_step": chain_step, "chain_total": chain_total,
     })
 
 
@@ -234,6 +260,171 @@ def task_status_history_delete(request, pk, history_pk):
         task.recompute_status_from_history()
         messages.success(request, _("Entrada del historial eliminada."))
     return redirect("tasks:detail", pk=task.pk)
+
+
+def _get_chain_scoped(user, pk):
+    chain = get_object_or_404(TaskChain, pk=pk)
+    event = get_event_or_403(user, chain.event_id)
+    return chain, event
+
+
+def _can_manage_chains(user):
+    return user.can_manage_events or user.is_supervisor
+
+
+@login_required
+def task_chain_list(request, event_pk):
+    event = get_event_or_403(request.user, event_pk)
+    chains = event.task_chains.prefetch_related("tasks")
+    return render(request, "tasks/task_chain_list.html", {
+        "event": event, "chains": chains, "can_manage_chains": _can_manage_chains(request.user),
+    })
+
+
+@login_required
+def task_chain_create(request, event_pk):
+    event = get_event_or_403(request.user, event_pk)
+    if not _can_manage_chains(request.user):
+        raise PermissionDenied(_("No tienes permiso para crear cadenas de tareas en este evento."))
+    if request.method == "POST":
+        form = TaskChainForm(request.POST)
+        if form.is_valid():
+            chain = form.save(commit=False)
+            chain.event = event
+            chain.created_by = request.user
+            chain.save()
+            messages.success(request, _("Cadena de tareas creada."))
+            return redirect("tasks:chain_detail", pk=chain.pk)
+    else:
+        form = TaskChainForm()
+    return render(request, "tasks/task_chain_form.html", {"form": form, "event": event, "is_new": True})
+
+
+@login_required
+def task_chain_detail(request, pk):
+    chain, event = _get_chain_scoped(request.user, pk)
+    tasks = list(chain.tasks.select_related("assigned_to", "supervisor", "vendor").order_by("chain_order"))
+    for task in tasks:
+        task.latest_status_entry = task.status_history.select_related("changed_by").first()
+    available_tasks = event.tasks.filter(chain__isnull=True).order_by("title")
+    return render(request, "tasks/task_chain_detail.html", {
+        "event": event, "chain": chain, "tasks": tasks, "available_tasks": available_tasks,
+        "can_manage_chains": _can_manage_chains(request.user),
+    })
+
+
+@login_required
+def task_chain_edit(request, pk):
+    chain, event = _get_chain_scoped(request.user, pk)
+    if not _can_manage_chains(request.user):
+        raise PermissionDenied(_("No tienes permiso para editar esta cadena de tareas."))
+    if request.method == "POST":
+        form = TaskChainForm(request.POST, instance=chain)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Cadena de tareas actualizada."))
+            return redirect("tasks:chain_detail", pk=chain.pk)
+    else:
+        form = TaskChainForm(instance=chain)
+    return render(request, "tasks/task_chain_form.html", {
+        "form": form, "event": event, "is_new": False, "chain": chain,
+    })
+
+
+@login_required
+def task_chain_delete(request, pk):
+    chain, event = _get_chain_scoped(request.user, pk)
+    if not _can_manage_chains(request.user):
+        raise PermissionDenied(_("No tienes permiso para eliminar esta cadena de tareas."))
+    if request.method == "POST":
+        with transaction.atomic():
+            chain.tasks.update(chain=None, chain_order=None)
+            chain.delete()
+        messages.success(request, _("Cadena de tareas eliminada. Las tareas no se borraron."))
+        return redirect("tasks:chain_list", event_pk=event.pk)
+    return redirect("tasks:chain_detail", pk=chain.pk)
+
+
+@login_required
+def task_chain_add_task(request, pk):
+    chain, event = _get_chain_scoped(request.user, pk)
+    if not _can_manage_chains(request.user):
+        raise PermissionDenied(_("No tienes permiso para modificar esta cadena de tareas."))
+    if request.method == "POST":
+        task = get_object_or_404(Task, pk=request.POST.get("task_id"), event=event, chain__isnull=True)
+        next_order = (chain.tasks.aggregate(Max("chain_order"))["chain_order__max"] or 0) + 1
+        task.chain = chain
+        task.chain_order = next_order
+        task.save(update_fields=["chain", "chain_order"])
+        messages.success(request, _("Tarea agregada a la cadena."))
+    return redirect("tasks:chain_detail", pk=chain.pk)
+
+
+@login_required
+def task_chain_create_task(request, pk):
+    chain, event = _get_chain_scoped(request.user, pk)
+    if not _can_manage_chains(request.user):
+        raise PermissionDenied(_("No tienes permiso para crear tareas en esta cadena."))
+    if request.method == "POST":
+        form = TaskForm(request.POST, event=event)
+        if form.is_valid():
+            next_order = (chain.tasks.aggregate(Max("chain_order"))["chain_order__max"] or 0) + 1
+            task = form.save(commit=False)
+            task.event = event
+            task.created_by = request.user
+            task.chain = chain
+            task.chain_order = next_order
+            task.save()
+            task.record_status_change(request.user)
+            messages.success(request, _("Tarea creada y agregada a la cadena."))
+            return redirect("tasks:chain_detail", pk=chain.pk)
+    else:
+        form = TaskForm(event=event)
+    return render(request, "tasks/task_form.html", {
+        "form": form, "event": event, "is_new": True, "chain": chain,
+    })
+
+
+@login_required
+def task_chain_remove_task(request, pk, task_pk):
+    chain, event = _get_chain_scoped(request.user, pk)
+    if not _can_manage_chains(request.user):
+        raise PermissionDenied(_("No tienes permiso para modificar esta cadena de tareas."))
+    task = get_object_or_404(Task, pk=task_pk, chain=chain)
+    if request.method == "POST":
+        task.chain = None
+        task.chain_order = None
+        task.save(update_fields=["chain", "chain_order"])
+        messages.success(request, _("Tarea quitada de la cadena. La tarea no se eliminó."))
+    return redirect("tasks:chain_detail", pk=chain.pk)
+
+
+@login_required
+def task_chain_move(request, pk, task_pk, direction):
+    chain, event = _get_chain_scoped(request.user, pk)
+    if not _can_manage_chains(request.user):
+        raise PermissionDenied(_("No tienes permiso para modificar esta cadena de tareas."))
+    task = get_object_or_404(Task, pk=task_pk, chain=chain)
+    if request.method == "POST":
+        ordered = list(chain.tasks.order_by("chain_order"))
+        index = next((i for i, t in enumerate(ordered) if t.pk == task.pk), None)
+        if index is not None:
+            neighbor_index = index - 1 if direction == "up" else index + 1
+            if 0 <= neighbor_index < len(ordered):
+                neighbor = ordered[neighbor_index]
+                task_order, neighbor_order = task.chain_order, neighbor.chain_order
+                with transaction.atomic():
+                    # Swap via a temporary NULL first — the (chain, chain_order)
+                    # constraint only applies to non-null orders, so this avoids
+                    # a momentary collision when both rows would otherwise share
+                    # the same order value between the two save() calls.
+                    task.chain_order = None
+                    task.save(update_fields=["chain_order"])
+                    neighbor.chain_order = task_order
+                    neighbor.save(update_fields=["chain_order"])
+                    task.chain_order = neighbor_order
+                    task.save(update_fields=["chain_order"])
+    return redirect("tasks:chain_detail", pk=chain.pk)
 
 
 @login_required
@@ -486,3 +677,50 @@ def task_import_confirm(request, event_pk):
     if replaced:
         messages.info(request, _("Se borraron %(count)s tareas existentes antes de importar.") % {"count": replaced})
     return redirect("tasks:list", event_pk=event.pk)
+
+
+@login_required
+def task_export_guion_ics(request, event_pk):
+    """Exports every 'guión' task with a due date/time as a .ics calendar file
+    with a reminder alarm, so it can be imported into Apple/Google Calendar and
+    show up as a notification on a phone or watch."""
+    from icalendar import Alarm, Calendar
+    from icalendar import Event as ICalEvent
+
+    event = get_event_or_403(request.user, event_pk)
+    tasks = event.tasks.filter(
+        is_guion=True, due_date__isnull=False, due_time__isnull=False,
+    ).select_related("assigned_to", "vendor").order_by("due_date", "due_time")
+
+    cal = Calendar()
+    cal.add("prodid", f"-//EventPlanner//{event.pk}//ES")
+    cal.add("version", "2.0")
+    cal.add("calscale", "GREGORIAN")
+    cal.add("x-wr-calname", f"{_('Guión')} — {event.name}")
+
+    for task in tasks:
+        start = datetime.combine(task.due_date, task.due_time)
+        ical_event = ICalEvent()
+        ical_event.add("uid", f"eventplanner-task-{task.pk}@eventplanner")
+        ical_event.add("summary", task.title)
+        ical_event.add("dtstart", start)
+        ical_event.add("dtend", start + timedelta(minutes=15))
+        ical_event.add("dtstamp", timezone.now())
+        description = _("Responsable: %(name)s") % {"name": task.responsible_display}
+        if task.description:
+            description = f"{task.description}\n\n{description}"
+        ical_event.add("description", description)
+        if event.venue_name:
+            ical_event.add("location", event.venue_name)
+
+        alarm = Alarm()
+        alarm.add("action", "DISPLAY")
+        alarm.add("description", task.title)
+        alarm.add("trigger", timedelta(minutes=-15))
+        ical_event.add_component(alarm)
+
+        cal.add_component(ical_event)
+
+    response = HttpResponse(cal.to_ical(), content_type="text/calendar; charset=utf-8")
+    response["Content-Disposition"] = f'attachment; filename="guion_{event.pk}.ics"'
+    return response

@@ -107,6 +107,7 @@
 
   <div class="tab-pane fade" id="tab-tareas">
     <a href="{% url 'tasks:list' event.pk %}" class="btn btn-sm btn-outline-dark mb-3">{% trans "Ver todas las tareas" %}</a>
+    <a href="{% url 'tasks:chain_list' event.pk %}" class="btn btn-sm btn-outline-dark mb-3"><i class="bi bi-link-45deg"></i> {% trans "Ver cadenas de tareas" %}</a>
     {% if user.can_manage_events or user.is_supervisor %}
     <a href="{% url 'tasks:create' event.pk %}" class="btn btn-sm btn-dark mb-3"><i class="bi bi-plus-lg"></i> {% trans "Nueva tarea" %}</a>
     {% endif %}

@@ -14,6 +14,7 @@
       <thead class="table-light">
         <tr>
           <th>{% trans "Nombre" %}</th>
+          <th>{% trans "Iniciales" %}</th>
           <th>{% trans "Usuario" %}</th>
           <th>{% trans "Rol" %}</th>
           <th>{% trans "Teléfono" %}</th>
@@ -25,6 +26,7 @@
         {% for member in members %}
         <tr>
           <td>{{ member.get_full_name|default:"—" }}</td>
+          <td>{{ member.iniciales|default:"—" }}</td>
           <td>{{ member.username }}</td>
           <td><span class="badge text-bg-secondary">{{ member.role.name|default:"—" }}</span></td>
           <td>{{ member.phone|default:"—" }}</td>
@@ -43,7 +45,7 @@
           </td>
         </tr>
         {% empty %}
-        <tr><td colspan="6" class="text-center text-muted py-4">{% trans "Todavía no hay miembros en el equipo." %}</td></tr>
+        <tr><td colspan="7" class="text-center text-muted py-4">{% trans "Todavía no hay miembros en el equipo." %}</td></tr>
         {% endfor %}
       </tbody>
     </table>

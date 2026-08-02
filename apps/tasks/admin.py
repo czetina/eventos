@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Task, TaskEvidence, TaskStatusHistory
+from .models import Task, TaskChain, TaskEvidence, TaskStatusHistory
 
 
 class TaskEvidenceInline(admin.TabularInline):
@@ -17,7 +17,15 @@ class TaskStatusHistoryInline(admin.TabularInline):
 
 @admin.register(Task)
 class TaskAdmin(admin.ModelAdmin):
-    list_display = ["title", "event", "assigned_to", "vendor", "supervisor", "status", "due_date", "due_time"]
+    list_display = [
+        "title", "event", "assigned_to", "vendor", "supervisor", "status", "due_date", "due_time", "chain",
+    ]
     list_filter = ["status", "requires_photo", "requires_document"]
     search_fields = ["title", "event__name"]
     inlines = [TaskEvidenceInline, TaskStatusHistoryInline]
+
+
+@admin.register(TaskChain)
+class TaskChainAdmin(admin.ModelAdmin):
+    list_display = ["name", "event", "created_by", "created_at"]
+    search_fields = ["name", "event__name"]

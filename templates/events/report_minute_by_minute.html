@@ -92,9 +92,10 @@
           <td class="text-muted small">{{ task.due_time|default:"—" }}</td>
           <td class="small ps-4">
             <span class="badge badge-status-{{ task.status }}">{{ task.get_status_display }}</span> {{ task.title }}
+            {% if task.chain_id %}<span class="badge text-bg-light border"><i class="bi bi-link-45deg"></i> {{ task.chain.name }}</span>{% endif %}
           </td>
           <td></td>
-          <td class="text-muted small">{{ task.responsible_display }}</td>
+          <td class="text-muted small">{{ task.responsible_initials_display }}</td>
           <td></td>
         </tr>
         {% empty %}

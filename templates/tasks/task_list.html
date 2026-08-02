@@ -9,10 +9,17 @@
     {% if user.can_manage_events %}
     <a href="{% url 'tasks:import' event.pk %}" class="btn btn-outline-dark"><i class="bi bi-file-earmark-arrow-up"></i> {% trans "Importar desde Excel" %}</a>
     {% endif %}
+    <a href="{% url 'tasks:export_guion_ics' event.pk %}" class="btn btn-outline-dark" title="{% trans "Descarga un archivo .ics con las tareas del guión para importarlo a tu calendario (iPhone, Apple Watch, Android) y recibir alarmas." %}"><i class="bi bi-calendar-event"></i> {% trans "Exportar guión a calendario" %}</a>
     {% if user.can_manage_events or user.is_supervisor %}
     <a href="{% url 'tasks:create' event.pk %}" class="btn btn-dark"><i class="bi bi-plus-lg"></i> {% trans "Nueva tarea" %}</a>
+    <a href="{% url 'tasks:chain_create' event.pk %}" class="btn btn-outline-dark"><i class="bi bi-link-45deg"></i> {% trans "Nueva cadena de tareas" %}</a>
     {% endif %}
   </div>
+</div>
+
+<div class="btn-group btn-group-sm mb-3" role="group">
+  <a href="{% url 'tasks:list' event.pk %}" class="btn btn-dark">{% trans "Lista de tareas" %}</a>
+  <a href="{% url 'tasks:chain_list' event.pk %}" class="btn btn-outline-dark">{% trans "Cadenas de tareas" %}</a>
 </div>
 
 <div class="mb-3">
@@ -37,7 +44,7 @@
 
   <div class="list-group mb-2">
     {% for task in tasks %}
-    <div class="list-group-item d-flex justify-content-between align-items-center gap-2 task-row" data-task-search="{{ task.title|lower }} {{ task.responsible_display|lower }}">
+    <div class="list-group-item d-flex justify-content-between align-items-center gap-2 task-row" data-task-search="{{ task.title|lower }} {{ task.responsible_display|lower }} {{ task.chain.name|lower }}">
       {% if task.status != 'completada' %}
       <input type="checkbox" class="form-check-input flex-shrink-0" name="task_ids" value="{{ task.pk }}">
       {% else %}
@@ -48,6 +55,9 @@
           <strong>{{ task.title }}</strong>
           {% if task.is_guion %}
           <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle small ms-1"><i class="bi bi-check-circle"></i> {% trans "Guión" %}</span>
+          {% endif %}
+          {% if task.chain_id %}
+          <span class="badge text-bg-light border small ms-1"><i class="bi bi-link-45deg"></i> {{ task.chain.name }}</span>
           {% endif %}
           <span class="text-muted small d-block">
             {{ task.responsible_display }}{% if task.supervisor %} · {% trans "supervisa" %} {{ task.supervisor }}{% endif %}{% if task.due_date %} · {{ task.due_date }} {{ task.due_time|default:"" }}{% endif %}

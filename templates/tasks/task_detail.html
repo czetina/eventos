@@ -41,6 +41,13 @@
       <strong>{% trans "Momento del itinerario" %}:</strong> {{ task.itinerary_session.title }} ({{ task.itinerary_session.date }} {{ task.itinerary_session.start_time }})
     </div>
     {% endif %}
+    {% if task.chain_id %}
+    <div class="mt-2 small">
+      <strong><i class="bi bi-link-45deg"></i> {% trans "Cadena" %}:</strong>
+      <a href="{% url 'tasks:chain_detail' task.chain_id %}">{{ task.chain.name }}</a>
+      {% if chain_step %}— {% blocktrans with step=chain_step total=chain_total %}Paso {{ step }} de {{ total }}{% endblocktrans %}{% endif %}
+    </div>
+    {% endif %}
     <div class="mt-2">
       {% if task.requires_photo %}<span class="badge text-bg-light border"><i class="bi bi-camera"></i> {% trans "Requiere foto" %}</span>{% endif %}
       {% if task.requires_video %}<span class="badge text-bg-light border"><i class="bi bi-camera-video"></i> {% trans "Requiere video" %}</span>{% endif %}

@@ -39,7 +39,7 @@
         <tr>
           <td>{{ task.responsible_display }}</td>
           <td>{{ task.category|default:"—" }}</td>
-          <td>{{ task.title }}</td>
+          <td>{{ task.title }}{% if task.chain_id %} <span class="badge text-bg-light border small"><i class="bi bi-link-45deg"></i> {{ task.chain.name }}</span>{% endif %}</td>
           <td>{{ task.due_date|default:"—" }} {{ task.due_time|default:"" }}</td>
           <td><span class="badge badge-status-{{ task.status }}">{{ task.get_status_display }}</span></td>
         </tr>

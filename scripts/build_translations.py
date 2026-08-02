@@ -1038,6 +1038,34 @@ TRANSLATIONS = {
     # Task list: client-side search box
     "Buscar tarea por título o responsable...": "Search task by title or responsible...",
     "Ninguna tarea coincide con la búsqueda.": "No task matches the search.",
+    # Task chains
+    "Nueva cadena de tareas": "New task chain",
+    "Editar cadena de tareas": "Edit task chain",
+    "Crear cadena": "Create chain",
+    "Lista de tareas": "Task list",
+    "Cadenas de tareas": "Task chains",
+    "Cadenas de tareas de": "Task chains for",
+    "Volver a cadenas de tareas": "Back to task chains",
+    "Todavía no hay cadenas de tareas.": "No task chains yet.",
+    "Todavía no hay tareas en esta cadena.": "No tasks in this chain yet.",
+    "¿Eliminar esta cadena? Las tareas no se borrarán.": "Delete this chain? The tasks will not be deleted.",
+    "¿Quitar esta tarea de la cadena? La tarea no se eliminará.": "Remove this task from the chain? The task will not be deleted.",
+    "Nueva tarea en esta cadena": "New task in this chain",
+    "Usa el mismo formulario completo de tareas — responsable, fecha, evidencia, etc.":
+        "Uses the same full task form — responsible, date, evidence, etc.",
+    "Agregar tarea existente": "Add existing task",
+    "Elegir tarea...": "Choose a task...",
+    "No hay tareas sueltas en este evento para agregar.": "There are no unassigned-to-a-chain tasks in this event to add.",
+    "Ver cadenas de tareas": "View task chains",
+    "Cadena": "Chain",
+    "Cadena de tareas": "Task chain",
+    "Iniciales": "Initials",
+    "Se usa en el reporte minuto a minuto para no mostrar el nombre completo. Ej. JCJ.":
+        "Used in the minute-by-minute report instead of the full name. E.g. JCJ.",
+    "Exportar guión a calendario": "Export script to calendar",
+    "Descarga un archivo .ics con las tareas del guión para importarlo a tu calendario (iPhone, Apple Watch, Android) y recibir alarmas.":
+        "Downloads a .ics file with the script tasks to import into your calendar (iPhone, Apple Watch, Android) and get alarms.",
+    "Responsable: %(name)s": "Responsible: %(name)s",
 }
 
 

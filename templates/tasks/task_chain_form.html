@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% if is_new %}{% trans "Nueva cadena de tareas" %}{% else %}{% trans "Editar cadena de tareas" %}{% endif %}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-7">
+    <div class="card">
+      <div class="card-body p-4">
+        <h4 class="mb-3">
+          {% if is_new %}<i class="bi bi-plus-square"></i> {% trans "Nueva cadena de tareas" %}
+          {% else %}<i class="bi bi-pencil"></i> {% trans "Editar cadena de tareas" %}{% endif %}
+          — {{ event.name }}
+        </h4>
+        <form method="post">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <button type="submit" class="btn btn-dark">{% if is_new %}{% trans "Crear cadena" %}{% else %}{% trans "Guardar" %}{% endif %}</button>
+          {% if chain %}
+          <a href="{% url 'tasks:chain_detail' chain.pk %}" class="btn btn-link">{% trans "Cancelar" %}</a>
+          {% else %}
+          <a href="{% url 'tasks:chain_list' event.pk %}" class="btn btn-link">{% trans "Cancelar" %}</a>
+          {% endif %}
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eventplanner\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-29 08:19\n"
+"POT-Creation-Date: 2026-08-01 07:53\n"
 "Language: en\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -3915,3 +3915,108 @@ msgstr "Search task by title or responsible..."
 #: eventplanner
 msgid "Ninguna tarea coincide con la búsqueda."
 msgstr "No task matches the search."
+
+#: eventplanner
+msgid "Nueva cadena de tareas"
+msgstr "New task chain"
+
+#: eventplanner
+msgid "Editar cadena de tareas"
+msgstr "Edit task chain"
+
+#: eventplanner
+msgid "Crear cadena"
+msgstr "Create chain"
+
+#: eventplanner
+msgid "Lista de tareas"
+msgstr "Task list"
+
+#: eventplanner
+msgid "Cadenas de tareas"
+msgstr "Task chains"
+
+#: eventplanner
+msgid "Cadenas de tareas de"
+msgstr "Task chains for"
+
+#: eventplanner
+msgid "Volver a cadenas de tareas"
+msgstr "Back to task chains"
+
+#: eventplanner
+msgid "Todavía no hay cadenas de tareas."
+msgstr "No task chains yet."
+
+#: eventplanner
+msgid "Todavía no hay tareas en esta cadena."
+msgstr "No tasks in this chain yet."
+
+#: eventplanner
+msgid "¿Eliminar esta cadena? Las tareas no se borrarán."
+msgstr "Delete this chain? The tasks will not be deleted."
+
+#: eventplanner
+msgid "¿Quitar esta tarea de la cadena? La tarea no se eliminará."
+msgstr "Remove this task from the chain? The task will not be deleted."
+
+#: eventplanner
+msgid "Nueva tarea en esta cadena"
+msgstr "New task in this chain"
+
+#: eventplanner
+msgid ""
+"Usa el mismo formulario completo de tareas — responsable, fecha, evidencia, "
+"etc."
+msgstr "Uses the same full task form — responsible, date, evidence, etc."
+
+#: eventplanner
+msgid "Agregar tarea existente"
+msgstr "Add existing task"
+
+#: eventplanner
+msgid "Elegir tarea..."
+msgstr "Choose a task..."
+
+#: eventplanner
+msgid "No hay tareas sueltas en este evento para agregar."
+msgstr "There are no unassigned-to-a-chain tasks in this event to add."
+
+#: eventplanner
+msgid "Ver cadenas de tareas"
+msgstr "View task chains"
+
+#: eventplanner
+msgid "Cadena"
+msgstr "Chain"
+
+#: eventplanner
+msgid "Cadena de tareas"
+msgstr "Task chain"
+
+#: eventplanner
+msgid "Iniciales"
+msgstr "Initials"
+
+#: eventplanner
+msgid ""
+"Se usa en el reporte minuto a minuto para no mostrar el nombre completo. Ej."
+" JCJ."
+msgstr ""
+"Used in the minute-by-minute report instead of the full name. E.g. JCJ."
+
+#: eventplanner
+msgid "Exportar guión a calendario"
+msgstr "Export script to calendar"
+
+#: eventplanner
+msgid ""
+"Descarga un archivo .ics con las tareas del guión para importarlo a tu "
+"calendario (iPhone, Apple Watch, Android) y recibir alarmas."
+msgstr ""
+"Downloads a .ics file with the script tasks to import into your calendar "
+"(iPhone, Apple Watch, Android) and get alarms."
+
+#: eventplanner
+msgid "Responsable: %(name)s"
+msgstr "Responsible: %(name)s"

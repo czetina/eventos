@@ -14,6 +14,39 @@ def evidence_upload_path(instance, filename):
     return f"evidencias/evento_{event_id}/tarea_{instance.task_id}/{filename}"
 
 
+class TaskChain(models.Model):
+    """Groups several related Task rows into an ordered, purely organizational
+    sequence (e.g. 'Comprar reloj' -> 'Grabar reloj' -> 'Llevar reloj a la
+    ceremonia'). Each Task stays a fully normal, independent task — the chain
+    only relates and orders them, it never blocks or automates anything."""
+
+    event = models.ForeignKey(
+        Event, verbose_name=_("evento"), related_name="task_chains", on_delete=models.CASCADE
+    )
+    name = models.CharField(_("nombre"), max_length=150)
+    description = models.TextField(_("descripción"), blank=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, verbose_name=_("creada por"), related_name="task_chains_created",
+        on_delete=models.SET_NULL, null=True, blank=True,
+    )
+    created_at = models.DateTimeField(_("creada"), auto_now_add=True)
+
+    class Meta:
+        verbose_name = _("cadena de tareas")
+        verbose_name_plural = _("cadenas de tareas")
+        ordering = ["name"]
+
+    def __str__(self):
+        return f"{self.name} ({self.event})"
+
+    @property
+    def progress_percent(self):
+        total = self.tasks.count()
+        if not total:
+            return 0
+        return round(self.tasks.filter(status=Task.STATUS_DONE).count() * 100 / total)
+
+
 class Task(models.Model):
     """A checklist item assigned to a responsible person (encargado) for an event.
 
@@ -85,6 +118,12 @@ class Task(models.Model):
         _("en el guión"), default=False,
         help_text=_("Marca si esta tarea forma parte del guión (minuto a minuto) del evento."),
     )
+    chain = models.ForeignKey(
+        TaskChain, verbose_name=_("cadena de tareas"), related_name="tasks",
+        on_delete=models.SET_NULL, null=True, blank=True,
+        help_text=_("Agrupa esta tarea dentro de una secuencia ordenada (opcional)."),
+    )
+    chain_order = models.PositiveIntegerField(_("orden en la cadena"), null=True, blank=True)
 
     due_date = models.DateField(_("fecha límite"), null=True, blank=True)
     due_time = models.TimeField(_("hora límite"), null=True, blank=True)
@@ -128,6 +167,12 @@ class Task(models.Model):
         verbose_name = _("tarea")
         verbose_name_plural = _("tareas")
         ordering = ["due_date", "due_time", "id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["chain", "chain_order"], condition=models.Q(chain__isnull=False),
+                name="unique_chain_order_per_chain",
+            ),
+        ]
 
     def __str__(self):
         return f"{self.title} ({self.event})"
@@ -146,6 +191,12 @@ class Task(models.Model):
         if self.vendor:
             return str(self.vendor.name)
         return self.external_assignee_name or _("Sin asignar")
+
+    @property
+    def responsible_initials_display(self):
+        if self.assigned_to:
+            return self.assigned_to.initials_display
+        return self.responsible_display
 
     @property
     def is_overdue(self):

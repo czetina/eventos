@@ -7,7 +7,7 @@ from apps.accounts.models import Role
 from apps.events.models import EventTeamMember
 from apps.vendors.models import Vendor
 
-from .models import Task, TaskEvidence, TaskStatusHistory
+from .models import Task, TaskChain, TaskEvidence, TaskStatusHistory
 
 
 class TaskForm(BootstrapFormMixin, forms.ModelForm):
@@ -28,13 +28,15 @@ class TaskForm(BootstrapFormMixin, forms.ModelForm):
         super().__init__(*args, **kwargs)
         if event:
             member_user_ids = EventTeamMember.objects.filter(event=event).values_list("user_id", flat=True)
+            company_admin_filter = models.Q(company=event.company, role__base_level=Role.LEVEL_COMPANY_ADMIN)
             self.fields["assigned_to"].queryset = self.fields["assigned_to"].queryset.model.objects.filter(
-                pk__in=member_user_ids
+                models.Q(pk__in=member_user_ids) | company_admin_filter
             )
+            supervisor_user_ids = EventTeamMember.objects.filter(
+                event=event, role__base_level__in=[Role.LEVEL_SUPERVISOR, Role.LEVEL_PLANNER]
+            ).values_list("user_id", flat=True)
             self.fields["supervisor"].queryset = self.fields["supervisor"].queryset.model.objects.filter(
-                pk__in=EventTeamMember.objects.filter(
-                    event=event, role__base_level__in=[Role.LEVEL_SUPERVISOR, Role.LEVEL_PLANNER]
-                ).values_list("user_id", flat=True)
+                models.Q(pk__in=supervisor_user_ids) | company_admin_filter
             )
             vendor_filter = models.Q(is_active=True)
             if self.instance.pk and self.instance.vendor_id:
@@ -54,6 +56,17 @@ class TaskForm(BootstrapFormMixin, forms.ModelForm):
                 _("Indica un encargado del sistema, un proveedor o un responsable externo.")
             )
         return cleaned
+
+
+class TaskChainForm(BootstrapFormMixin, forms.ModelForm):
+    class Meta:
+        model = TaskChain
+        fields = ["name", "description"]
+        widgets = {"description": forms.Textarea(attrs={"rows": 2})}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._apply_bootstrap()
 
 
 class TaskImportForm(BootstrapFormMixin, forms.Form):

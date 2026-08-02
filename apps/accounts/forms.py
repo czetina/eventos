@@ -96,7 +96,9 @@ class TeamMemberForm(BootstrapFormMixin, forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ["first_name", "last_name", "username", "email", "phone", "role", "preferred_language"]
+        fields = [
+            "first_name", "last_name", "username", "email", "phone", "iniciales", "role", "preferred_language",
+        ]
 
     def __init__(self, *args, requesting_user=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -136,7 +138,9 @@ class TeamMemberEditForm(BootstrapFormMixin, forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ["first_name", "last_name", "email", "phone", "role", "preferred_language", "is_active"]
+        fields = [
+            "first_name", "last_name", "email", "phone", "iniciales", "role", "preferred_language", "is_active",
+        ]
 
     def __init__(self, *args, requesting_user=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -169,7 +173,7 @@ class TeamMemberPasswordForm(BootstrapFormMixin, forms.Form):
 class ProfileForm(BootstrapFormMixin, forms.ModelForm):
     class Meta:
         model = User
-        fields = ["first_name", "last_name", "email", "phone", "preferred_language"]
+        fields = ["first_name", "last_name", "email", "phone", "iniciales", "preferred_language"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
