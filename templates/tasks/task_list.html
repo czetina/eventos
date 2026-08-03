@@ -9,7 +9,24 @@
     {% if user.can_manage_events %}
     <a href="{% url 'tasks:import' event.pk %}" class="btn btn-outline-dark"><i class="bi bi-file-earmark-arrow-up"></i> {% trans "Importar desde Excel" %}</a>
     {% endif %}
-    <a href="{% url 'tasks:export_guion_ics' event.pk %}" class="btn btn-outline-dark" title="{% trans "Descarga un archivo .ics con las tareas del guión para importarlo a tu calendario (iPhone, Apple Watch, Android) y recibir alarmas." %}"><i class="bi bi-calendar-event"></i> {% trans "Exportar guión a calendario" %}</a>
+    <div class="btn-group">
+      <button type="button" class="btn btn-outline-dark dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-calendar-event"></i> {% trans "Guión a calendario" %}
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li><h6 class="dropdown-header">{% trans "Suscribirse (crea un calendario nuevo)" %}</h6></li>
+        <li><a class="dropdown-item" href="{{ guion_subscribe_url }}">
+          <i class="bi bi-calendar-plus"></i> {% trans "Suscribirse desde el celular" %}
+        </a></li>
+        <li><span class="dropdown-item-text small text-muted">{% trans "En iPhone/Android crea un calendario aparte con el nombre del evento, que se actualiza solo si cambian las tareas." %}</span></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><h6 class="dropdown-header">{% trans "Descargar una copia" %}</h6></li>
+        <li><a class="dropdown-item" href="{% url 'tasks:export_guion_ics' event.pk %}">
+          <i class="bi bi-download"></i> {% trans "Descargar archivo .ics" %}
+        </a></li>
+        <li><span class="dropdown-item-text small text-muted">{% trans "Una foto del guión en este momento — no se actualiza sola. Útil para enviar por correo." %}</span></li>
+      </ul>
+    </div>
     {% if user.can_manage_events or user.is_supervisor %}
     <a href="{% url 'tasks:create' event.pk %}" class="btn btn-dark"><i class="bi bi-plus-lg"></i> {% trans "Nueva tarea" %}</a>
     <a href="{% url 'tasks:chain_create' event.pk %}" class="btn btn-outline-dark"><i class="bi bi-link-45deg"></i> {% trans "Nueva cadena de tareas" %}</a>

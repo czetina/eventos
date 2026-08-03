@@ -8,6 +8,7 @@ from django.db import transaction
 from django.db.models import Max
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -74,9 +75,14 @@ def task_list(request, event_pk):
         tasks = [t for t in tasks if t.is_overdue]
     for task in tasks:
         task.latest_status_entry = task.status_history.select_related("changed_by").first()
+    ics_public_url = request.build_absolute_uri(
+        reverse("tasks:export_guion_ics_public", args=[event.share_token])
+    )
+    subscribe_url = ics_public_url.replace("http://", "webcal://").replace("https://", "webcal://")
     return render(request, "tasks/task_list.html", {
         "event": event, "tasks": tasks, "status_choices": Task.STATUS_CHOICES,
         "active_status": status, "show_overdue": show_overdue,
+        "guion_subscribe_url": subscribe_url,
     })
 
 
@@ -117,6 +123,20 @@ def task_edit(request, pk):
     else:
         form = TaskForm(instance=task, event=event)
     return render(request, "tasks/task_form.html", {"form": form, "event": event, "is_new": False, "task": task})
+
+
+@login_required
+def task_delete(request, pk):
+    task, event = _get_task_scoped(request.user, pk)
+    if not (request.user.can_manage_events or request.user.is_supervisor):
+        raise PermissionDenied(_("No tienes permiso para eliminar esta tarea."))
+    if request.method == "POST":
+        for evidence in task.evidences.all():
+            evidence.file.delete(save=False)
+        task.delete()
+        messages.success(request, _("Tarea eliminada."))
+        return redirect("tasks:list", event_pk=event.pk)
+    return redirect("tasks:detail", pk=task.pk)
 
 
 def _get_task_scoped(user, pk):
@@ -679,15 +699,14 @@ def task_import_confirm(request, event_pk):
     return redirect("tasks:list", event_pk=event.pk)
 
 
-@login_required
-def task_export_guion_ics(request, event_pk):
-    """Exports every 'guión' task with a due date/time as a .ics calendar file
-    with a reminder alarm, so it can be imported into Apple/Google Calendar and
-    show up as a notification on a phone or watch."""
+def _build_guion_calendar(event):
+    """Builds the icalendar Calendar with every 'guión' task that has a due
+    date/time, each with a 15-minute reminder alarm. Shared by the logged-in
+    download and the public webcal subscription feed, so both always produce
+    the exact same events."""
     from icalendar import Alarm, Calendar
     from icalendar import Event as ICalEvent
 
-    event = get_event_or_403(request.user, event_pk)
     tasks = event.tasks.filter(
         is_guion=True, due_date__isnull=False, due_time__isnull=False,
     ).select_related("assigned_to", "vendor").order_by("due_date", "due_time")
@@ -696,6 +715,7 @@ def task_export_guion_ics(request, event_pk):
     cal.add("prodid", f"-//EventPlanner//{event.pk}//ES")
     cal.add("version", "2.0")
     cal.add("calscale", "GREGORIAN")
+    cal.add("method", "PUBLISH")
     cal.add("x-wr-calname", f"{_('Guión')} — {event.name}")
 
     for task in tasks:
@@ -721,6 +741,26 @@ def task_export_guion_ics(request, event_pk):
 
         cal.add_component(ical_event)
 
+    return cal
+
+
+@login_required
+def task_export_guion_ics(request, event_pk):
+    """Downloads a one-time snapshot .ics of the 'guión' tasks — good for
+    emailing to yourself or opening directly in Mail's Add-to-Calendar flow."""
+    event = get_event_or_403(request.user, event_pk)
+    cal = _build_guion_calendar(event)
     response = HttpResponse(cal.to_ical(), content_type="text/calendar; charset=utf-8")
     response["Content-Disposition"] = f'attachment; filename="guion_{event.pk}.ics"'
     return response
+
+
+def task_export_guion_ics_public(request, token):
+    """No-login webcal feed keyed by the event's existing public share_token
+    (same token already used for the processional-diagram public link) —
+    subscribing to this URL (webcal://...) makes the phone's Calendar app
+    create its own separate, auto-refreshing calendar for the event, instead
+    of dumping the events into whatever calendar is currently selected."""
+    event = get_object_or_404(Event, share_token=token)
+    cal = _build_guion_calendar(event)
+    return HttpResponse(cal.to_ical(), content_type="text/calendar; charset=utf-8")

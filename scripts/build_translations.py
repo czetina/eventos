@@ -1066,6 +1066,18 @@ TRANSLATIONS = {
     "Descarga un archivo .ics con las tareas del guión para importarlo a tu calendario (iPhone, Apple Watch, Android) y recibir alarmas.":
         "Downloads a .ics file with the script tasks to import into your calendar (iPhone, Apple Watch, Android) and get alarms.",
     "Responsable: %(name)s": "Responsible: %(name)s",
+    "Guión a calendario": "Script to calendar",
+    "Suscribirse (crea un calendario nuevo)": "Subscribe (creates a new calendar)",
+    "Suscribirse desde el celular": "Subscribe from your phone",
+    "En iPhone/Android crea un calendario aparte con el nombre del evento, que se actualiza solo si cambian las tareas.":
+        "On iPhone/Android this creates a separate calendar named after the event, which updates itself if tasks change.",
+    "Descargar una copia": "Download a copy",
+    "Descargar archivo .ics": "Download .ics file",
+    "Una foto del guión en este momento — no se actualiza sola. Útil para enviar por correo.":
+        "A snapshot of the script right now — doesn't update itself. Useful for emailing.",
+    "¿Eliminar esta tarea? Esta acción no se puede deshacer.": "Delete this task? This action cannot be undone.",
+    "Tarea eliminada.": "Task deleted.",
+    "No tienes permiso para eliminar esta tarea.": "You don't have permission to delete this task.",
 }
 
 

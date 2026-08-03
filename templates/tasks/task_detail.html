@@ -16,6 +16,10 @@
         <div class="mt-2">
           {% if user.can_manage_events or user.is_supervisor %}
           <a href="{% url 'tasks:edit' task.pk %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i> {% trans "Editar" %}</a>
+          <form method="post" action="{% url 'tasks:delete' task.pk %}" class="d-inline" onsubmit="return confirm('{% trans "¿Eliminar esta tarea? Esta acción no se puede deshacer." %}');">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> {% trans "Eliminar" %}</button>
+          </form>
           {% endif %}
           {% if task.is_guion %}
           <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle"><i class="bi bi-check-circle"></i> {% trans "Guión" %}</span>

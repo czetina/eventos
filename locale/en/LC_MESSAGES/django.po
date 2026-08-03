@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eventplanner\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-01 07:53\n"
+"POT-Creation-Date: 2026-08-02 17:49\n"
 "Language: en\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -4020,3 +4020,51 @@ msgstr ""
 #: eventplanner
 msgid "Responsable: %(name)s"
 msgstr "Responsible: %(name)s"
+
+#: eventplanner
+msgid "Guión a calendario"
+msgstr "Script to calendar"
+
+#: eventplanner
+msgid "Suscribirse (crea un calendario nuevo)"
+msgstr "Subscribe (creates a new calendar)"
+
+#: eventplanner
+msgid "Suscribirse desde el celular"
+msgstr "Subscribe from your phone"
+
+#: eventplanner
+msgid ""
+"En iPhone/Android crea un calendario aparte con el nombre del evento, que se"
+" actualiza solo si cambian las tareas."
+msgstr ""
+"On iPhone/Android this creates a separate calendar named after the event, "
+"which updates itself if tasks change."
+
+#: eventplanner
+msgid "Descargar una copia"
+msgstr "Download a copy"
+
+#: eventplanner
+msgid "Descargar archivo .ics"
+msgstr "Download .ics file"
+
+#: eventplanner
+msgid ""
+"Una foto del guión en este momento — no se actualiza sola. Útil para enviar "
+"por correo."
+msgstr ""
+"A snapshot of the script right now — doesn't update itself. Useful for "
+"emailing."
+
+#: eventplanner
+msgid "¿Eliminar esta tarea? Esta acción no se puede deshacer."
+msgstr "Delete this task? This action cannot be undone."
+
+#: eventplanner
+msgid "Tarea eliminada."
+msgstr "Task deleted."
+
+#: eventplanner
+msgid "No tienes permiso para eliminar esta tarea."
+msgstr "You don't have permission to delete this task."
