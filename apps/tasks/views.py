@@ -82,7 +82,7 @@ def task_list(request, event_pk):
     return render(request, "tasks/task_list.html", {
         "event": event, "tasks": tasks, "status_choices": Task.STATUS_CHOICES,
         "active_status": status, "show_overdue": show_overdue,
-        "guion_subscribe_url": subscribe_url,
+        "guion_subscribe_url": subscribe_url, "guion_subscribe_url_https": ics_public_url,
     })
 
 

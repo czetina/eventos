@@ -1809,69 +1809,109 @@ def _minute_by_minute_groups(event, only_pending, date_from="", date_to="", time
 
     `guion_only=True` trims each session's task list down to tasks marked
     `is_guion`, the same way `only_pending` trims it down to non-completed
-    tasks — the two filters compose independently."""
+    tasks — the two filters compose independently.
+
+    The date/time filter considers both the itinerary session's own date/time
+    and each related task's own due_date/due_time (a task can be linked to a
+    session but scheduled on a different day). A session shows up if it
+    matches on its own or has at least one matching task; when the filter is
+    active, only the tasks that themselves match are listed under it."""
     from django.db.models import Prefetch
 
     from apps.tasks.models import Task
 
+    date_from_d = dt_date.fromisoformat(date_from) if date_from else None
+    date_to_d = dt_date.fromisoformat(date_to) if date_to else None
+    time_from_t = dt_time.fromisoformat(time_from) if time_from else None
+    time_to_t = dt_time.fromisoformat(time_to) if time_to else None
+    has_date_filter = bool(date_from_d or date_to_d or time_from_t or time_to_t)
+
+    def matches_date_time(d, t):
+        if date_from_d and (not d or d < date_from_d):
+            return False
+        if date_to_d and (not d or d > date_to_d):
+            return False
+        if time_from_t and (not t or t < time_from_t):
+            return False
+        if time_to_t and (not t or t > time_to_t):
+            return False
+        return True
+
     sessions = event.sessions.select_related("section").prefetch_related(
         Prefetch("tasks", queryset=Task.objects.select_related("chain"))
     ).order_by("section__order", "date", "start_time")
-    if date_from:
-        sessions = sessions.filter(date__gte=date_from)
-    if date_to:
-        sessions = sessions.filter(date__lte=date_to)
-    if time_from:
-        sessions = sessions.filter(start_time__gte=time_from)
-    if time_to:
-        sessions = sessions.filter(start_time__lte=time_to)
 
     groups_by_section = {}
     order = []
     for session in sessions:
-        section = session.section
-        if section.pk not in groups_by_section:
-            groups_by_section[section.pk] = {"section": section, "sessions": []}
-            order.append(section.pk)
         session_tasks = session.tasks.all()
         if guion_only:
             session_tasks = [t for t in session_tasks if t.is_guion]
         if only_pending:
             session_tasks = [t for t in session_tasks if t.status != "completada"]
-        session.related_tasks = sorted(
-            session_tasks, key=lambda t: (t.due_date or dt_date.max, t.due_time or dt_time.max)
-        )
+
+        if has_date_filter:
+            session_matches = matches_date_time(session.date, session.start_time)
+            matching_tasks = [t for t in session_tasks if matches_date_time(t.due_date, t.due_time)]
+            if not session_matches and not matching_tasks:
+                continue
+            session.related_tasks = sorted(
+                matching_tasks, key=lambda t: (t.due_date or dt_date.max, t.due_time or dt_time.max)
+            )
+        else:
+            session.related_tasks = sorted(
+                session_tasks, key=lambda t: (t.due_date or dt_date.max, t.due_time or dt_time.max)
+            )
+
+        section = session.section
+        if section.pk not in groups_by_section:
+            groups_by_section[section.pk] = {"section": section, "sessions": []}
+            order.append(section.pk)
         groups_by_section[section.pk]["sessions"].append(session)
     return [groups_by_section[pk] for pk in order]
 
 
 def _minute_by_minute_filters(request):
     only_pending = request.GET.get("solo_pendientes") == "1"
-    section_filter = request.GET.get("seccion", "todas")
+    section_filters = request.GET.getlist("seccion")
     guion_only = request.GET.get("guion") == "1"
     lang = request.GET.get("lang") or getattr(request, "LANGUAGE_CODE", None) or translation.get_language()
     date_from = request.GET.get("fecha_desde") or ""
     date_to = request.GET.get("fecha_hasta") or ""
     time_from = request.GET.get("hora_desde") or ""
     time_to = request.GET.get("hora_hasta") or ""
-    return only_pending, section_filter, guion_only, lang, date_from, date_to, time_from, time_to
+    return only_pending, section_filters, guion_only, lang, date_from, date_to, time_from, time_to
 
 
 @login_required
 def report_minute_by_minute(request, pk):
     event = get_event_or_403(request.user, pk)
-    only_pending, section_filter, guion_only, lang, date_from, date_to, time_from, time_to = _minute_by_minute_filters(request)
+    only_pending, section_filters, guion_only, lang, date_from, date_to, time_from, time_to = _minute_by_minute_filters(request)
     groups = _minute_by_minute_groups(event, only_pending, date_from, date_to, time_from, time_to, guion_only)
     available_sections = [g["section"] for g in groups]
-    if section_filter != "todas":
-        groups = [g for g in groups if str(g["section"].pk) == section_filter]
+
+    section_links = []
+    for section in available_sections:
+        pk_str = str(section.pk)
+        selected = pk_str in section_filters
+        qd = request.GET.copy()
+        current = qd.getlist("seccion")
+        qd.setlist("seccion", [v for v in current if v != pk_str] if selected else current + [pk_str])
+        section_links.append({"section": section, "selected": selected, "url": f"?{qd.urlencode()}"})
+    qd_all = request.GET.copy()
+    qd_all.pop("seccion", None)
+    all_sections_url = f"?{qd_all.urlencode()}"
+
+    if section_filters:
+        groups = [g for g in groups if str(g["section"].pk) in section_filters]
     with translation.override(lang):
         return render(request, "events/report_minute_by_minute.html", {
             "event": event,
             "groups": groups,
-            "available_sections": available_sections,
+            "section_links": section_links,
+            "all_sections_url": all_sections_url,
             "only_pending": only_pending,
-            "section_filter": section_filter,
+            "section_filters": section_filters,
             "guion_only": guion_only,
             "lang": lang,
             "date_from": date_from,
@@ -1887,10 +1927,10 @@ def report_minute_by_minute_excel(request, pk):
     from openpyxl.styles import Font
 
     event = get_event_or_403(request.user, pk)
-    only_pending, section_filter, guion_only, lang, date_from, date_to, time_from, time_to = _minute_by_minute_filters(request)
+    only_pending, section_filters, guion_only, lang, date_from, date_to, time_from, time_to = _minute_by_minute_filters(request)
     groups = _minute_by_minute_groups(event, only_pending, date_from, date_to, time_from, time_to, guion_only)
-    if section_filter != "todas":
-        groups = [g for g in groups if str(g["section"].pk) == section_filter]
+    if section_filters:
+        groups = [g for g in groups if str(g["section"].pk) in section_filters]
 
     with translation.override(lang):
         rows = []

@@ -17,10 +17,10 @@
 <h4 class="d-none d-print-block">{% trans "Minuto a minuto" %} — {{ event.name }}</h4>
 
 <div class="d-flex flex-wrap gap-3 mb-3 no-print">
-  <div class="btn-group btn-group-sm" role="group">
-    <a href="{% querystring seccion=None %}" class="btn {% if section_filter == 'todas' %}btn-dark{% else %}btn-outline-secondary{% endif %}">{% trans "Todas las secciones" %}</a>
-    {% for section in available_sections %}
-    <a href="{% querystring seccion=section.pk %}" class="btn {% if section_filter == section.pk|stringformat:"s" %}btn-dark{% else %}btn-outline-secondary{% endif %}">{{ section.name }}</a>
+  <div class="btn-group btn-group-sm flex-wrap" role="group">
+    <a href="{{ all_sections_url }}" class="btn {% if not section_filters %}btn-dark{% else %}btn-outline-secondary{% endif %}">{% trans "Todas las secciones" %}</a>
+    {% for link in section_links %}
+    <a href="{{ link.url }}" class="btn {% if link.selected %}btn-dark{% else %}btn-outline-secondary{% endif %}">{% if link.selected %}<i class="bi bi-check-lg"></i> {% endif %}{{ link.section.name }}</a>
     {% endfor %}
   </div>
   <div class="btn-group btn-group-sm" role="group">
@@ -39,7 +39,7 @@
 </div>
 
 <form method="get" class="row g-2 align-items-end mb-3 no-print">
-  {% if section_filter != 'todas' %}<input type="hidden" name="seccion" value="{{ section_filter }}">{% endif %}
+  {% for pk in section_filters %}<input type="hidden" name="seccion" value="{{ pk }}">{% endfor %}
   {% if only_pending %}<input type="hidden" name="solo_pendientes" value="1">{% endif %}
   {% if guion_only %}<input type="hidden" name="guion" value="1">{% endif %}
   <input type="hidden" name="lang" value="{{ lang }}">

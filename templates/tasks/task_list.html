@@ -19,6 +19,17 @@
           <i class="bi bi-calendar-plus"></i> {% trans "Suscribirse desde el celular" %}
         </a></li>
         <li><span class="dropdown-item-text small text-muted">{% trans "En iPhone/Android crea un calendario aparte con el nombre del evento, que se actualiza solo si cambian las tareas." %}</span></li>
+        <li>
+          <div class="dropdown-item-text">
+            <div class="input-group input-group-sm">
+              <input type="text" class="form-control form-control-sm" id="guionSubscribeUrlInput" value="{{ guion_subscribe_url_https }}" readonly onclick="this.select()">
+              <button class="btn btn-sm btn-outline-secondary" type="button" onclick="navigator.clipboard.writeText(document.getElementById('guionSubscribeUrlInput').value)">
+                <i class="bi bi-clipboard"></i>
+              </button>
+            </div>
+            <span class="small text-muted">{% trans "¿El link de arriba no hizo nada? Copia esta dirección y pégala en Ajustes → Calendario → Añadir calendario suscrito." %}</span>
+          </div>
+        </li>
         <li><hr class="dropdown-divider"></li>
         <li><h6 class="dropdown-header">{% trans "Descargar una copia" %}</h6></li>
         <li><a class="dropdown-item" href="{% url 'tasks:export_guion_ics' event.pk %}">

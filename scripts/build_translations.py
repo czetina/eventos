@@ -1078,6 +1078,8 @@ TRANSLATIONS = {
     "¿Eliminar esta tarea? Esta acción no se puede deshacer.": "Delete this task? This action cannot be undone.",
     "Tarea eliminada.": "Task deleted.",
     "No tienes permiso para eliminar esta tarea.": "You don't have permission to delete this task.",
+    "¿El link de arriba no hizo nada? Copia esta dirección y pégala en Ajustes → Calendario → Añadir calendario suscrito.":
+        "Did the link above do nothing? Copy this address and paste it into Settings → Calendar → Add Subscribed Calendar.",
 }
 
 
