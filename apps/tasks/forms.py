@@ -15,7 +15,7 @@ class TaskForm(BootstrapFormMixin, forms.ModelForm):
         model = Task
         fields = [
             "title", "description", "category", "assigned_to", "vendor", "external_assignee_name",
-            "supervisor", "itinerary_session", "is_guion", "due_date", "due_time",
+            "supervisor", "chain", "itinerary_session", "is_guion", "due_date", "due_time",
             "requires_photo", "requires_video", "requires_document",
         ]
         widgets = {
@@ -43,10 +43,14 @@ class TaskForm(BootstrapFormMixin, forms.ModelForm):
                 vendor_filter |= models.Q(pk=self.instance.vendor_id)
             self.fields["vendor"].queryset = Vendor.objects.filter(vendor_filter, company=event.company)
             self.fields["itinerary_session"].queryset = event.sessions.all()
+            self.fields["chain"].queryset = event.task_chains.all()
+            self.fields["chain"].label_from_instance = lambda obj: obj.name
         self.fields["assigned_to"].required = False
         self.fields["vendor"].required = False
         self.fields["supervisor"].required = False
         self.fields["itinerary_session"].required = False
+        self.fields["chain"].required = False
+        self.fields["chain"].label = _("Cadena de tareas")
         self._apply_bootstrap()
 
     def clean(self):

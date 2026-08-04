@@ -12,7 +12,11 @@
           — {{ event.name }}
         </h4>
         {% if chain %}
-        <p class="text-muted small">{% blocktrans with name=chain.name %}Se agregará a la cadena: {{ name }}{% endblocktrans %}</p>
+        <p class="text-muted small">
+          <i class="bi bi-link-45deg"></i>
+          {% if is_new %}{% blocktrans with name=chain.name %}Se agregará a la cadena: {{ name }}{% endblocktrans %}
+          {% else %}{% blocktrans with name=chain.name %}Parte de la cadena: {{ name }}{% endblocktrans %}{% endif %}
+        </p>
         {% endif %}
         <form method="post">
           {% csrf_token %}

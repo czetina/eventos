@@ -1050,6 +1050,8 @@ TRANSLATIONS = {
     "Todavía no hay tareas en esta cadena.": "No tasks in this chain yet.",
     "¿Eliminar esta cadena? Las tareas no se borrarán.": "Delete this chain? The tasks will not be deleted.",
     "¿Quitar esta tarea de la cadena? La tarea no se eliminará.": "Remove this task from the chain? The task will not be deleted.",
+    "Se agregará a la cadena: %(name)s": "Will be added to the chain: %(name)s",
+    "Parte de la cadena: %(name)s": "Part of the chain: %(name)s",
     "Nueva tarea en esta cadena": "New task in this chain",
     "Usa el mismo formulario completo de tareas — responsable, fecha, evidencia, etc.":
         "Uses the same full task form — responsible, date, evidence, etc.",
@@ -1069,12 +1071,12 @@ TRANSLATIONS = {
     "Guión a calendario": "Script to calendar",
     "Suscribirse (crea un calendario nuevo)": "Subscribe (creates a new calendar)",
     "Suscribirse desde el celular": "Subscribe from your phone",
-    "En iPhone/Android crea un calendario aparte con el nombre del evento, que se actualiza solo si cambian las tareas.":
-        "On iPhone/Android this creates a separate calendar named after the event, which updates itself if tasks change.",
+    "En iPhone/Android crea un calendario aparte con el nombre del evento, que se actualiza solo si cambian las tareas. Los calendarios suscritos no muestran alarma — para eso usa la opción de descargar de abajo.":
+        "On iPhone/Android this creates a separate calendar named after the event, which updates itself if tasks change. Subscribed calendars don't show alarms — use the download option below for that.",
     "Descargar una copia": "Download a copy",
     "Descargar archivo .ics": "Download .ics file",
-    "Una foto del guión en este momento — no se actualiza sola. Útil para enviar por correo.":
-        "A snapshot of the script right now — doesn't update itself. Useful for emailing.",
+    "La única forma de recibir alarma (15 min antes) en el celular — no se actualiza sola si cambian las tareas, hay que volver a descargar e importar.":
+        "The only way to get an alarm (15 min before) on your phone — doesn't update itself if tasks change, you'll need to download and import again.",
     "¿Eliminar esta tarea? Esta acción no se puede deshacer.": "Delete this task? This action cannot be undone.",
     "Tarea eliminada.": "Task deleted.",
     "No tienes permiso para eliminar esta tarea.": "You don't have permission to delete this task.",

@@ -18,7 +18,7 @@
         <li><a class="dropdown-item" href="{{ guion_subscribe_url }}">
           <i class="bi bi-calendar-plus"></i> {% trans "Suscribirse desde el celular" %}
         </a></li>
-        <li><span class="dropdown-item-text small text-muted">{% trans "En iPhone/Android crea un calendario aparte con el nombre del evento, que se actualiza solo si cambian las tareas." %}</span></li>
+        <li><span class="dropdown-item-text small text-muted">{% trans "En iPhone/Android crea un calendario aparte con el nombre del evento, que se actualiza solo si cambian las tareas. Los calendarios suscritos no muestran alarma — para eso usa la opción de descargar de abajo." %}</span></li>
         <li>
           <div class="dropdown-item-text">
             <div class="input-group input-group-sm">
@@ -35,7 +35,7 @@
         <li><a class="dropdown-item" href="{% url 'tasks:export_guion_ics' event.pk %}">
           <i class="bi bi-download"></i> {% trans "Descargar archivo .ics" %}
         </a></li>
-        <li><span class="dropdown-item-text small text-muted">{% trans "Una foto del guión en este momento — no se actualiza sola. Útil para enviar por correo." %}</span></li>
+        <li><span class="dropdown-item-text small text-muted">{% trans "La única forma de recibir alarma (15 min antes) en el celular — no se actualiza sola si cambian las tareas, hay que volver a descargar e importar." %}</span></li>
       </ul>
     </div>
     {% if user.can_manage_events or user.is_supervisor %}

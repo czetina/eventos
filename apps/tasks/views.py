@@ -86,6 +86,23 @@ def task_list(request, event_pk):
     })
 
 
+def _sync_chain_order(task, previous_chain_id):
+    """Keeps chain_order valid after the plain task form (not the chain
+    detail's dedicated 'add task'/'create task' actions) changes which chain,
+    if any, a task belongs to — appends it to the end of its new chain, or
+    clears the order if it's no longer in a chain."""
+    if task.chain_id == previous_chain_id:
+        return
+    if task.chain_id:
+        next_order = (
+            task.chain.tasks.exclude(pk=task.pk).aggregate(Max("chain_order"))["chain_order__max"] or 0
+        ) + 1
+        task.chain_order = next_order
+    else:
+        task.chain_order = None
+    task.save(update_fields=["chain_order"])
+
+
 @login_required
 def task_create(request, event_pk):
     event = get_event_or_403(request.user, event_pk)
@@ -99,6 +116,7 @@ def task_create(request, event_pk):
             task.created_by = request.user
             task.save()
             task.record_status_change(request.user)
+            _sync_chain_order(task, previous_chain_id=None)
             messages.success(request, _("Tarea creada y asignada."))
             return redirect("tasks:list", event_pk=event.pk)
     else:
@@ -111,6 +129,7 @@ def task_edit(request, pk):
     task, event = _get_task_scoped(request.user, pk)
     if not (request.user.can_manage_events or request.user.is_supervisor):
         raise PermissionDenied(_("No tienes permiso para editar esta tarea."))
+    previous_chain_id = task.chain_id
     if request.method == "POST":
         form = TaskForm(request.POST, instance=task, event=event)
         if form.is_valid():
@@ -118,11 +137,16 @@ def task_edit(request, pk):
             task = form.save()
             if task.status != previous_status:
                 task.record_status_change(request.user)
+            _sync_chain_order(task, previous_chain_id)
             messages.success(request, _("Tarea actualizada."))
+            if task.chain_id:
+                return redirect("tasks:chain_detail", pk=task.chain_id)
             return redirect("tasks:detail", pk=task.pk)
     else:
         form = TaskForm(instance=task, event=event)
-    return render(request, "tasks/task_form.html", {"form": form, "event": event, "is_new": False, "task": task})
+    return render(request, "tasks/task_form.html", {
+        "form": form, "event": event, "is_new": False, "task": task, "chain": task.chain,
+    })
 
 
 @login_required

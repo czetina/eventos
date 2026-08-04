@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eventplanner\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-02 19:12\n"
+"POT-Creation-Date: 2026-08-04 11:54\n"
 "Language: en\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -3961,6 +3961,14 @@ msgid "¿Quitar esta tarea de la cadena? La tarea no se eliminará."
 msgstr "Remove this task from the chain? The task will not be deleted."
 
 #: eventplanner
+msgid "Se agregará a la cadena: %(name)s"
+msgstr "Will be added to the chain: %(name)s"
+
+#: eventplanner
+msgid "Parte de la cadena: %(name)s"
+msgstr "Part of the chain: %(name)s"
+
+#: eventplanner
 msgid "Nueva tarea en esta cadena"
 msgstr "New task in this chain"
 
@@ -4036,10 +4044,12 @@ msgstr "Subscribe from your phone"
 #: eventplanner
 msgid ""
 "En iPhone/Android crea un calendario aparte con el nombre del evento, que se"
-" actualiza solo si cambian las tareas."
+" actualiza solo si cambian las tareas. Los calendarios suscritos no muestran"
+" alarma — para eso usa la opción de descargar de abajo."
 msgstr ""
 "On iPhone/Android this creates a separate calendar named after the event, "
-"which updates itself if tasks change."
+"which updates itself if tasks change. Subscribed calendars don't show alarms"
+" — use the download option below for that."
 
 #: eventplanner
 msgid "Descargar una copia"
@@ -4051,11 +4061,11 @@ msgstr "Download .ics file"
 
 #: eventplanner
 msgid ""
-"Una foto del guión en este momento — no se actualiza sola. Útil para enviar "
-"por correo."
+"La única forma de recibir alarma (15 min antes) en el celular — no se "
+"actualiza sola si cambian las tareas, hay que volver a descargar e importar."
 msgstr ""
-"A snapshot of the script right now — doesn't update itself. Useful for "
-"emailing."
+"The only way to get an alarm (15 min before) on your phone — doesn't update "
+"itself if tasks change, you'll need to download and import again."
 
 #: eventplanner
 msgid "¿Eliminar esta tarea? Esta acción no se puede deshacer."

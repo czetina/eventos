@@ -53,6 +53,7 @@
           <span class="badge badge-status-{{ task.status }}">{{ task.get_status_display }}</span>
           {% if can_manage_chains %}
           <div class="btn-group btn-group-sm mt-1">
+            <a href="{% url 'tasks:edit' task.pk %}" class="btn btn-outline-secondary"><i class="bi bi-pencil"></i></a>
             <form method="post" action="{% url 'tasks:chain_move_task' chain.pk task.pk 'up' %}">
               {% csrf_token %}
               <button type="submit" class="btn btn-outline-secondary" {% if forloop.first %}disabled{% endif %}><i class="bi bi-arrow-up"></i></button>
