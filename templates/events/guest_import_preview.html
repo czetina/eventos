@@ -8,9 +8,20 @@
   {% trans "Nada se guarda todavía." %}
 </p>
 
-<div class="alert alert-danger">
-  <i class="bi bi-exclamation-triangle"></i>
-  {% blocktrans %}Al confirmar se borrarán los {{ existing_count }} invitados actuales del evento y se reemplazarán por esta lista.{% endblocktrans %}
+<div class="alert alert-info">
+  <i class="bi bi-info-circle"></i>
+  {% trans "Esto es una actualización, no un reemplazo: se compara con la lista actual por nombre y apellido." %}
+  <ul class="mb-0 mt-2">
+    <li>{% blocktrans count c=add_count %}{{ c }} invitado nuevo se agregará.{% plural %}{{ c }} invitados nuevos se agregarán.{% endblocktrans %}</li>
+    <li>{% blocktrans count c=update_count %}{{ c }} invitado ya existente se actualizará (cambió algún dato).{% plural %}{{ c }} invitados ya existentes se actualizarán (cambió algún dato).{% endblocktrans %}</li>
+    <li>{% blocktrans count c=unchanged_count %}{{ c }} invitado ya existente sigue igual, sin cambios.{% plural %}{{ c }} invitados ya existentes siguen igual, sin cambios.{% endblocktrans %}</li>
+    {% if remove_count %}
+    <li class="text-danger">
+      {% blocktrans count c=remove_count %}{{ c }} invitado se eliminará por no aparecer ya en este archivo:{% plural %}{{ c }} invitados se eliminarán por no aparecer ya en este archivo:{% endblocktrans %}
+      {{ remove_names|join:", " }}
+    </li>
+    {% endif %}
+  </ul>
 </div>
 
 <div class="row mb-3">

@@ -566,6 +566,8 @@ TRANSLATIONS = {
     "Ya existe una lista con ese nombre.": "A list with that name already exists.",
     "Selecciona al menos 2 listas para unir.": "Select at least 2 lists to merge.",
     "Se unieron %(count)s personas en la nueva lista '%(name)s'.": "Merged %(count)s people into the new list '%(name)s'.",
+    "Se unieron %(count)s personas en la nueva lista '%(name)s' (%(dupes)s ya estaban repetidas entre las listas y no se duplicaron).":
+        "Merged %(count)s people into the new list '%(name)s' (%(dupes)s were already repeated across the lists and were not duplicated).",
     "Buscar en plan de mesas": "Search in seating chart",
     "Busca a alguien que ya está en el plan de mesas y agrégalo directamente a una o varias listas del cortejo, sin volver a escribir su nombre.":
         "Search for someone already in the seating chart and add them directly to one or more wedding party lists, without retyping their name.",
@@ -574,6 +576,9 @@ TRANSLATIONS = {
     "No se encontró a nadie con ese nombre en el plan de mesas.": "No one with that name was found in the seating chart.",
     "Agregar a las listas marcadas": "Add to the checked lists",
     "Se agregaron %(count)s registros al cortejo.": "Added %(count)s entries to the wedding party.",
+    "Se agregaron %(count)s registros al cortejo (%(skipped)s ya estaban en esa lista y no se repitieron).":
+        "Added %(count)s entries to the wedding party (%(skipped)s were already in that list and were not repeated).",
+    "Esas personas ya estaban en la lista elegida — no se agregó nada.": "Those people were already in the chosen list — nothing was added.",
     "No se seleccionó ninguna lista para las personas marcadas.": "No list was selected for the checked people.",
     "Volver al cortejo nupcial": "Back to the wedding party",
     "Todas las listas": "All lists",
@@ -1012,6 +1017,10 @@ TRANSLATIONS = {
     "Se importaron %(count)s invitados correctamente.": "%(count)s guests were imported successfully.",
     "Se borraron %(count)s invitados existentes antes de importar.": "%(count)s existing guests were deleted before importing.",
     "Solo planificadores o administradores pueden importar invitados.": "Only planners or administrators can import guests.",
+    "Esto es una actualización, no un reemplazo: se compara con la lista actual por nombre y apellido.":
+        "This is an update, not a replacement: it's matched against the current list by first and last name.",
+    "Importación completa: %(created)s agregados, %(updated)s actualizados, %(removed)s eliminados (ya no estaban en el archivo), %(unchanged)s sin cambios.":
+        "Import complete: %(created)s added, %(updated)s updated, %(removed)s removed (no longer in the file), %(unchanged)s unchanged.",
     # Guest list: quick entry
     "Captura rápida": "Quick entry",
     "Captura rápida de invitados": "Guest quick entry",

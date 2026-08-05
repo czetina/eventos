@@ -465,11 +465,23 @@ def wedding_party_search_guests(request, pk):
         )
 
     if request.method == "POST":
+        # (list_type_id, name) pairs already in this event, so the same
+        # guest never ends up twice in the same list if searched and added
+        # more than once.
+        existing = {
+            (m.list_type_id, m.name.strip().casefold())
+            for m in WeddingPartyMember.objects.filter(event=event).only("list_type_id", "name")
+        }
         created = 0
+        already_there = 0
         posted_guests = event.all_guests.filter(pk__in=request.POST.getlist("guest_id")).select_related("table")
         for guest in posted_guests:
             for list_type in list_types:
                 if request.POST.get(f"list_{guest.pk}_{list_type.pk}") != "on":
+                    continue
+                key = (list_type.pk, guest.name.strip().casefold())
+                if key in existing:
+                    already_there += 1
                     continue
                 next_order = (
                     WeddingPartyMember.objects.filter(event=event, list_type=list_type)
@@ -479,9 +491,16 @@ def wedding_party_search_guests(request, pk):
                     event=event, list_type=list_type, name=guest.name, quantity=1,
                     order=next_order, table_number=guest.table.table_number if guest.table else "",
                 )
+                existing.add(key)
                 created += 1
-        if created:
+        if created and already_there:
+            messages.success(request, _(
+                "Se agregaron %(count)s registros al cortejo (%(skipped)s ya estaban en esa lista y no se repitieron)."
+            ) % {"count": created, "skipped": already_there})
+        elif created:
             messages.success(request, _("Se agregaron %(count)s registros al cortejo.") % {"count": created})
+        elif already_there:
+            messages.info(request, _("Esas personas ya estaban en la lista elegida — no se agregó nada."))
         else:
             messages.info(request, _("No se seleccionó ninguna lista para las personas marcadas."))
         return redirect(f"{reverse('events:wedding_party_search_guests', args=[event.pk])}?q={query}")
@@ -521,12 +540,35 @@ def wedding_party_type_merge(request, pk):
             new_list = WeddingPartyListType.objects.create(
                 company=event.company, name=form.cleaned_data["name"], order=next_order,
             )
-            moved = WeddingPartyMember.objects.filter(
+            # A person can legitimately be in more than one source list at
+            # once (e.g. added to both via "Buscar en plan de mesas"), which
+            # would otherwise leave them duplicated within the single merged
+            # list. Keep only the first row per name and drop the rest.
+            seen_names = set()
+            moved = 0
+            duplicates = 0
+            source_members = WeddingPartyMember.objects.filter(
                 event=event, list_type__in=source_lists
-            ).update(list_type=new_list)
-            messages.success(request, _("Se unieron %(count)s personas en la nueva lista '%(name)s'.") % {
-                "count": moved, "name": new_list.name,
-            })
+            ).order_by("id")
+            for member in source_members:
+                key = member.name.strip().casefold()
+                if key in seen_names:
+                    member.delete()
+                    duplicates += 1
+                    continue
+                seen_names.add(key)
+                member.list_type = new_list
+                member.save(update_fields=["list_type"])
+                moved += 1
+            if duplicates:
+                messages.success(request, _(
+                    "Se unieron %(count)s personas en la nueva lista '%(name)s' "
+                    "(%(dupes)s ya estaban repetidas entre las listas y no se duplicaron)."
+                ) % {"count": moved, "name": new_list.name, "dupes": duplicates})
+            else:
+                messages.success(request, _("Se unieron %(count)s personas en la nueva lista '%(name)s'.") % {
+                    "count": moved, "name": new_list.name,
+                })
             return redirect("events:wedding_party", pk=event.pk)
     else:
         form = WeddingPartyListMergeForm(company=event.company, event=event)
@@ -842,6 +884,59 @@ def event_guest_assign_table(request, pk, guest_pk):
 _SEXO_LABELS = {code: str(label) for code, label in TableGuest.SEXO_CHOICES}
 _INVITA_LABELS = {code: str(label) for code, label in TableGuest.INVITA_CHOICES}
 
+_GUEST_TRACKED_FIELDS = [
+    "invita", "sexo", "family", "rsvp", "main_dish", "dietary_restrictions", "notes", "relationship",
+]
+
+
+def _guest_match_key(first_name, last_name):
+    """There's no stable ID coming from a spreadsheet, so guests are matched
+    between the current list and a re-import by (nombre, apellido) — same
+    convention as the dedup checks elsewhere in cortejo/plan de mesas."""
+    return ((first_name or "").strip().casefold(), (last_name or "").strip().casefold())
+
+
+def _diff_guest_import(event, rows):
+    """Compares the event's current guests against freshly-imported rows and
+    classifies each into: to_add (no matching current guest), to_update
+    (matched, but table or one of the tracked fields differs — live guest
+    instances, ready to be modified and saved), to_remove (current guests no
+    longer present in the new file), and how many matched rows had no
+    changes at all. Never wipes the list wholesale — a re-import is a sync,
+    not a replace, so manual edits made in the app since the last import
+    (RSVP, table, notes, etc.) are only overwritten where the new file says
+    something different."""
+    existing_by_key = {}
+    for guest in event.all_guests.select_related("table"):
+        key = _guest_match_key(guest.first_name, guest.last_name)
+        existing_by_key.setdefault(key, []).append(guest)
+
+    to_add, to_update, unchanged = [], [], 0
+    for row in rows:
+        key = _guest_match_key(row.get("first_name"), row.get("last_name"))
+        bucket = existing_by_key.get(key)
+        if not bucket:
+            to_add.append(row)
+            continue
+        guest = bucket.pop(0)
+        if not bucket:
+            del existing_by_key[key]
+        changed_fields = []
+        current_table_number = guest.table.table_number if guest.table else ""
+        new_table_number = (row.get("table_number") or "").strip()
+        if current_table_number != new_table_number:
+            changed_fields.append("table_number")
+        for field in _GUEST_TRACKED_FIELDS:
+            if (getattr(guest, field) or "") != (row.get(field) or ""):
+                changed_fields.append(field)
+        if changed_fields:
+            to_update.append((guest, row, changed_fields))
+        else:
+            unchanged += 1
+
+    to_remove = [guest for bucket in existing_by_key.values() for guest in bucket]
+    return to_add, to_update, to_remove, unchanged
+
 
 def _row_to_guest_payload(row):
     return {
@@ -888,7 +983,7 @@ def event_guest_import(request, pk):
                 key=lambda n: (0, int(n)) if n.isdigit() else (1, n),
             )
             unassigned_count = sum(1 for r in rows if not r.table_number)
-            existing_count = event.all_guests.count()
+            to_add, to_update, to_remove, unchanged = _diff_guest_import(event, payload)
 
             return render(request, "events/guest_import_preview.html", {
                 "event": event,
@@ -896,7 +991,11 @@ def event_guest_import(request, pk):
                 "payload_json": json.dumps(payload),
                 "new_tables": new_tables,
                 "unassigned_count": unassigned_count,
-                "existing_count": existing_count,
+                "add_count": len(to_add),
+                "update_count": len(to_update),
+                "remove_count": len(to_remove),
+                "remove_names": [g.name for g in to_remove],
+                "unchanged_count": unchanged,
             })
     else:
         form = GuestImportForm()
@@ -917,24 +1016,36 @@ def event_guest_import_confirm(request, pk):
         messages.error(request, _("No se pudo leer la información a importar."))
         return redirect("events:guest_import", pk=event.pk)
 
-    replaced = event.all_guests.count()
-    event.all_guests.all().delete()
-
     table_types = create_default_table_types(event.company)
     default_type = table_types["Redonda"]
     tables_by_number = {t.table_number: t for t in event.seating_tables.all()}
 
+    def resolve_table(table_number):
+        table_number = (table_number or "").strip()
+        if not table_number:
+            return None
+        table = tables_by_number.get(table_number)
+        if table is None:
+            table = SeatingTable.objects.create(event=event, table_number=table_number, table_type=default_type)
+            tables_by_number[table_number] = table
+        return table
+
+    to_add, to_update, to_remove, unchanged = _diff_guest_import(event, rows)
+
+    for guest, row, _changed_fields in to_update:
+        guest.table = resolve_table(row.get("table_number"))
+        for field in _GUEST_TRACKED_FIELDS:
+            setattr(guest, field, row.get(field) or "")
+        guest.save()
+
+    for guest in to_remove:
+        if guest.speech_member_id:
+            guest.speech_member.delete()
+        guest.delete()
+
     created = 0
-    for row in rows:
-        table = None
-        table_number = row.get("table_number", "").strip()
-        if table_number:
-            table = tables_by_number.get(table_number)
-            if table is None:
-                table = SeatingTable.objects.create(
-                    event=event, table_number=table_number, table_type=default_type,
-                )
-                tables_by_number[table_number] = table
+    for row in to_add:
+        table = resolve_table(row.get("table_number"))
         next_order = (table.guests.aggregate(Max("order"))["order__max"] or 0) + 1 if table else 0
         TableGuest.objects.create(
             event=event, table=table,
@@ -947,9 +1058,12 @@ def event_guest_import_confirm(request, pk):
         )
         created += 1
 
-    messages.success(request, _("Se importaron %(count)s invitados correctamente.") % {"count": created})
-    if replaced:
-        messages.info(request, _("Se borraron %(count)s invitados existentes antes de importar.") % {"count": replaced})
+    messages.success(request, _(
+        "Importación completa: %(created)s agregados, %(updated)s actualizados, %(removed)s eliminados "
+        "(ya no estaban en el archivo), %(unchanged)s sin cambios."
+    ) % {
+        "created": created, "updated": len(to_update), "removed": len(to_remove), "unchanged": unchanged,
+    })
     return redirect("events:seating_chart", pk=event.pk)
 
 

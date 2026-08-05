@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eventplanner\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-04 21:39\n"
+"POT-Creation-Date: 2026-08-05 12:26\n"
 "Language: en\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -2201,6 +2201,14 @@ msgid "Se unieron %(count)s personas en la nueva lista '%(name)s'."
 msgstr "Merged %(count)s people into the new list '%(name)s'."
 
 #: eventplanner
+msgid ""
+"Se unieron %(count)s personas en la nueva lista '%(name)s' (%(dupes)s ya "
+"estaban repetidas entre las listas y no se duplicaron)."
+msgstr ""
+"Merged %(count)s people into the new list '%(name)s' (%(dupes)s were already"
+" repeated across the lists and were not duplicated)."
+
+#: eventplanner
 msgid "Buscar en plan de mesas"
 msgstr "Search in seating chart"
 
@@ -2231,6 +2239,18 @@ msgstr "Add to the checked lists"
 #: eventplanner
 msgid "Se agregaron %(count)s registros al cortejo."
 msgstr "Added %(count)s entries to the wedding party."
+
+#: eventplanner
+msgid ""
+"Se agregaron %(count)s registros al cortejo (%(skipped)s ya estaban en esa "
+"lista y no se repitieron)."
+msgstr ""
+"Added %(count)s entries to the wedding party (%(skipped)s were already in "
+"that list and were not repeated)."
+
+#: eventplanner
+msgid "Esas personas ya estaban en la lista elegida — no se agregó nada."
+msgstr "Those people were already in the chosen list — nothing was added."
 
 #: eventplanner
 msgid "No se seleccionó ninguna lista para las personas marcadas."
@@ -3846,6 +3866,23 @@ msgstr "%(count)s existing guests were deleted before importing."
 #: eventplanner
 msgid "Solo planificadores o administradores pueden importar invitados."
 msgstr "Only planners or administrators can import guests."
+
+#: eventplanner
+msgid ""
+"Esto es una actualización, no un reemplazo: se compara con la lista actual "
+"por nombre y apellido."
+msgstr ""
+"This is an update, not a replacement: it's matched against the current list "
+"by first and last name."
+
+#: eventplanner
+msgid ""
+"Importación completa: %(created)s agregados, %(updated)s actualizados, "
+"%(removed)s eliminados (ya no estaban en el archivo), %(unchanged)s sin "
+"cambios."
+msgstr ""
+"Import complete: %(created)s added, %(updated)s updated, %(removed)s removed"
+" (no longer in the file), %(unchanged)s unchanged."
 
 #: eventplanner
 msgid "Captura rápida"
