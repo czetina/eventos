@@ -117,6 +117,41 @@ class WeddingPartyMemberForm(BootstrapFormMixin, forms.ModelForm):
         self._apply_bootstrap()
 
 
+class WeddingPartyListMergeForm(BootstrapFormMixin, forms.Form):
+    """Moves every person from two or more existing lists into one brand-new
+    list — used to combine e.g. 'Damas' + 'Caballeros' into a single list for
+    a final printed program, without duplicating anyone."""
+
+    name = forms.CharField(label=_("Nombre de la nueva lista"), max_length=100)
+    source_lists = forms.ModelMultipleChoiceField(
+        label=_("Listas a unir"), queryset=WeddingPartyListType.objects.none(),
+        widget=forms.CheckboxSelectMultiple,
+    )
+
+    def __init__(self, *args, company=None, event=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._company = company
+        if company:
+            self.fields["source_lists"].queryset = WeddingPartyListType.objects.filter(company=company)
+            if event:
+                self.fields["source_lists"].label_from_instance = (
+                    lambda obj: f"{obj.name} ({obj.members.filter(event=event).count()})"
+                )
+        self._apply_bootstrap()
+
+    def clean_name(self):
+        name = self.cleaned_data["name"].strip()
+        if self._company and WeddingPartyListType.objects.filter(company=self._company, name=name).exists():
+            raise forms.ValidationError(_("Ya existe una lista con ese nombre."))
+        return name
+
+    def clean_source_lists(self):
+        source_lists = self.cleaned_data["source_lists"]
+        if source_lists.count() < 2:
+            raise forms.ValidationError(_("Selecciona al menos 2 listas para unir."))
+        return source_lists
+
+
 class WeddingTableTypeForm(BootstrapFormMixin, forms.ModelForm):
     class Meta:
         model = WeddingTableType

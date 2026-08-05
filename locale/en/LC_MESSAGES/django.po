@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eventplanner\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-04 11:54\n"
+"POT-Creation-Date: 2026-08-04 21:39\n"
 "Language: en\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -2157,6 +2157,109 @@ msgstr "List deleted."
 #: eventplanner
 msgid "No tienes permiso para gestionar las listas del cortejo."
 msgstr "You don't have permission to manage the wedding party lists."
+
+#: eventplanner
+msgid "Unir listas"
+msgstr "Merge lists"
+
+#: eventplanner
+msgid "Unir listas del cortejo"
+msgstr "Merge wedding party lists"
+
+#: eventplanner
+msgid ""
+"Combina 2 o más listas en una nueva. Todas las personas de este evento en "
+"las listas seleccionadas se mueven a la nueva lista (no se duplican) — las "
+"listas de origen quedan vacías para este evento y las puedes eliminar "
+"después si ya no las necesitas. El número entre paréntesis es cuántas "
+"personas de este evento tiene cada lista."
+msgstr ""
+"Combine 2 or more lists into a new one. Everyone this event has in the "
+"selected lists is moved to the new list (not duplicated) — the source lists "
+"end up empty for this event and you can delete them afterward if you no "
+"longer need them. The number in parentheses is how many people from this "
+"event are in each list."
+
+#: eventplanner
+msgid "Nombre de la nueva lista"
+msgstr "New list name"
+
+#: eventplanner
+msgid "Listas a unir"
+msgstr "Lists to merge"
+
+#: eventplanner
+msgid "Ya existe una lista con ese nombre."
+msgstr "A list with that name already exists."
+
+#: eventplanner
+msgid "Selecciona al menos 2 listas para unir."
+msgstr "Select at least 2 lists to merge."
+
+#: eventplanner
+msgid "Se unieron %(count)s personas en la nueva lista '%(name)s'."
+msgstr "Merged %(count)s people into the new list '%(name)s'."
+
+#: eventplanner
+msgid "Buscar en plan de mesas"
+msgstr "Search in seating chart"
+
+#: eventplanner
+msgid ""
+"Busca a alguien que ya está en el plan de mesas y agrégalo directamente a "
+"una o varias listas del cortejo, sin volver a escribir su nombre."
+msgstr ""
+"Search for someone already in the seating chart and add them directly to one"
+" or more wedding party lists, without retyping their name."
+
+#: eventplanner
+msgid "Nombre, apellido o familia"
+msgstr "First name, last name, or family"
+
+#: eventplanner
+msgid "Ej. García"
+msgstr "E.g. Smith"
+
+#: eventplanner
+msgid "No se encontró a nadie con ese nombre en el plan de mesas."
+msgstr "No one with that name was found in the seating chart."
+
+#: eventplanner
+msgid "Agregar a las listas marcadas"
+msgstr "Add to the checked lists"
+
+#: eventplanner
+msgid "Se agregaron %(count)s registros al cortejo."
+msgstr "Added %(count)s entries to the wedding party."
+
+#: eventplanner
+msgid "No se seleccionó ninguna lista para las personas marcadas."
+msgstr "No list was selected for the checked people."
+
+#: eventplanner
+msgid "Volver al cortejo nupcial"
+msgstr "Back to the wedding party"
+
+#: eventplanner
+msgid "Todas las listas"
+msgstr "All lists"
+
+#: eventplanner
+msgid ""
+"¿Eliminar esta lista de este evento? Se borrarán todas las personas que "
+"tiene aquí. La categoría de lista seguirá disponible para otros eventos."
+msgstr ""
+"Delete this list from this event? Everyone in it will be removed. The list "
+"category will still be available for other events."
+
+#: eventplanner
+msgid "Eliminar esta lista de este evento"
+msgstr "Delete this list from this event"
+
+#: eventplanner
+msgid ""
+"Se eliminaron %(count)s personas de la lista '%(name)s' en este evento."
+msgstr "Removed %(count)s people from the list '%(name)s' in this event."
 
 #: eventplanner
 msgid "proveedor / persona"

@@ -4,7 +4,7 @@ from datetime import date as dt_date, time as dt_time
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
-from django.db.models import Max, Sum
+from django.db.models import Max, Q, Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -18,8 +18,8 @@ from .forms import (
     EventAdvanceForm, EventForm, EventSectionTypeForm, EventSessionForm, EventTeamMemberForm,
     ExpenseForm, GuestImportForm, GuestQuickEntryForm, InvoiceForm, InvoiceItemForm, MealCountForm,
     ProcessionalEntryForm, QuotationForm, QuotationItemForm, SeatingTableForm, SessionImportForm,
-    TableGuestForm, TableGuestMoveForm, WeddingPartyMemberForm, WeddingPartyListTypeForm,
-    WeddingTableTypeForm,
+    TableGuestForm, TableGuestMoveForm, WeddingPartyMemberForm, WeddingPartyListMergeForm,
+    WeddingPartyListTypeForm, WeddingTableTypeForm,
 )
 from .models import (
     Event, EventAdvance, EventSectionType, EventSession, EventTeamMember, Expense, Invoice,
@@ -426,12 +426,111 @@ def event_wedding_party_remove(request, pk, member_pk):
 
 
 @login_required
+def event_wedding_party_list_clear(request, pk, list_type_pk):
+    """Removes every person *this event* has in a list — the list category
+    itself (WeddingPartyListType) is shared company-wide, so it's left in
+    place for other events that may still be using it; only delete it via
+    'Mantenimiento de listas' once no event has anyone left in it."""
+    event = get_event_or_403(request.user, pk)
+    if not request.user.can_manage_events:
+        raise PermissionDenied
+    list_type = get_object_or_404(WeddingPartyListType, pk=list_type_pk, company=event.company)
+    if request.method == "POST":
+        deleted, _details = WeddingPartyMember.objects.filter(event=event, list_type=list_type).delete()
+        messages.success(request, _("Se eliminaron %(count)s personas de la lista '%(name)s' en este evento.") % {
+            "count": deleted, "name": list_type.name,
+        })
+    return redirect("events:wedding_party", pk=event.pk)
+
+
+@login_required
+def wedding_party_search_guests(request, pk):
+    """Alternative to typing a name by hand: search the event's seating chart
+    (plan de mesas) and add a matching guest to one or several cortejo lists
+    at once, copying their name and table — one WeddingPartyMember row per
+    list checked, since a person can be in more than one list (e.g. Damas
+    and Discursos) but each list only holds one FK per row."""
+    event = get_event_or_403(request.user, pk)
+    if not request.user.can_manage_events:
+        raise PermissionDenied
+    create_default_wedding_party_list_types(event.company)
+    list_types = list(WeddingPartyListType.objects.filter(company=event.company))
+    query = request.GET.get("q", "").strip()
+    guests = []
+    if query:
+        guests = list(
+            event.all_guests.select_related("table").filter(
+                Q(first_name__icontains=query) | Q(last_name__icontains=query) | Q(family__icontains=query)
+            ).order_by("first_name", "last_name")
+        )
+
+    if request.method == "POST":
+        created = 0
+        posted_guests = event.all_guests.filter(pk__in=request.POST.getlist("guest_id")).select_related("table")
+        for guest in posted_guests:
+            for list_type in list_types:
+                if request.POST.get(f"list_{guest.pk}_{list_type.pk}") != "on":
+                    continue
+                next_order = (
+                    WeddingPartyMember.objects.filter(event=event, list_type=list_type)
+                    .aggregate(Max("order"))["order__max"] or 0
+                ) + 1
+                WeddingPartyMember.objects.create(
+                    event=event, list_type=list_type, name=guest.name, quantity=1,
+                    order=next_order, table_number=guest.table.table_number if guest.table else "",
+                )
+                created += 1
+        if created:
+            messages.success(request, _("Se agregaron %(count)s registros al cortejo.") % {"count": created})
+        else:
+            messages.info(request, _("No se seleccionó ninguna lista para las personas marcadas."))
+        return redirect(f"{reverse('events:wedding_party_search_guests', args=[event.pk])}?q={query}")
+
+    return render(request, "events/wedding_party_search_guests.html", {
+        "event": event, "list_types": list_types, "guests": guests, "query": query,
+    })
+
+
+@login_required
 def wedding_party_type_list(request):
     if not request.user.can_manage_events:
         raise PermissionDenied(_("No tienes permiso para gestionar las listas del cortejo."))
     create_default_wedding_party_list_types(request.user.company)
     list_types = WeddingPartyListType.objects.filter(company=request.user.company)
     return render(request, "events/wedding_party_type_list.html", {"list_types": list_types})
+
+
+@login_required
+def wedding_party_type_merge(request, pk):
+    """Combines two or more existing lists into a brand-new one, scoped to
+    this event only — every person *this event* has in the selected source
+    lists is moved (not duplicated) into the new list. List categories are
+    shared company-wide, but the people in them are per-event, so people
+    other events happen to have in those same lists are left untouched."""
+    event = get_event_or_403(request.user, pk)
+    if not request.user.can_manage_events:
+        raise PermissionDenied(_("No tienes permiso para gestionar las listas del cortejo."))
+    if request.method == "POST":
+        form = WeddingPartyListMergeForm(request.POST, company=event.company, event=event)
+        if form.is_valid():
+            source_lists = form.cleaned_data["source_lists"]
+            next_order = (
+                WeddingPartyListType.objects.filter(company=event.company)
+                .aggregate(Max("order"))["order__max"] or 0
+            ) + 1
+            new_list = WeddingPartyListType.objects.create(
+                company=event.company, name=form.cleaned_data["name"], order=next_order,
+            )
+            moved = WeddingPartyMember.objects.filter(
+                event=event, list_type__in=source_lists
+            ).update(list_type=new_list)
+            messages.success(request, _("Se unieron %(count)s personas en la nueva lista '%(name)s'.") % {
+                "count": moved, "name": new_list.name,
+            })
+            return redirect("events:wedding_party", pk=event.pk)
+    else:
+        form = WeddingPartyListMergeForm(company=event.company, event=event)
+    return render(request, "events/wedding_party_type_merge.html", {"form": form, "event": event})
 
 
 @login_required
@@ -1971,15 +2070,61 @@ def report_minute_by_minute_excel(request, pk):
     return workbook_response(wb, f"minuto_a_minuto_{event.pk}.xlsx")
 
 
+def _wedding_party_report_list_types(request, event):
+    """Returns (all_list_types_with_member_list, filtered_list_types, selected_pks)
+    — 'lista' may be repeated in the querystring to report on several lists
+    at once; with none selected, every list is included (unfiltered)."""
+    create_default_wedding_party_list_types(event.company)
+    all_list_types = list(WeddingPartyListType.objects.filter(company=event.company))
+    members = event.wedding_party_members.select_related("list_type")
+    for list_type in all_list_types:
+        list_type.member_list = members.filter(list_type=list_type)
+    selected = request.GET.getlist("lista")
+    list_types = [lt for lt in all_list_types if str(lt.pk) in selected] if selected else all_list_types
+    return all_list_types, list_types, selected
+
+
 @login_required
 def report_wedding_party(request, pk):
     event = get_event_or_403(request.user, pk)
-    create_default_wedding_party_list_types(event.company)
-    list_types = list(WeddingPartyListType.objects.filter(company=event.company))
-    members = event.wedding_party_members.select_related("list_type")
-    for list_type in list_types:
-        list_type.member_list = members.filter(list_type=list_type)
-    has_any_members = any(list_type.member_list for list_type in list_types)
+    all_list_types, list_types, selected = _wedding_party_report_list_types(request, event)
+    has_any_members = any(lt.member_list for lt in list_types)
+
+    list_links = []
+    for lt in all_list_types:
+        pk_str = str(lt.pk)
+        is_selected = pk_str in selected
+        qd = request.GET.copy()
+        current = qd.getlist("lista")
+        qd.setlist("lista", [v for v in current if v != pk_str] if is_selected else current + [pk_str])
+        list_links.append({"list_type": lt, "selected": is_selected, "url": f"?{qd.urlencode()}"})
+    qd_all = request.GET.copy()
+    qd_all.pop("lista", None)
+    all_lists_url = f"?{qd_all.urlencode()}"
+
     return render(request, "events/report_wedding_party.html", {
         "event": event, "list_types": list_types, "has_any_members": has_any_members,
+        "list_links": list_links, "all_lists_url": all_lists_url, "selected_lists": selected,
     })
+
+
+@login_required
+def report_wedding_party_excel(request, pk):
+    from .xlsx_export import build_simple_workbook, workbook_response
+
+    event = get_event_or_403(request.user, pk)
+    _all_list_types, list_types, _selected = _wedding_party_report_list_types(request, event)
+
+    rows = [
+        [lt.name, m.order, m.name, m.role_description, m.quantity, m.table_number]
+        for lt in list_types for m in lt.member_list
+    ]
+    wb = build_simple_workbook(
+        f"{_('Cortejo nupcial')} - {event.name}",
+        [
+            str(_("Lista")), str(_("Orden")), str(_("Nombre")), str(_("Rol / descripción")),
+            str(_("Cantidad")), str(_("Mesa")),
+        ],
+        rows,
+    )
+    return workbook_response(wb, f"cortejo_{event.pk}.xlsx")

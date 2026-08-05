@@ -7,11 +7,21 @@
     <h3><i class="bi bi-flower1"></i> {% trans "Reporte del cortejo nupcial" %} — {{ event.name }}</h3>
     <a href="{% url 'events:detail' event.pk %}" class="btn btn-link px-0">&larr; {% trans "Volver al evento" %}</a>
   </div>
-  <button class="btn btn-sm btn-outline-dark" type="button" onclick="window.print()">
-    <i class="bi bi-printer"></i> {% trans "Imprimir / Guardar PDF" %}
-  </button>
+  <div>
+    <a href="{% url 'events:report_wedding_party_excel' event.pk %}{% querystring %}" class="btn btn-sm btn-outline-success"><i class="bi bi-file-earmark-excel"></i> {% trans "Descargar Excel" %}</a>
+    <button class="btn btn-sm btn-outline-dark" type="button" onclick="window.print()">
+      <i class="bi bi-printer"></i> {% trans "Imprimir / Guardar PDF" %}
+    </button>
+  </div>
 </div>
 <h4 class="d-none d-print-block">{% trans "Reporte del cortejo nupcial" %} — {{ event.name }}</h4>
+
+<div class="btn-group btn-group-sm flex-wrap mb-3 no-print" role="group">
+  <a href="{{ all_lists_url }}" class="btn {% if not selected_lists %}btn-dark{% else %}btn-outline-secondary{% endif %}">{% trans "Todas las listas" %}</a>
+  {% for link in list_links %}
+  <a href="{{ link.url }}" class="btn {% if link.selected %}btn-dark{% else %}btn-outline-secondary{% endif %}">{% if link.selected %}<i class="bi bi-check-lg"></i> {% endif %}{{ link.list_type.name }}</a>
+  {% endfor %}
+</div>
 
 {% if not has_any_members %}
 <div class="text-muted">{% trans "Todavía no hay listas configuradas." %}</div>

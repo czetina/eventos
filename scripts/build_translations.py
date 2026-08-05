@@ -557,6 +557,31 @@ TRANSLATIONS = {
     "No se puede eliminar una lista que todavía tiene personas asignadas.": "A list that still has people assigned to it cannot be deleted.",
     "Lista eliminada.": "List deleted.",
     "No tienes permiso para gestionar las listas del cortejo.": "You don't have permission to manage the wedding party lists.",
+    "Unir listas": "Merge lists",
+    "Unir listas del cortejo": "Merge wedding party lists",
+    "Combina 2 o más listas en una nueva. Todas las personas de este evento en las listas seleccionadas se mueven a la nueva lista (no se duplican) — las listas de origen quedan vacías para este evento y las puedes eliminar después si ya no las necesitas. El número entre paréntesis es cuántas personas de este evento tiene cada lista.":
+        "Combine 2 or more lists into a new one. Everyone this event has in the selected lists is moved to the new list (not duplicated) — the source lists end up empty for this event and you can delete them afterward if you no longer need them. The number in parentheses is how many people from this event are in each list.",
+    "Nombre de la nueva lista": "New list name",
+    "Listas a unir": "Lists to merge",
+    "Ya existe una lista con ese nombre.": "A list with that name already exists.",
+    "Selecciona al menos 2 listas para unir.": "Select at least 2 lists to merge.",
+    "Se unieron %(count)s personas en la nueva lista '%(name)s'.": "Merged %(count)s people into the new list '%(name)s'.",
+    "Buscar en plan de mesas": "Search in seating chart",
+    "Busca a alguien que ya está en el plan de mesas y agrégalo directamente a una o varias listas del cortejo, sin volver a escribir su nombre.":
+        "Search for someone already in the seating chart and add them directly to one or more wedding party lists, without retyping their name.",
+    "Nombre, apellido o familia": "First name, last name, or family",
+    "Ej. García": "E.g. Smith",
+    "No se encontró a nadie con ese nombre en el plan de mesas.": "No one with that name was found in the seating chart.",
+    "Agregar a las listas marcadas": "Add to the checked lists",
+    "Se agregaron %(count)s registros al cortejo.": "Added %(count)s entries to the wedding party.",
+    "No se seleccionó ninguna lista para las personas marcadas.": "No list was selected for the checked people.",
+    "Volver al cortejo nupcial": "Back to the wedding party",
+    "Todas las listas": "All lists",
+    "¿Eliminar esta lista de este evento? Se borrarán todas las personas que tiene aquí. La categoría de lista seguirá disponible para otros eventos.":
+        "Delete this list from this event? Everyone in it will be removed. The list category will still be available for other events.",
+    "Eliminar esta lista de este evento": "Delete this list from this event",
+    "Se eliminaron %(count)s personas de la lista '%(name)s' en este evento.":
+        "Removed %(count)s people from the list '%(name)s' in this event.",
     # Meal counts: target/amount/contingency
     "proveedor / persona": "vendor / person",
     "Ej. 'Transportes', 'Asistente 1', 'Planner'": "E.g. 'Transportation', 'Assistant 1', 'Planner'",

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Unir listas del cortejo" %} — {{ event.name }}{% endblock %}
+{% block content %}
+<a href="{% url 'events:wedding_party' event.pk %}" class="btn btn-link px-0 mb-2">&larr; {% trans "Volver al cortejo nupcial" %}</a>
+<div class="row justify-content-center">
+  <div class="col-md-7">
+    <div class="card">
+      <div class="card-body p-4">
+        <h4 class="mb-3"><i class="bi bi-union"></i> {% trans "Unir listas" %} — {{ event.name }}</h4>
+        <p class="text-muted small">
+          {% trans "Combina 2 o más listas en una nueva. Todas las personas de este evento en las listas seleccionadas se mueven a la nueva lista (no se duplican) — las listas de origen quedan vacías para este evento y las puedes eliminar después si ya no las necesitas. El número entre paréntesis es cuántas personas de este evento tiene cada lista." %}
+        </p>
+        <form method="post">
+          {% csrf_token %}
+          {{ form.name.errors }}
+          <div class="mb-3">
+            <label class="form-label">{{ form.name.label }}</label>
+            {{ form.name }}
+          </div>
+          {{ form.source_lists.errors }}
+          <label class="form-label">{{ form.source_lists.label }}</label>
+          <div class="mb-3">
+            {% for checkbox in form.source_lists %}
+            <div class="form-check">
+              {{ checkbox.tag }}
+              <label class="form-check-label" for="{{ checkbox.id_for_label }}">{{ checkbox.choice_label }}</label>
+            </div>
+            {% empty %}
+            <p class="text-muted small">{% trans "Todavía no hay listas configuradas." %}</p>
+            {% endfor %}
+          </div>
+          <button type="submit" class="btn btn-dark">{% trans "Unir listas" %}</button>
+          <a href="{% url 'events:wedding_party' event.pk %}" class="btn btn-link">{% trans "Cancelar" %}</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

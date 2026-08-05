@@ -7,16 +7,32 @@
     <h3><i class="bi bi-flower1"></i> {% trans "Cortejo nupcial" %} — {{ event.name }}</h3>
     <a href="{% url 'events:detail' event.pk %}" class="btn btn-link px-0">&larr; {% trans "Volver al evento" %}</a>
   </div>
-  <a href="{% url 'events:wedding_party_type_list' %}" class="btn btn-sm btn-outline-secondary">
-    <i class="bi bi-gear"></i> {% trans "Mantenimiento de listas" %}
-  </a>
+  <div>
+    <a href="{% url 'events:wedding_party_search_guests' event.pk %}" class="btn btn-sm btn-outline-dark">
+      <i class="bi bi-search"></i> {% trans "Buscar en plan de mesas" %}
+    </a>
+    <a href="{% url 'events:wedding_party_type_merge' event.pk %}" class="btn btn-sm btn-outline-dark">
+      <i class="bi bi-union"></i> {% trans "Unir listas" %}
+    </a>
+    <a href="{% url 'events:wedding_party_type_list' %}" class="btn btn-sm btn-outline-secondary">
+      <i class="bi bi-gear"></i> {% trans "Mantenimiento de listas" %}
+    </a>
+  </div>
 </div>
 
 <div class="row g-4">
   <div class="col-md-7">
     {% for list_type in list_types %}
     <div class="card mb-4">
-      <div class="card-header"><i class="bi bi-flower2"></i> {{ list_type.name }}</div>
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-flower2"></i> {{ list_type.name }}</span>
+        {% if list_type.member_list %}
+        <form method="post" action="{% url 'events:wedding_party_list_clear' event.pk list_type.pk %}" onsubmit="return confirm('{% trans "¿Eliminar esta lista de este evento? Se borrarán todas las personas que tiene aquí. La categoría de lista seguirá disponible para otros eventos." %}');">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-sm btn-outline-danger" title="{% trans "Eliminar esta lista de este evento" %}"><i class="bi bi-trash"></i></button>
+        </form>
+        {% endif %}
+      </div>
       <div class="table-responsive">
         <table class="table align-middle mb-0">
           <thead class="table-light">
