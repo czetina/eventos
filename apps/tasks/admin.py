@@ -20,7 +20,7 @@ class TaskAdmin(admin.ModelAdmin):
     list_display = [
         "title", "event", "assigned_to", "vendor", "supervisor", "status", "due_date", "due_time", "chain",
     ]
-    list_filter = ["status", "requires_photo", "requires_document"]
+    list_filter = ["status", "requires_photo", "requires_document", "is_guion", "is_guion_cliente"]
     search_fields = ["title", "event__name"]
     inlines = [TaskEvidenceInline, TaskStatusHistoryInline]
 

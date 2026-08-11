@@ -2015,14 +2015,18 @@ def report_meals_excel(request, pk):
     return workbook_response(wb, f"comidas_{event.pk}.xlsx")
 
 
-def _minute_by_minute_groups(event, only_pending, date_from="", date_to="", time_from="", time_to="", guion_only=False):
+def _minute_by_minute_groups(
+    event, only_pending, date_from="", date_to="", time_from="", time_to="",
+    guion_only=False, guion_cliente_only=False,
+):
     """Groups every itinerary session by its (company-maintained) section,
     in section order — not just Ceremonia/Recepción, whatever sections the
     event actually uses.
 
     `guion_only=True` trims each session's task list down to tasks marked
     `is_guion`, the same way `only_pending` trims it down to non-completed
-    tasks — the two filters compose independently.
+    tasks — the two filters compose independently. `guion_cliente_only=True`
+    does the same for `is_guion_cliente` and composes independently too.
 
     The date/time filter considers both the itinerary session's own date/time
     and each related task's own due_date/due_time (a task can be linked to a
@@ -2060,6 +2064,8 @@ def _minute_by_minute_groups(event, only_pending, date_from="", date_to="", time
         session_tasks = session.tasks.all()
         if guion_only:
             session_tasks = [t for t in session_tasks if t.is_guion]
+        if guion_cliente_only:
+            session_tasks = [t for t in session_tasks if t.is_guion_cliente]
         if only_pending:
             session_tasks = [t for t in session_tasks if t.status != "completada"]
 
@@ -2088,19 +2094,28 @@ def _minute_by_minute_filters(request):
     only_pending = request.GET.get("solo_pendientes") == "1"
     section_filters = request.GET.getlist("seccion")
     guion_only = request.GET.get("guion") == "1"
+    guion_cliente_only = request.GET.get("guion_cliente") == "1"
     lang = request.GET.get("lang") or getattr(request, "LANGUAGE_CODE", None) or translation.get_language()
     date_from = request.GET.get("fecha_desde") or ""
     date_to = request.GET.get("fecha_hasta") or ""
     time_from = request.GET.get("hora_desde") or ""
     time_to = request.GET.get("hora_hasta") or ""
-    return only_pending, section_filters, guion_only, lang, date_from, date_to, time_from, time_to
+    return (
+        only_pending, section_filters, guion_only, guion_cliente_only, lang,
+        date_from, date_to, time_from, time_to,
+    )
 
 
 @login_required
 def report_minute_by_minute(request, pk):
     event = get_event_or_403(request.user, pk)
-    only_pending, section_filters, guion_only, lang, date_from, date_to, time_from, time_to = _minute_by_minute_filters(request)
-    groups = _minute_by_minute_groups(event, only_pending, date_from, date_to, time_from, time_to, guion_only)
+    (
+        only_pending, section_filters, guion_only, guion_cliente_only, lang,
+        date_from, date_to, time_from, time_to,
+    ) = _minute_by_minute_filters(request)
+    groups = _minute_by_minute_groups(
+        event, only_pending, date_from, date_to, time_from, time_to, guion_only, guion_cliente_only,
+    )
     available_sections = [g["section"] for g in groups]
 
     section_links = []
@@ -2126,6 +2141,7 @@ def report_minute_by_minute(request, pk):
             "only_pending": only_pending,
             "section_filters": section_filters,
             "guion_only": guion_only,
+            "guion_cliente_only": guion_cliente_only,
             "lang": lang,
             "date_from": date_from,
             "date_to": date_to,
@@ -2140,8 +2156,13 @@ def report_minute_by_minute_excel(request, pk):
     from openpyxl.styles import Font
 
     event = get_event_or_403(request.user, pk)
-    only_pending, section_filters, guion_only, lang, date_from, date_to, time_from, time_to = _minute_by_minute_filters(request)
-    groups = _minute_by_minute_groups(event, only_pending, date_from, date_to, time_from, time_to, guion_only)
+    (
+        only_pending, section_filters, guion_only, guion_cliente_only, lang,
+        date_from, date_to, time_from, time_to,
+    ) = _minute_by_minute_filters(request)
+    groups = _minute_by_minute_groups(
+        event, only_pending, date_from, date_to, time_from, time_to, guion_only, guion_cliente_only,
+    )
     if section_filters:
         groups = [g for g in groups if str(g["section"].pk) in section_filters]
 

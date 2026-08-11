@@ -32,6 +32,11 @@
   {% else %}
   <a href="{% querystring guion="1" %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-square"></i> {% trans "Guión" %}</a>
   {% endif %}
+  {% if guion_cliente_only %}
+  <a href="{% querystring guion_cliente=None %}" class="btn btn-sm btn-warning"><i class="bi bi-check-square"></i> {% trans "Guión cliente" %}</a>
+  {% else %}
+  <a href="{% querystring guion_cliente="1" %}" class="btn btn-sm btn-outline-warning"><i class="bi bi-square"></i> {% trans "Guión cliente" %}</a>
+  {% endif %}
   <div class="btn-group btn-group-sm" role="group">
     <a href="{% querystring lang="es" %}" class="btn {% if lang == 'es' %}btn-dark{% else %}btn-outline-secondary{% endif %}">ES</a>
     <a href="{% querystring lang="en" %}" class="btn {% if lang == 'en' %}btn-dark{% else %}btn-outline-secondary{% endif %}">EN</a>
@@ -42,6 +47,7 @@
   {% for pk in section_filters %}<input type="hidden" name="seccion" value="{{ pk }}">{% endfor %}
   {% if only_pending %}<input type="hidden" name="solo_pendientes" value="1">{% endif %}
   {% if guion_only %}<input type="hidden" name="guion" value="1">{% endif %}
+  {% if guion_cliente_only %}<input type="hidden" name="guion_cliente" value="1">{% endif %}
   <input type="hidden" name="lang" value="{{ lang }}">
   <div class="col-auto">
     <label class="form-label small mb-0">{% trans "Fecha desde" %}</label>

@@ -494,6 +494,7 @@ TRANSLATIONS = {
     "Atrasadas": "Overdue",
     "Guión": "Script",
     "Guión:": "Script:",
+    "Guión cliente": "Client script",
     "token para compartir": "share token",
     "Identificador usado para el link público (sin login) del planograma del cortejo.": "Identifier used for the public (no-login) link to the processional diagram.",
     # Meal counts (#39)

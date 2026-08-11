@@ -15,7 +15,7 @@ class TaskForm(BootstrapFormMixin, forms.ModelForm):
         model = Task
         fields = [
             "title", "description", "category", "assigned_to", "vendor", "external_assignee_name",
-            "supervisor", "chain", "itinerary_session", "is_guion", "due_date", "due_time",
+            "supervisor", "chain", "itinerary_session", "is_guion", "is_guion_cliente", "due_date", "due_time",
             "requires_photo", "requires_video", "requires_document",
         ]
         widgets = {

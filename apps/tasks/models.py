@@ -118,6 +118,10 @@ class Task(models.Model):
         _("en el guión"), default=False,
         help_text=_("Marca si esta tarea forma parte del guión (minuto a minuto) del evento."),
     )
+    is_guion_cliente = models.BooleanField(
+        _("en el guión cliente"), default=False,
+        help_text=_("Marca si esta tarea forma parte del guión que se entrega al cliente."),
+    )
     chain = models.ForeignKey(
         TaskChain, verbose_name=_("cadena de tareas"), related_name="tasks",
         on_delete=models.SET_NULL, null=True, blank=True,
