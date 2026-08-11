@@ -134,10 +134,20 @@ def task_edit(request, pk):
         form = TaskForm(request.POST, instance=task, event=event)
         if form.is_valid():
             previous_status = task.status
-            task = form.save()
-            if task.status != previous_status:
-                task.record_status_change(request.user)
-            _sync_chain_order(task, previous_chain_id)
+            if form.instance.chain_id != previous_chain_id and task.chain_order is not None:
+                # The form doesn't touch chain_order, so it's still carrying the
+                # position from the OLD chain at this point. Saving the new chain
+                # together with that stale order can collide with another task
+                # that already holds that same order in the destination chain
+                # (unique_chain_order_per_chain) and raise an IntegrityError.
+                # Clear it first — NULL is exempt from the constraint — then
+                # _sync_chain_order() assigns the real position in a second save.
+                task.chain_order = None
+            with transaction.atomic():
+                task = form.save()
+                if task.status != previous_status:
+                    task.record_status_change(request.user)
+                _sync_chain_order(task, previous_chain_id)
             messages.success(request, _("Tarea actualizada."))
             if task.chain_id:
                 return redirect("tasks:chain_detail", pk=task.chain_id)
