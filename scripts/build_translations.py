@@ -515,6 +515,7 @@ TRANSLATIONS = {
     # Reports (#33-35)
     "Boda y reportes": "Wedding & reports",
     "Reportes": "Reports",
+    "Reporte": "Report",
     "Itinerario imprimible por día": "Printable itinerary by day",
     "Tareas por responsable": "Tasks by assignee",
     "Historial de cambios de estado": "Status change history",
@@ -801,6 +802,12 @@ TRANSLATIONS = {
     # Minute-by-minute / wedding party reports
     "Minuto a minuto": "Minute by minute",
     "Minuto a minuto (ceremonia y recepción)": "Minute by minute (ceremony and reception)",
+    "Minuto a minuto por fecha y hora": "Minute by minute by date and time",
+    "Ver por fecha y hora (sin agrupar)": "View by date and time (ungrouped)",
+    "Volver al minuto a minuto agrupado": "Back to the grouped minute by minute",
+    "Todas las tareas del guión en una sola lista, ordenadas por fecha y hora — sin agrupar por sección.":
+        "All script tasks in a single list, sorted by date and time — not grouped by section.",
+    "No hay tareas de guión que coincidan con los filtros.": "No script tasks match the filters.",
     "Sin actividades en esta sección.": "No activities in this section.",
     "Reporte del cortejo nupcial": "Wedding party report",
     "Orden de entrada, para el ensayo y para compartir": "Entrance order, for rehearsal and to share",
@@ -1081,8 +1088,11 @@ TRANSLATIONS = {
     "Cadenas de tareas": "Task chains",
     "Cadenas de tareas de": "Task chains for",
     "Volver a cadenas de tareas": "Back to task chains",
+    "Volver a la cadena": "Back to the chain",
     "Todavía no hay cadenas de tareas.": "No task chains yet.",
     "Todavía no hay tareas en esta cadena.": "No tasks in this chain yet.",
+    "Orden automático: completadas arriba (más reciente primero), luego en progreso, luego pendientes por fecha/hora. Dentro de cada grupo puedes ajustar el orden con las flechas.":
+        "Automatic order: completed on top (most recent first), then in progress, then pending by date/time. Within each group you can still adjust the order with the arrows.",
     "¿Eliminar esta cadena? Las tareas no se borrarán.": "Delete this chain? The tasks will not be deleted.",
     "¿Quitar esta tarea de la cadena? La tarea no se eliminará.": "Remove this task from the chain? The task will not be deleted.",
     "Se agregará a la cadena: %(name)s": "Will be added to the chain: %(name)s",

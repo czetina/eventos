@@ -8,20 +8,30 @@
     <h3><i class="bi bi-link-45deg"></i> {{ chain.name }}</h3>
     {% if chain.description %}<div class="text-muted">{{ chain.description }}</div>{% endif %}
   </div>
-  {% if can_manage_chains %}
   <div class="text-end">
+    <a href="{% url 'tasks:chain_report' chain.pk %}" class="btn btn-outline-dark"><i class="bi bi-file-earmark-text"></i> {% trans "Reporte" %}</a>
+    {% if can_manage_chains %}
     <a href="{% url 'tasks:chain_edit' chain.pk %}" class="btn btn-outline-secondary"><i class="bi bi-pencil"></i> {% trans "Editar" %}</a>
     <form method="post" action="{% url 'tasks:chain_delete' chain.pk %}" class="d-inline" onsubmit="return confirm('{% trans "¿Eliminar esta cadena? Las tareas no se borrarán." %}');">
       {% csrf_token %}
       <button type="submit" class="btn btn-outline-danger"><i class="bi bi-trash"></i> {% trans "Eliminar" %}</button>
     </form>
+    {% endif %}
   </div>
-  {% endif %}
 </div>
 
+<p class="text-muted small mb-2">
+  <i class="bi bi-info-circle"></i>
+  {% trans "Orden automático: completadas arriba (más reciente primero), luego en progreso, luego pendientes por fecha/hora. Dentro de cada grupo puedes ajustar el orden con las flechas." %}
+</p>
 <div class="card mb-3">
   <div class="list-group list-group-flush">
     {% for task in tasks %}
+    {% if task.is_first_in_bucket %}
+    <div class="list-group-item bg-body-tertiary py-1">
+      <strong class="small text-uppercase text-muted">{{ task.bucket_label }}</strong>
+    </div>
+    {% endif %}
     <div class="list-group-item">
       <div class="d-flex justify-content-between align-items-start gap-2">
         <div class="d-flex align-items-start gap-2">
@@ -56,11 +66,11 @@
             <a href="{% url 'tasks:edit' task.pk %}" class="btn btn-outline-secondary"><i class="bi bi-pencil"></i></a>
             <form method="post" action="{% url 'tasks:chain_move_task' chain.pk task.pk 'up' %}">
               {% csrf_token %}
-              <button type="submit" class="btn btn-outline-secondary" {% if forloop.first %}disabled{% endif %}><i class="bi bi-arrow-up"></i></button>
+              <button type="submit" class="btn btn-outline-secondary" {% if task.is_first_in_bucket %}disabled{% endif %}><i class="bi bi-arrow-up"></i></button>
             </form>
             <form method="post" action="{% url 'tasks:chain_move_task' chain.pk task.pk 'down' %}">
               {% csrf_token %}
-              <button type="submit" class="btn btn-outline-secondary" {% if forloop.last %}disabled{% endif %}><i class="bi bi-arrow-down"></i></button>
+              <button type="submit" class="btn btn-outline-secondary" {% if task.is_last_in_bucket %}disabled{% endif %}><i class="bi bi-arrow-down"></i></button>
             </form>
             <form method="post" action="{% url 'tasks:chain_remove_task' chain.pk task.pk %}" onsubmit="return confirm('{% trans "¿Quitar esta tarea de la cadena? La tarea no se eliminará." %}');">
               {% csrf_token %}

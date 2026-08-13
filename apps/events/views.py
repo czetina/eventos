@@ -2205,6 +2205,134 @@ def report_minute_by_minute_excel(request, pk):
     return workbook_response(wb, f"minuto_a_minuto_{event.pk}.xlsx")
 
 
+def _flat_minute_by_minute_rows(
+    event, only_pending, date_from="", date_to="", time_from="", time_to="",
+    guion_only=False, guion_cliente_only=False, section_filters=None,
+):
+    """A second, simpler shape for the same report: one row per guión task
+    (linked to a session or not), sorted purely by date/time — no grouping
+    by section/session, matching the flat "todo mezclado por hora" layout
+    some planners print instead of the grouped one. Only tasks with both a
+    due date and time can appear (nothing to sort them by otherwise) — same
+    requirement as the .ics calendar export.
+
+    Base universe is every task marked as guión (internal) and/or guión
+    cliente; `guion_only`/`guion_cliente_only` narrow it further and compose
+    independently, same as in the grouped report — both active means a task
+    must be marked as both."""
+    from apps.tasks.models import Task
+
+    tasks = event.tasks.filter(
+        Q(is_guion=True) | Q(is_guion_cliente=True),
+        due_date__isnull=False, due_time__isnull=False,
+    ).select_related("itinerary_session__section", "assigned_to")
+    if guion_only:
+        tasks = tasks.filter(is_guion=True)
+    if guion_cliente_only:
+        tasks = tasks.filter(is_guion_cliente=True)
+    if only_pending:
+        tasks = tasks.exclude(status=Task.STATUS_DONE)
+
+    date_from_d = dt_date.fromisoformat(date_from) if date_from else None
+    date_to_d = dt_date.fromisoformat(date_to) if date_to else None
+    time_from_t = dt_time.fromisoformat(time_from) if time_from else None
+    time_to_t = dt_time.fromisoformat(time_to) if time_to else None
+
+    rows = []
+    for task in tasks:
+        if date_from_d and task.due_date < date_from_d:
+            continue
+        if date_to_d and task.due_date > date_to_d:
+            continue
+        if time_from_t and task.due_time < time_from_t:
+            continue
+        if time_to_t and task.due_time > time_to_t:
+            continue
+        session = task.itinerary_session
+        if section_filters and (not session or str(session.section_id) not in section_filters):
+            continue
+        rows.append({
+            "label": f"{_('Itinerario')}: {session.title}" if session else (task.category or "—"),
+            "date": task.due_date,
+            "time": task.due_time,
+            "text": f"{task.title} ({task.get_status_display()})",
+            "venue": session.venue_name if session else "",
+            "responsible": task.responsible_initials_display,
+        })
+    rows.sort(key=lambda r: (r["date"], r["time"]))
+    return rows
+
+
+@login_required
+def report_minute_by_minute_flat(request, pk):
+    event = get_event_or_403(request.user, pk)
+    (
+        only_pending, section_filters, guion_only, guion_cliente_only, lang,
+        date_from, date_to, time_from, time_to,
+    ) = _minute_by_minute_filters(request)
+    rows = _flat_minute_by_minute_rows(
+        event, only_pending, date_from, date_to, time_from, time_to, guion_only, guion_cliente_only, section_filters,
+    )
+
+    available_sections = list(
+        EventSectionType.objects.filter(sessions__event=event).distinct().order_by("order")
+    )
+    section_links = []
+    for section in available_sections:
+        pk_str = str(section.pk)
+        selected = pk_str in section_filters
+        qd = request.GET.copy()
+        current = qd.getlist("seccion")
+        qd.setlist("seccion", [v for v in current if v != pk_str] if selected else current + [pk_str])
+        section_links.append({"section": section, "selected": selected, "url": f"?{qd.urlencode()}"})
+    qd_all = request.GET.copy()
+    qd_all.pop("seccion", None)
+    all_sections_url = f"?{qd_all.urlencode()}"
+
+    with translation.override(lang):
+        return render(request, "events/report_minute_by_minute_flat.html", {
+            "event": event, "rows": rows,
+            "section_links": section_links,
+            "all_sections_url": all_sections_url,
+            "only_pending": only_pending,
+            "section_filters": section_filters,
+            "guion_only": guion_only,
+            "guion_cliente_only": guion_cliente_only,
+            "lang": lang,
+            "date_from": date_from,
+            "date_to": date_to,
+            "time_from": time_from,
+            "time_to": time_to,
+        })
+
+
+@login_required
+def report_minute_by_minute_flat_excel(request, pk):
+    from .xlsx_export import build_simple_workbook, workbook_response
+
+    event = get_event_or_403(request.user, pk)
+    (
+        only_pending, section_filters, guion_only, guion_cliente_only, lang,
+        date_from, date_to, time_from, time_to,
+    ) = _minute_by_minute_filters(request)
+    rows = _flat_minute_by_minute_rows(
+        event, only_pending, date_from, date_to, time_from, time_to, guion_only, guion_cliente_only, section_filters,
+    )
+    with translation.override(lang):
+        xlsx_rows = [
+            [r["label"], str(r["date"]), r["time"].strftime("%H:%M"), r["text"], r["venue"], r["responsible"], ""]
+            for r in rows
+        ]
+        headers = [
+            str(_("Itinerario")), str(_("Fecha")), str(_("Hora")),
+            str(_("Tareas")), str(_("Lugar")), str(_("Responsable")), str(_("Notas")),
+        ]
+        wb = build_simple_workbook(
+            f"{_('Minuto a minuto por fecha y hora')} - {event.name}", headers, xlsx_rows,
+        )
+    return workbook_response(wb, f"minuto_a_minuto_fecha_hora_{event.pk}.xlsx")
+
+
 def _wedding_party_report_list_types(request, event):
     """Returns (all_list_types_with_member_list, filtered_list_types, selected_pks)
     — 'lista' may be repeated in the querystring to report on several lists

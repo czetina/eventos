@@ -1,3 +1,5 @@
+from datetime import date, time as dt_time
+
 from django.conf import settings
 from django.db import models
 from django.urls import reverse
@@ -203,6 +205,19 @@ class Task(models.Model):
         return self.responsible_display
 
     @property
+    def chain_bucket(self):
+        """Which of the 3 auto-sort groups this task falls into within its
+        chain's display order: 0 = completada (most recently completed
+        first), 1 = en progreso, 2 = everything else (pendiente / con
+        problema), sorted by due date/time. Always derived live from the
+        current status — never stored."""
+        if self.status == self.STATUS_DONE:
+            return 0
+        if self.status == self.STATUS_IN_PROGRESS:
+            return 1
+        return 2
+
+    @property
     def is_overdue(self):
         if self.status == self.STATUS_DONE or not self.due_date:
             return False
@@ -232,6 +247,7 @@ class Task(models.Model):
             "status", "completed_at", "completion_recorded_at", "completed_by", "updated_at",
         ])
         self.record_status_change(user, changed_at=self.completed_at)
+        relocate_task_in_chain(self)
 
     def record_status_change(self, user, note="", changed_at=None):
         """Appends an entry to this task's status history — call whenever `status`
@@ -259,6 +275,7 @@ class Task(models.Model):
             "status", "completed_at", "completion_recorded_at", "completed_by", "updated_at",
         ])
         self.record_status_change(user, note=note, changed_at=changed_at)
+        relocate_task_in_chain(self)
 
     def recompute_status_from_history(self):
         """Keeps `status` (and the completion fields) in sync with whatever is now
@@ -283,6 +300,50 @@ class Task(models.Model):
         self.save(update_fields=[
             "status", "completed_at", "completion_recorded_at", "completed_by", "updated_at",
         ])
+        relocate_task_in_chain(self)
+
+
+def _chain_date_rank(task):
+    """Sort key used to auto-place a task among its chain_bucket peers:
+    for completed tasks, the most recently completed sorts first; for
+    everything else, the earliest due date/time sorts first (tasks with
+    no due date/time sort last within their bucket)."""
+    if task.chain_bucket == 0:
+        return -(task.completed_at.timestamp() if task.completed_at else 0)
+    return (task.due_date or date.max, task.due_time or dt_time.max)
+
+
+def relocate_task_in_chain(task):
+    """Auto-places `task` within its chain's display order right after its
+    status (or due date/time) put it in a different chain_bucket than
+    before: completed tasks first (most recently completed on top), then
+    en progreso, then the rest by due date/time. Every OTHER task in the
+    chain keeps its existing relative order — including any manual
+    subir/bajar adjustment — this only decides where the changed task
+    slots in among its new bucket's peers. No-op for tasks not in a chain."""
+    if not task.chain_id:
+        return
+    buckets = {0: [], 1: [], 2: []}
+    for other in task.chain.tasks.exclude(pk=task.pk).order_by("chain_order"):
+        buckets[other.chain_bucket].append(other)
+    peers = buckets[task.chain_bucket]
+    rank = _chain_date_rank(task)
+    insert_at = next(
+        (i for i, peer in enumerate(peers) if rank < _chain_date_rank(peer)), len(peers)
+    )
+    peers.insert(insert_at, task)
+    ordered = buckets[0] + buckets[1] + buckets[2]
+    changed = [(t, i) for i, t in enumerate(ordered, start=1) if t.chain_order != i]
+    if not changed:
+        return
+    # Two-phase update — NULL is exempt from unique_chain_order_per_chain, so
+    # staging every changed row through NULL first avoids a transient
+    # collision with another row in `changed` that hasn't been renumbered
+    # yet but currently holds the value we're about to assign.
+    Task.objects.filter(pk__in=[t.pk for t, _ in changed]).update(chain_order=None)
+    for t, i in changed:
+        t.chain_order = i
+        Task.objects.filter(pk=t.pk).update(chain_order=i)
 
 
 class TaskEvidence(models.Model):

@@ -1,21 +1,24 @@
 {% extends "base.html" %}
 {% load i18n %}
-{% block title %}{% trans "Minuto a minuto" %} — {{ event.name }}{% endblock %}
+{% block title %}{% trans "Minuto a minuto por fecha y hora" %} — {{ event.name }}{% endblock %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-start mb-3 no-print">
   <div>
-    <h3><i class="bi bi-stopwatch"></i> {% trans "Minuto a minuto" %} — {{ event.name }}</h3>
-    <a href="{% url 'events:detail' event.pk %}" class="btn btn-link px-0">&larr; {% trans "Volver al evento" %}</a>
+    <h3><i class="bi bi-stopwatch"></i> {% trans "Minuto a minuto por fecha y hora" %} — {{ event.name }}</h3>
+    <a href="{% url 'events:report_minute_by_minute' event.pk %}" class="btn btn-link px-0">&larr; {% trans "Volver al minuto a minuto agrupado" %}</a>
   </div>
   <div>
-    <a href="{% url 'events:report_minute_by_minute_flat' event.pk %}" class="btn btn-sm btn-outline-dark"><i class="bi bi-list-ol"></i> {% trans "Ver por fecha y hora (sin agrupar)" %}</a>
-    <a href="{% url 'events:report_minute_by_minute_excel' event.pk %}{% querystring %}" class="btn btn-sm btn-outline-success"><i class="bi bi-file-earmark-excel"></i> {% trans "Descargar Excel" %}</a>
+    <a href="{% url 'events:report_minute_by_minute_flat_excel' event.pk %}{% querystring %}" class="btn btn-sm btn-outline-success"><i class="bi bi-file-earmark-excel"></i> {% trans "Descargar Excel" %}</a>
     <button class="btn btn-sm btn-outline-dark" type="button" onclick="window.print()">
       <i class="bi bi-printer"></i> {% trans "Imprimir / Guardar PDF" %}
     </button>
   </div>
 </div>
-<h4 class="d-none d-print-block">{% trans "Minuto a minuto" %} — {{ event.name }}</h4>
+<h4 class="d-none d-print-block">{% trans "Minuto a minuto por fecha y hora" %} — {{ event.name }}</h4>
+<p class="text-muted small mb-3 no-print">
+  <i class="bi bi-info-circle"></i>
+  {% trans "Todas las tareas del guión en una sola lista, ordenadas por fecha y hora — sin agrupar por sección." %}
+</p>
 
 <div class="d-flex flex-wrap gap-3 mb-3 no-print">
   <div class="btn-group btn-group-sm flex-wrap" role="group">
@@ -72,50 +75,34 @@
   </div>
 </form>
 
-{% for group in groups %}
-<h5><i class="bi bi-clock-history"></i> {{ group.section.name }}</h5>
-<div class="card mb-4">
+<div class="card mb-3">
   <div class="table-responsive">
     <table class="table table-sm align-middle mb-0">
       <thead class="table-light">
         <tr>
-          <th style="width:8em;">{% trans "Fecha" %}</th>
-          <th style="width:10em;">{% trans "Hora" %}</th><th>{% trans "Itinerario" %}</th><th>{% trans "Lugar" %}</th><th>{% trans "Responsable" %}</th><th>{% trans "Notas" %}</th>
+          <th>{% trans "Itinerario" %}</th>
+          <th>{% trans "Fecha" %}</th>
+          <th>{% trans "Hora" %}</th>
+          <th>{% trans "Tareas" %}</th>
+          <th>{% trans "Lugar" %}</th>
+          <th>{% trans "Responsable" %}</th>
         </tr>
       </thead>
       <tbody>
-        {% for session in group.sessions %}
-        <tr class="table-light">
-          <td>{{ session.date }}</td>
-          <td>{{ session.start_time }}{% if session.end_time %} - {{ session.end_time }}{% endif %}</td>
-          <td><strong>{{ session.title }}</strong></td>
-          <td>{{ session.venue_name|default:"—" }}</td>
-          <td></td>
-          <td class="text-muted small">{{ session.notes|default:"—" }}</td>
-        </tr>
-        {% for task in session.related_tasks %}
+        {% for row in rows %}
         <tr>
-          <td class="text-muted small ps-4">{{ task.due_date|default:"—" }}</td>
-          <td class="text-muted small">{{ task.due_time|default:"—" }}</td>
-          <td class="small ps-4">
-            <span class="badge badge-status-{{ task.status }}">{{ task.get_status_display }}</span> {{ task.title }}
-            {% if task.chain_id %}<span class="badge text-bg-light border"><i class="bi bi-link-45deg"></i> {{ task.chain.name }}</span>{% endif %}
-          </td>
-          <td></td>
-          <td class="text-muted small">{{ task.responsible_initials_display }}</td>
-          <td></td>
+          <td class="text-muted small">{{ row.label }}</td>
+          <td>{{ row.date }}</td>
+          <td>{{ row.time }}</td>
+          <td>{{ row.text }}</td>
+          <td>{{ row.venue }}</td>
+          <td>{{ row.responsible }}</td>
         </tr>
         {% empty %}
-        <tr>
-          <td></td><td></td><td class="small text-muted ps-4">{% trans "Sin tareas relacionadas." %}</td><td></td><td></td><td></td>
-        </tr>
-        {% endfor %}
+        <tr><td colspan="6" class="text-muted">{% trans "No hay tareas de guión que coincidan con los filtros." %}</td></tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
 </div>
-{% empty %}
-<div class="text-muted">{% trans "Sin actividades en esta sección." %}</div>
-{% endfor %}
 {% endblock %}

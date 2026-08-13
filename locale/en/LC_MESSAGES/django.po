@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eventplanner\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-11 15:11\n"
+"POT-Creation-Date: 2026-08-13 08:45\n"
 "Language: en\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -2001,6 +2001,10 @@ msgid "Reportes"
 msgstr "Reports"
 
 #: eventplanner
+msgid "Reporte"
+msgstr "Report"
+
+#: eventplanner
 msgid "Itinerario imprimible por día"
 msgstr "Printable itinerary by day"
 
@@ -3071,6 +3075,30 @@ msgid "Minuto a minuto (ceremonia y recepción)"
 msgstr "Minute by minute (ceremony and reception)"
 
 #: eventplanner
+msgid "Minuto a minuto por fecha y hora"
+msgstr "Minute by minute by date and time"
+
+#: eventplanner
+msgid "Ver por fecha y hora (sin agrupar)"
+msgstr "View by date and time (ungrouped)"
+
+#: eventplanner
+msgid "Volver al minuto a minuto agrupado"
+msgstr "Back to the grouped minute by minute"
+
+#: eventplanner
+msgid ""
+"Todas las tareas del guión en una sola lista, ordenadas por fecha y hora — "
+"sin agrupar por sección."
+msgstr ""
+"All script tasks in a single list, sorted by date and time — not grouped by "
+"section."
+
+#: eventplanner
+msgid "No hay tareas de guión que coincidan con los filtros."
+msgstr "No script tasks match the filters."
+
+#: eventplanner
 msgid "Sin actividades en esta sección."
 msgstr "No activities in this section."
 
@@ -4089,12 +4117,26 @@ msgid "Volver a cadenas de tareas"
 msgstr "Back to task chains"
 
 #: eventplanner
+msgid "Volver a la cadena"
+msgstr "Back to the chain"
+
+#: eventplanner
 msgid "Todavía no hay cadenas de tareas."
 msgstr "No task chains yet."
 
 #: eventplanner
 msgid "Todavía no hay tareas en esta cadena."
 msgstr "No tasks in this chain yet."
+
+#: eventplanner
+msgid ""
+"Orden automático: completadas arriba (más reciente primero), luego en "
+"progreso, luego pendientes por fecha/hora. Dentro de cada grupo puedes "
+"ajustar el orden con las flechas."
+msgstr ""
+"Automatic order: completed on top (most recent first), then in progress, "
+"then pending by date/time. Within each group you can still adjust the order "
+"with the arrows."
 
 #: eventplanner
 msgid "¿Eliminar esta cadena? Las tareas no se borrarán."

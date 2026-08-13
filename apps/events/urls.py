@@ -126,6 +126,14 @@ urlpatterns = [
         "<int:pk>/reportes/minuto-a-minuto/excel/",
         views.report_minute_by_minute_excel, name="report_minute_by_minute_excel",
     ),
+    path(
+        "<int:pk>/reportes/minuto-a-minuto/fecha-hora/",
+        views.report_minute_by_minute_flat, name="report_minute_by_minute_flat",
+    ),
+    path(
+        "<int:pk>/reportes/minuto-a-minuto/fecha-hora/excel/",
+        views.report_minute_by_minute_flat_excel, name="report_minute_by_minute_flat_excel",
+    ),
     path("<int:pk>/reportes/cortejo/", views.report_wedding_party, name="report_wedding_party"),
     path("<int:pk>/reportes/cortejo/excel/", views.report_wedding_party_excel, name="report_wedding_party_excel"),
     path("<int:pk>/reportes/mesas/", views.report_seating_chart, name="report_seating_chart"),

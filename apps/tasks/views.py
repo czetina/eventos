@@ -23,7 +23,7 @@ from . import importers
 from .forms import (
     TaskChainForm, TaskEvidenceForm, TaskForm, TaskImportForm, TaskStatusChangeForm, TaskStatusHistoryEditForm,
 )
-from .models import Task, TaskChain, TaskEvidence, TaskStatusHistory
+from .models import Task, TaskChain, TaskEvidence, TaskStatusHistory, relocate_task_in_chain
 
 
 def _annotate_chain_step(tasks):
@@ -89,18 +89,16 @@ def task_list(request, event_pk):
 def _sync_chain_order(task, previous_chain_id):
     """Keeps chain_order valid after the plain task form (not the chain
     detail's dedicated 'add task'/'create task' actions) changes which chain,
-    if any, a task belongs to — appends it to the end of its new chain, or
+    if any, a task belongs to — auto-places it among its new chain's
+    completada/en progreso/pendiente peers (see relocate_task_in_chain), or
     clears the order if it's no longer in a chain."""
     if task.chain_id == previous_chain_id:
         return
     if task.chain_id:
-        next_order = (
-            task.chain.tasks.exclude(pk=task.pk).aggregate(Max("chain_order"))["chain_order__max"] or 0
-        ) + 1
-        task.chain_order = next_order
+        relocate_task_in_chain(task)
     else:
         task.chain_order = None
-    task.save(update_fields=["chain_order"])
+        task.save(update_fields=["chain_order"])
 
 
 @login_required
@@ -130,10 +128,11 @@ def task_edit(request, pk):
     if not (request.user.can_manage_events or request.user.is_supervisor):
         raise PermissionDenied(_("No tienes permiso para editar esta tarea."))
     previous_chain_id = task.chain_id
+    previous_status = task.status
+    previous_due = (task.due_date, task.due_time)
     if request.method == "POST":
         form = TaskForm(request.POST, instance=task, event=event)
         if form.is_valid():
-            previous_status = task.status
             if form.instance.chain_id != previous_chain_id and task.chain_order is not None:
                 # The form doesn't touch chain_order, so it's still carrying the
                 # position from the OLD chain at this point. Saving the new chain
@@ -147,7 +146,14 @@ def task_edit(request, pk):
                 task = form.save()
                 if task.status != previous_status:
                     task.record_status_change(request.user)
-                _sync_chain_order(task, previous_chain_id)
+                if task.chain_id != previous_chain_id:
+                    # Entering/leaving/switching chains already auto-places it.
+                    _sync_chain_order(task, previous_chain_id)
+                elif task.chain_id and (task.due_date, task.due_time) != previous_due:
+                    # Same chain, but its due date/time moved — reslot it among
+                    # its pendiente/en progreso peers (status can't change here;
+                    # "status" isn't one of this form's fields).
+                    relocate_task_in_chain(task)
             messages.success(request, _("Tarea actualizada."))
             if task.chain_id:
                 return redirect("tasks:chain_detail", pk=task.chain_id)
@@ -354,17 +360,67 @@ def task_chain_create(request, event_pk):
     return render(request, "tasks/task_chain_form.html", {"form": form, "event": event, "is_new": True})
 
 
+CHAIN_BUCKET_LABELS = {0: _("Completadas"), 1: _("En progreso"), 2: _("Pendientes")}
+
+
+def _chain_display_order(chain):
+    """Tasks grouped completada/en progreso/pendiente (each internally by
+    chain_order) — recomputed live from each task's current status so the
+    grouping is correct even if chain_order somehow fell out of sync."""
+    tasks = list(chain.tasks.select_related("assigned_to", "supervisor", "vendor"))
+    tasks.sort(key=lambda t: (t.chain_bucket, t.chain_order or 0))
+    for i, task in enumerate(tasks):
+        task.is_first_in_bucket = i == 0 or tasks[i - 1].chain_bucket != task.chain_bucket
+        task.is_last_in_bucket = i == len(tasks) - 1 or tasks[i + 1].chain_bucket != task.chain_bucket
+    return tasks
+
+
 @login_required
 def task_chain_detail(request, pk):
     chain, event = _get_chain_scoped(request.user, pk)
-    tasks = list(chain.tasks.select_related("assigned_to", "supervisor", "vendor").order_by("chain_order"))
+    tasks = _chain_display_order(chain)
     for task in tasks:
         task.latest_status_entry = task.status_history.select_related("changed_by").first()
+        task.bucket_label = CHAIN_BUCKET_LABELS[task.chain_bucket]
     available_tasks = event.tasks.filter(chain__isnull=True).order_by("title")
     return render(request, "tasks/task_chain_detail.html", {
         "event": event, "chain": chain, "tasks": tasks, "available_tasks": available_tasks,
         "can_manage_chains": _can_manage_chains(request.user),
     })
+
+
+@login_required
+def task_chain_report(request, pk):
+    chain, event = _get_chain_scoped(request.user, pk)
+    tasks = _chain_display_order(chain)
+    for task in tasks:
+        task.bucket_label = CHAIN_BUCKET_LABELS[task.chain_bucket]
+    return render(request, "tasks/task_chain_report.html", {"event": event, "chain": chain, "tasks": tasks})
+
+
+@login_required
+def task_chain_report_excel(request, pk):
+    from apps.events.xlsx_export import build_simple_workbook, workbook_response
+
+    chain, event = _get_chain_scoped(request.user, pk)
+    tasks = _chain_display_order(chain)
+    rows = []
+    for task in tasks:
+        rows.append([
+            str(CHAIN_BUCKET_LABELS[task.chain_bucket]),
+            task.title,
+            task.get_status_display(),
+            task.responsible_display,
+            str(task.due_date) if task.due_date else "",
+            task.due_time.strftime("%H:%M") if task.due_time else "",
+            str(task.supervisor) if task.supervisor else "",
+        ])
+    headers = [
+        str(_("Grupo")), str(_("Tarea")), str(_("Estado")), str(_("Responsable")),
+        str(_("Fecha")), str(_("Hora")), str(_("Supervisor")),
+    ]
+    wb = build_simple_workbook(f"{chain.name} - {event.name}", headers, rows)
+    return workbook_response(wb, f"cadena_{chain.pk}.xlsx")
 
 
 @login_required
@@ -406,10 +462,9 @@ def task_chain_add_task(request, pk):
         raise PermissionDenied(_("No tienes permiso para modificar esta cadena de tareas."))
     if request.method == "POST":
         task = get_object_or_404(Task, pk=request.POST.get("task_id"), event=event, chain__isnull=True)
-        next_order = (chain.tasks.aggregate(Max("chain_order"))["chain_order__max"] or 0) + 1
         task.chain = chain
-        task.chain_order = next_order
-        task.save(update_fields=["chain", "chain_order"])
+        task.save(update_fields=["chain"])
+        relocate_task_in_chain(task)
         messages.success(request, _("Tarea agregada a la cadena."))
     return redirect("tasks:chain_detail", pk=chain.pk)
 
@@ -422,14 +477,13 @@ def task_chain_create_task(request, pk):
     if request.method == "POST":
         form = TaskForm(request.POST, event=event)
         if form.is_valid():
-            next_order = (chain.tasks.aggregate(Max("chain_order"))["chain_order__max"] or 0) + 1
             task = form.save(commit=False)
             task.event = event
             task.created_by = request.user
             task.chain = chain
-            task.chain_order = next_order
             task.save()
             task.record_status_change(request.user)
+            relocate_task_in_chain(task)
             messages.success(request, _("Tarea creada y agregada a la cadena."))
             return redirect("tasks:chain_detail", pk=chain.pk)
     else:
@@ -460,11 +514,11 @@ def task_chain_move(request, pk, task_pk, direction):
         raise PermissionDenied(_("No tienes permiso para modificar esta cadena de tareas."))
     task = get_object_or_404(Task, pk=task_pk, chain=chain)
     if request.method == "POST":
-        ordered = list(chain.tasks.order_by("chain_order"))
+        ordered = _chain_display_order(chain)
         index = next((i for i, t in enumerate(ordered) if t.pk == task.pk), None)
         if index is not None:
             neighbor_index = index - 1 if direction == "up" else index + 1
-            if 0 <= neighbor_index < len(ordered):
+            if 0 <= neighbor_index < len(ordered) and ordered[neighbor_index].chain_bucket == task.chain_bucket:
                 neighbor = ordered[neighbor_index]
                 task_order, neighbor_order = task.chain_order, neighbor.chain_order
                 with transaction.atomic():
