@@ -191,6 +191,15 @@ class Task(models.Model):
         return self.requires_photo or self.requires_video or self.requires_document
 
     @property
+    def pending_evidence(self):
+        """True once a task that needed photo/video/document evidence has
+        been marked completed without it yet — completing no longer waits
+        on the upload (day-of, on a phone, that's often not possible right
+        away), so this flag is how the pending upload stays visible instead
+        of silently getting lost."""
+        return self.status == self.STATUS_DONE and self.requires_evidence and not self.evidences.exists()
+
+    @property
     def responsible_display(self):
         if self.assigned_to:
             return str(self.assigned_to)

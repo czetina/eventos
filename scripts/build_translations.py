@@ -314,11 +314,15 @@ TRANSLATIONS = {
     "Registrada en el sistema el %(time)s": "Recorded in the system on %(time)s",
     "No seleccionaste ninguna tarea.": "You didn't select any tasks.",
     "%(count)s tareas marcadas como completadas.": "%(count)s tasks marked as completed.",
-    "%(count)s tareas se omitieron porque requieren evidencia y todavía no la tienen.": "%(count)s tasks were skipped because they require evidence they don't have yet.",
+    "%(count)s de esas tareas todavía necesitan que subas su evidencia (foto/video/documento).":
+        "%(count)s of those tasks still need you to upload their evidence (photo/video/document).",
     "%(count)s tareas se omitieron porque no tienes permiso para completarlas.": "%(count)s tasks were skipped because you don't have permission to complete them.",
     "Fecha y hora en que se hicieron (puedes ajustarla)": "Date and time they were done (you can adjust it)",
     "Marcar seleccionadas como completadas": "Mark selected as completed",
-    "Las tareas que requieran evidencia y no la tengan todavía se omitirán.": "Tasks that require evidence they don't have yet will be skipped.",
+    "Tarea completada el %(time)s. Todavía falta subir la evidencia (foto/video/documento) — puedes hacerlo cuando puedas.":
+        "Task completed on %(time)s. The evidence (photo/video/document) still needs to be uploaded — you can do that whenever you can.",
+    "Estado actualizado a %(status)s. Todavía falta subir la evidencia (foto/video/documento).":
+        "Status updated to %(status)s. The evidence (photo/video/document) still needs to be uploaded.",
     "¿Marcar todas las tareas seleccionadas como completadas?": "Mark all selected tasks as completed?",
     "Eliminar evento": "Delete event",
     "¿Seguro que quieres eliminar <strong>%(name)s</strong>?": "Are you sure you want to delete <strong>%(name)s</strong>?",
@@ -410,6 +414,28 @@ TRANSLATIONS = {
     "Roles creados automáticamente con la empresa; no se pueden eliminar.": "Roles created automatically with the company; they cannot be deleted.",
     "Requiere documento": "Requires document",
     "Requiere foto": "Requires photo",
+    # Live "Ahora" event-day view + deferred evidence (#pantalla en vivo)
+    "Ahora": "Now",
+    "Actualizar": "Refresh",
+    "Mostrando tareas entre %(before_min)s min antes y %(after_min)s min después de ahora":
+        "Showing tasks from %(before_min)s min before to %(after_min)s min after now",
+    "Requiere evidencia": "Requires evidence",
+    "Subir evidencia": "Upload evidence",
+    "Evidencia pendiente": "Evidence pending",
+    "No hay tareas en este rango de horario.": "No tasks in this time range.",
+    "Ver 30 min más atrás": "See 30 min earlier",
+    "Ver 30 min más adelante": "See 30 min later",
+    "Ver todas las tareas del evento": "View all of the event's tasks",
+    "La fecha/hora simulada no es válida; se usó el momento actual.":
+        "The simulated date/time isn't valid; the current moment was used instead.",
+    "Modo prueba: viendo como si fuera el %(time)s": "Test mode: viewing as if it were %(time)s",
+    "Quitar simulación": "Clear simulation",
+    "Probar con otra fecha/hora": "Test with a different date/time",
+    "Simular": "Simulate",
+    "Todavía falta subir la evidencia (foto/video/documento) de esta tarea.":
+        "The evidence (photo/video/document) for this task still needs to be uploaded.",
+    "Las tareas que requieran evidencia se marcan como completadas igual — solo recuerda subirla después.":
+        "Tasks that require evidence get marked complete anyway — just remember to upload it afterward.",
     "actualizado": "updated",
     "encargado": "assignee",
     "fecha límite": "due date",

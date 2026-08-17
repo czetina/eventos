@@ -70,6 +70,12 @@
       </div>
       {% endif %}
     </div>
+    {% if task.pending_evidence %}
+    <div class="alert alert-warning mt-2 mb-0">
+      <i class="bi bi-exclamation-triangle"></i>
+      {% trans "Todavía falta subir la evidencia (foto/video/documento) de esta tarea." %}
+    </div>
+    {% endif %}
     {% endif %}
   </div>
 </div>

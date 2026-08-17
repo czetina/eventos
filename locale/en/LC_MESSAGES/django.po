@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eventplanner\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-13 08:45\n"
+"POT-Creation-Date: 2026-08-17 10:29\n"
 "Language: en\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -1189,11 +1189,11 @@ msgstr "%(count)s tasks marked as completed."
 
 #: eventplanner
 msgid ""
-"%(count)s tareas se omitieron porque requieren evidencia y todavía no la "
-"tienen."
+"%(count)s de esas tareas todavía necesitan que subas su evidencia "
+"(foto/video/documento)."
 msgstr ""
-"%(count)s tasks were skipped because they require evidence they don't have "
-"yet."
+"%(count)s of those tasks still need you to upload their evidence "
+"(photo/video/document)."
 
 #: eventplanner
 msgid ""
@@ -1211,8 +1211,20 @@ msgid "Marcar seleccionadas como completadas"
 msgstr "Mark selected as completed"
 
 #: eventplanner
-msgid "Las tareas que requieran evidencia y no la tengan todavía se omitirán."
-msgstr "Tasks that require evidence they don't have yet will be skipped."
+msgid ""
+"Tarea completada el %(time)s. Todavía falta subir la evidencia "
+"(foto/video/documento) — puedes hacerlo cuando puedas."
+msgstr ""
+"Task completed on %(time)s. The evidence (photo/video/document) still needs "
+"to be uploaded — you can do that whenever you can."
+
+#: eventplanner
+msgid ""
+"Estado actualizado a %(status)s. Todavía falta subir la evidencia "
+"(foto/video/documento)."
+msgstr ""
+"Status updated to %(status)s. The evidence (photo/video/document) still "
+"needs to be uploaded."
 
 #: eventplanner
 msgid "¿Marcar todas las tareas seleccionadas como completadas?"
@@ -1601,6 +1613,84 @@ msgstr "Requires document"
 #: eventplanner
 msgid "Requiere foto"
 msgstr "Requires photo"
+
+#: eventplanner
+msgid "Ahora"
+msgstr "Now"
+
+#: eventplanner
+msgid "Actualizar"
+msgstr "Refresh"
+
+#: eventplanner
+msgid ""
+"Mostrando tareas entre %(before_min)s min antes y %(after_min)s min después "
+"de ahora"
+msgstr ""
+"Showing tasks from %(before_min)s min before to %(after_min)s min after now"
+
+#: eventplanner
+msgid "Requiere evidencia"
+msgstr "Requires evidence"
+
+#: eventplanner
+msgid "Subir evidencia"
+msgstr "Upload evidence"
+
+#: eventplanner
+msgid "Evidencia pendiente"
+msgstr "Evidence pending"
+
+#: eventplanner
+msgid "No hay tareas en este rango de horario."
+msgstr "No tasks in this time range."
+
+#: eventplanner
+msgid "Ver 30 min más atrás"
+msgstr "See 30 min earlier"
+
+#: eventplanner
+msgid "Ver 30 min más adelante"
+msgstr "See 30 min later"
+
+#: eventplanner
+msgid "Ver todas las tareas del evento"
+msgstr "View all of the event's tasks"
+
+#: eventplanner
+msgid "La fecha/hora simulada no es válida; se usó el momento actual."
+msgstr ""
+"The simulated date/time isn't valid; the current moment was used instead."
+
+#: eventplanner
+msgid "Modo prueba: viendo como si fuera el %(time)s"
+msgstr "Test mode: viewing as if it were %(time)s"
+
+#: eventplanner
+msgid "Quitar simulación"
+msgstr "Clear simulation"
+
+#: eventplanner
+msgid "Probar con otra fecha/hora"
+msgstr "Test with a different date/time"
+
+#: eventplanner
+msgid "Simular"
+msgstr "Simulate"
+
+#: eventplanner
+msgid "Todavía falta subir la evidencia (foto/video/documento) de esta tarea."
+msgstr ""
+"The evidence (photo/video/document) for this task still needs to be "
+"uploaded."
+
+#: eventplanner
+msgid ""
+"Las tareas que requieran evidencia se marcan como completadas igual — solo "
+"recuerda subirla después."
+msgstr ""
+"Tasks that require evidence get marked complete anyway — just remember to "
+"upload it afterward."
 
 #: eventplanner
 msgid "actualizado"

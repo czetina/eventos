@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Ahora" %} — {{ event.name }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-2">
+  <div>
+    <h4 class="mb-0"><i class="bi bi-broadcast"></i> {% trans "Ahora" %}</h4>
+    <div class="text-muted small">{{ event.name }}</div>
+  </div>
+  <div class="text-end">
+    <div class="fs-5 fw-bold" style="font-variant-numeric: tabular-nums;">{{ now|date:"H:i" }}</div>
+    <a href="{% querystring %}" class="btn btn-sm btn-outline-dark"><i class="bi bi-arrow-clockwise"></i> {% trans "Actualizar" %}</a>
+  </div>
+</div>
+<div class="text-muted small mb-3">
+  {% blocktrans %}Mostrando tareas entre {{ before_min }} min antes y {{ after_min }} min después de ahora{% endblocktrans %}
+</div>
+
+{% if simulated_at %}
+<div class="alert alert-info d-flex justify-content-between align-items-center py-2 mb-3">
+  <span><i class="bi bi-flask"></i> {% blocktrans with time=now|date:"d/m/Y H:i" %}Modo prueba: viendo como si fuera el {{ time }}{% endblocktrans %}</span>
+  <a href="{% querystring simular=None %}" class="btn btn-sm btn-outline-secondary">{% trans "Quitar simulación" %}</a>
+</div>
+{% endif %}
+
+{% if can_simulate %}
+<form method="get" class="card card-body p-2 mb-3 no-print">
+  <div class="d-flex gap-2 align-items-end flex-wrap">
+    <input type="hidden" name="antes" value="{{ before_min }}">
+    <input type="hidden" name="despues" value="{{ after_min }}">
+    <div>
+      <label class="form-label small mb-0">{% trans "Probar con otra fecha/hora" %}</label>
+      <input type="datetime-local" name="simular" class="form-control form-control-sm" value="{{ simulated_at }}">
+    </div>
+    <button type="submit" class="btn btn-sm btn-outline-dark"><i class="bi bi-flask"></i> {% trans "Simular" %}</button>
+  </div>
+</form>
+{% endif %}
+
+{% if tasks %}
+<div class="d-flex flex-column gap-2 mb-4">
+  {% for task in tasks %}
+  <div class="card {% if task.status == 'completada' %}border-success-subtle{% elif task.is_overdue %}border-danger{% endif %}">
+    <div class="card-body p-3">
+      <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
+        <div class="fs-4 fw-bold" style="font-variant-numeric: tabular-nums;">
+          {{ task.due_time|time:"H:i" }}
+          {% if task.is_overdue %}<i class="bi bi-exclamation-triangle-fill text-danger small"></i>{% endif %}
+        </div>
+        <span class="badge badge-status-{{ task.status }} fs-6">{{ task.get_status_display }}</span>
+      </div>
+      <div class="fs-5 mb-1">{{ task.title }}</div>
+      <div class="text-muted small mb-2">
+        {% if task.location %}<span><i class="bi bi-geo-alt"></i> {{ task.location }}</span> · {% endif %}
+        <span><i class="bi bi-person"></i> {{ task.responsible_display }}</span>
+        {% if task.chain_id %} · <i class="bi bi-link-45deg"></i> {{ task.chain.name }}{% endif %}
+      </div>
+      {% if task.requires_photo or task.requires_video or task.requires_document %}
+      <div class="mb-2">
+        {% if task.pending_evidence %}
+        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle"><i class="bi bi-exclamation-triangle"></i> {% trans "Evidencia pendiente" %}</span>
+        {% elif task.status != 'completada' %}
+        <span class="badge bg-light text-body border"><i class="bi bi-camera"></i> {% trans "Requiere evidencia" %}</span>
+        {% endif %}
+      </div>
+      {% endif %}
+      <div class="d-flex gap-2">
+        {% if task.status != 'completada' and task.can_complete %}
+        <form method="post" action="{% url 'tasks:complete' task.pk %}" class="flex-grow-1">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <button type="submit" class="btn btn-success btn-lg w-100"><i class="bi bi-check2-circle"></i> {% trans "Completar" %}</button>
+        </form>
+        {% endif %}
+        <a href="{% url 'tasks:detail' task.pk %}" class="btn btn-outline-secondary {% if task.status == 'completada' or not task.can_complete %}flex-grow-1{% endif %}">
+          {% if task.pending_evidence %}<i class="bi bi-camera"></i> {% trans "Subir evidencia" %}{% else %}<i class="bi bi-three-dots"></i>{% endif %}
+        </a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-light border text-center py-4">
+  <i class="bi bi-cup-hot fs-3 d-block mb-2 text-muted"></i>
+  {% trans "No hay tareas en este rango de horario." %}
+  <div class="mt-3 d-flex gap-2 justify-content-center flex-wrap">
+    <a href="{% querystring antes=before_min|add:30 %}" class="btn btn-sm btn-outline-dark">{% trans "Ver 30 min más atrás" %}</a>
+    <a href="{% querystring despues=after_min|add:30 %}" class="btn btn-sm btn-outline-dark">{% trans "Ver 30 min más adelante" %}</a>
+  </div>
+</div>
+{% endif %}
+
+<div class="text-center">
+  <a href="{% url 'tasks:list' event.pk %}" class="btn btn-link">{% trans "Ver todas las tareas del evento" %}</a>
+</div>
+
+{% if not simulated_at %}
+<script>
+  setTimeout(function(){ window.location.reload(); }, 90000);
+</script>
+{% endif %}
+{% endblock %}

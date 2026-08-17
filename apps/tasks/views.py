@@ -10,6 +10,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext_lazy as _
 
 from apps.accounts.models import User
@@ -83,6 +84,62 @@ def task_list(request, event_pk):
         "event": event, "tasks": tasks, "status_choices": Task.STATUS_CHOICES,
         "active_status": status, "show_overdue": show_overdue,
         "guion_subscribe_url": subscribe_url, "guion_subscribe_url_https": ics_public_url,
+    })
+
+
+@login_required
+def task_live_now(request, event_pk):
+    """Mobile-first, event-day screen: only tasks due within a rolling
+    window around the current moment (default 30 min before/after), so a
+    coordinator on-site — including across a multi-location event — can see
+    at a glance what's happening right now without hunting through the full
+    task list, and mark things done in one tap."""
+    event = get_event_or_403(request.user, event_pk)
+
+    def _window_minutes(param, default):
+        try:
+            value = int(request.GET.get(param, default))
+        except (TypeError, ValueError):
+            value = default
+        return max(0, min(value, 720))
+
+    before_min = _window_minutes("antes", 30)
+    after_min = _window_minutes("despues", 30)
+
+    simulated_at = ""
+    now_naive = timezone.localtime(timezone.now()).replace(tzinfo=None)
+    if request.user.can_manage_events or request.user.is_supervisor:
+        raw_sim = request.GET.get("simular", "").strip()
+        if raw_sim:
+            try:
+                now_naive = datetime.strptime(raw_sim, "%Y-%m-%dT%H:%M")
+                simulated_at = raw_sim
+            except ValueError:
+                messages.error(request, _("La fecha/hora simulada no es válida; se usó el momento actual."))
+    window_start = now_naive - timedelta(minutes=before_min)
+    window_end = now_naive + timedelta(minutes=after_min)
+
+    tasks = event.tasks.filter(
+        due_date__isnull=False, due_time__isnull=False,
+    ).select_related("assigned_to", "vendor", "supervisor", "itinerary_session")
+    if not request.user.can_manage_events:
+        tasks = tasks.filter(assigned_to=request.user)
+
+    in_window = []
+    for task in tasks:
+        moment = datetime.combine(task.due_date, task.due_time)
+        if window_start <= moment <= window_end:
+            task.moment = moment
+            task.location = task.itinerary_session.venue_name if task.itinerary_session else ""
+            task.can_complete = task.can_be_completed_by(request.user)
+            in_window.append(task)
+    in_window.sort(key=lambda t: t.moment)
+
+    return render(request, "tasks/task_live_now.html", {
+        "event": event, "tasks": in_window, "now": now_naive,
+        "before_min": before_min, "after_min": after_min,
+        "simulated_at": simulated_at,
+        "can_simulate": request.user.can_manage_events or request.user.is_supervisor,
     })
 
 
@@ -251,18 +308,24 @@ def task_complete(request, pk):
         return redirect("tasks:detail", pk=task.pk)
     if not task.can_be_completed_by(request.user):
         raise PermissionDenied(_("Solo el encargado o un supervisor pueden completar esta tarea."))
-    if task.requires_evidence and not task.evidences.exists():
-        messages.error(request, _("Esta tarea requiere subir evidencia (foto/documento) antes de completarla."))
-        return redirect("tasks:detail", pk=task.pk)
 
     completed_at, invalid = _parse_completed_at(request)
     if invalid:
         messages.error(request, _("La fecha/hora de finalización no es válida; se usó el momento actual."))
 
+    needs_evidence = task.requires_evidence and not task.evidences.exists()
     task.mark_completed(request.user, completed_at=completed_at)
-    messages.success(request, _("Tarea marcada como completada el %(time)s.") % {
-        "time": timezone.localtime(task.completed_at).strftime("%d/%m/%Y %H:%M")
-    })
+    if needs_evidence:
+        messages.warning(request, _(
+            "Tarea completada el %(time)s. Todavía falta subir la evidencia (foto/video/documento) — puedes hacerlo cuando puedas."
+        ) % {"time": timezone.localtime(task.completed_at).strftime("%d/%m/%Y %H:%M")})
+    else:
+        messages.success(request, _("Tarea marcada como completada el %(time)s.") % {
+            "time": timezone.localtime(task.completed_at).strftime("%d/%m/%Y %H:%M")
+        })
+    next_url = request.POST.get("next")
+    if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+        return redirect(next_url)
     return redirect("tasks:detail", pk=task.pk)
 
 
@@ -275,14 +338,17 @@ def task_change_status(request, pk):
         form = TaskStatusChangeForm(request.POST)
         if form.is_valid():
             status = form.cleaned_data["status"]
-            if status == Task.STATUS_DONE and task.requires_evidence and not task.evidences.exists():
-                messages.error(request, _("Esta tarea requiere subir evidencia (foto/documento) antes de completarla."))
+            needs_evidence = status == Task.STATUS_DONE and task.requires_evidence and not task.evidences.exists()
+            changed_at = timezone.make_aware(form.cleaned_data["changed_at"]) \
+                if timezone.is_naive(form.cleaned_data["changed_at"]) else form.cleaned_data["changed_at"]
+            task.change_status(request.user, status, changed_at=changed_at, note=form.cleaned_data["note"])
+            if needs_evidence:
+                messages.warning(request, _(
+                    "Estado actualizado a %(status)s. Todavía falta subir la evidencia (foto/video/documento)."
+                ) % {"status": task.get_status_display()})
             else:
-                changed_at = timezone.make_aware(form.cleaned_data["changed_at"]) \
-                    if timezone.is_naive(form.cleaned_data["changed_at"]) else form.cleaned_data["changed_at"]
-                task.change_status(request.user, status, changed_at=changed_at, note=form.cleaned_data["note"])
                 messages.success(request, _("Estado actualizado a %(status)s.") % {"status": task.get_status_display()})
-                return redirect("tasks:detail", pk=task.pk)
+            return redirect("tasks:detail", pk=task.pk)
     else:
         form = TaskStatusChangeForm(initial={"status": task.status, "changed_at": timezone.localtime(timezone.now())})
     return render(request, "tasks/task_status_change_form.html", {"form": form, "task": task, "event": event})
@@ -551,7 +617,7 @@ def task_bulk_complete(request):
         messages.error(request, _("La fecha/hora de finalización no es válida; se usó el momento actual."))
 
     tasks = Task.objects.filter(pk__in=task_ids).select_related("event")
-    completed, skipped_permission, skipped_evidence = 0, 0, 0
+    completed, skipped_permission, pending_evidence = 0, 0, 0
     for task in tasks:
         try:
             get_event_or_403(request.user, task.event_id)
@@ -562,17 +628,16 @@ def task_bulk_complete(request):
             skipped_permission += 1
             continue
         if task.requires_evidence and not task.evidences.exists():
-            skipped_evidence += 1
-            continue
+            pending_evidence += 1
         task.mark_completed(request.user, completed_at=completed_at)
         completed += 1
 
     if completed:
         messages.success(request, _("%(count)s tareas marcadas como completadas.") % {"count": completed})
-    if skipped_evidence:
+    if pending_evidence:
         messages.warning(request, _(
-            "%(count)s tareas se omitieron porque requieren evidencia y todavía no la tienen."
-        ) % {"count": skipped_evidence})
+            "%(count)s de esas tareas todavía necesitan que subas su evidencia (foto/video/documento)."
+        ) % {"count": pending_evidence})
     if skipped_permission:
         messages.warning(request, _("%(count)s tareas se omitieron porque no tienes permiso para completarlas.") % {
             "count": skipped_permission

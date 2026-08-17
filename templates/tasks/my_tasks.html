@@ -55,7 +55,7 @@
         </button>
       </div>
     </div>
-    <div class="form-text mt-1">{% trans "Las tareas que requieran evidencia y no la tengan todavía se omitirán." %}</div>
+    <div class="form-text mt-1">{% trans "Las tareas que requieran evidencia se marcan como completadas igual — solo recuerda subirla después." %}</div>
   </div>
 </form>
 {% else %}
@@ -72,6 +72,9 @@
         <div>
           <div class="fw-bold">{{ task.title }}</div>
           <div class="text-muted small">{{ task.event.name }} · {% trans "completada" %} {{ task.completed_at|date:"d/m/Y H:i" }}{% if task.chain_id %} · {% trans "Cadena" %}: {{ task.chain.name }}{% endif %}</div>
+          {% if task.pending_evidence %}
+          <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle small mt-1"><i class="bi bi-exclamation-triangle"></i> {% trans "Evidencia pendiente" %}</span>
+          {% endif %}
         </div>
         <span class="badge badge-status-completada">{% trans "Completada" %}</span>
       </div>

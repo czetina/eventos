@@ -8,6 +8,7 @@ urlpatterns = [
     path("mis-tareas/", views.my_tasks, name="my_tasks"),
     path("completar-varias/", views.task_bulk_complete, name="bulk_complete"),
     path("evento/<int:event_pk>/", views.task_list, name="list"),
+    path("evento/<int:event_pk>/ahora/", views.task_live_now, name="live_now"),
     path("evento/<int:event_pk>/nueva/", views.task_create, name="create"),
     path("evento/<int:event_pk>/importar/", views.task_import, name="import"),
     path("evento/<int:event_pk>/importar/confirmar/", views.task_import_confirm, name="import_confirm"),
